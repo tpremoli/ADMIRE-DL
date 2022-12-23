@@ -11,7 +11,6 @@ from pathlib import Path
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
-
 class Subject:
     def __init__(self, subj_folder: str, run_name: str, collection_df=None, group=None, sex=None):
         if collection_df is None and (group is None or sex is None):
@@ -111,10 +110,3 @@ class Subject:
     def show_img(self):
         nib.viewers.OrthoSlicer3D(self.data).show()
 
-
-subjects_csv = pd.read_csv("unprocessed_samples/test_sample.csv")
-s = Subject.from_pickle(existing_pkl="/home/tpremoli/Desktop/MRI_AD_Diagnosis/out/preprocessed_samples/test_run/002_S_0295_processed.pkl")
-
-print(s.nii_path)
-print(s.out_dir)
-print(s.subj_name)
