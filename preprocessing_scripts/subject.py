@@ -52,8 +52,12 @@ class Subject:
         # axial = self.data[:, :, 50] <- 50th slice along axial
 
         # Saving our object as a pickle
-        with open(Path(self.out_dir,"{}_processed.pkl".format(self.subj_name)), "wb") as pkl_file:
+        with open(Path(self.out_dir, "{}_processed.pkl".format(self.subj_name)), "wb") as pkl_file:
             pickle.dump(self, pkl_file, pickle.HIGHEST_PROTOCOL)
+
+    def from_pickle(existing_pkl):
+        with open(existing_pkl, "rb") as f:
+            return pickle.load(f)
 
     def run_fsl(self, subj_location):
         niifile = ""
@@ -105,9 +109,12 @@ class Subject:
         return np.array(imgfile.dataobj)
 
     def show_img(self):
-        nib.viewers.OrthoSlicer3D(self.data).show()  
-        
+        nib.viewers.OrthoSlicer3D(self.data).show()
 
 
 subjects_csv = pd.read_csv("unprocessed_samples/test_sample.csv")
-s = Subject("unprocessed_samples/ADNI/002_S_0295", "test_run", subjects_csv)
+s = Subject.from_pickle(existing_pkl="/home/tpremoli/Desktop/MRI_AD_Diagnosis/out/preprocessed_samples/test_run/002_S_0295_processed.pkl")
+
+print(s.nii_path)
+print(s.out_dir)
+print(s.subj_name)
