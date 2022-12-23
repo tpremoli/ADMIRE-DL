@@ -55,6 +55,19 @@ class Subject:
 
         fsl_anat(img=niifile, out=out_dir)
 
+        # fsl_anat adds .anat to end of output directory
+        final_out_dir = pathlib.Path("{}.anat".format(out_dir))
+        
+        # This is the outputted nonlinear transformed brain
+        mni_nonlin = pathlib.Path(final_out_dir,"T1_to_MNI_nonlin.nii.gz")
+
+        # This is the outputted brain mask
+        brain_mask = pathlib.Path(final_out_dir,"MNI152_T1_2mm_brain_mask_dil1.nii.gz")
+
+        final_brain = pathlib.Path(final_out_dir, "{}_processed.nii.gz".format(self.subj_name))
+
+        fsl_maths(mni_nonlin).mul(brain_mask).run(final_brain)
+
 
 subjects_csv = pd.read_csv("unprocessed_samples/test_sample.csv")
 s = Subject("unprocessed_samples/ADNI/002_S_0295", "test_run", subjects_csv)
