@@ -1,12 +1,14 @@
 import pathlib
+import numpy as np
+import pandas as pd
 
 cwd = pathlib.Path().resolve()
 filedir = pathlib.Path(__file__).parent.resolve()
 
 
 class Subject:
-    def __init__(self, subj_folder: str,  collection_df=None, group=None, sex=None, age=None):
-        if collection_df is None and (group is None or sex is None or age is None):
+    def __init__(self, subj_folder: str,  collection_df=None, group=None, sex=None):
+        if collection_df is None and (group is None or sex is None):
             raise ValueError("ERROR: Subject instatiation requires either a dataframe of collection info or group, sex, and age values!")
         
         subj_location = pathlib.Path(cwd, subj_folder).resolve()
@@ -18,14 +20,18 @@ class Subject:
         if collection_df is None:
             self.group = group
             self.sex = sex
-            self.age = int(age)
         else:
-            entry = collection_df[collection_df["Subject"] == self.name]
+            # TODO: How should we handle different scans of same subject?
+            # idea: treat each scan as a different subject. identify subj by id + date.
+            # Will work on in future. Keeping things simple for now.
+            entry = collection_df[collection_df["Subject"] == self.name].iloc[0]
+
             self.group = entry["Group"]
             self.sex = entry["Sex"]
-            self.age = entry["Age"]
 
 
-s = Subject("file", group="AD",sex="M",age=20)
+subjects_csv = pd.read_csv("unprocessed_samples/test_sample.csv")
+s = Subject("unprocessed_samples/ADNI/002_S_0295", subjects_csv)
 
 print(s.__dict__)
+
