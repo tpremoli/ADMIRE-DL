@@ -1,4 +1,5 @@
 import shutil
+import pickle
 import numpy as np
 import pandas as pd
 import nibabel as nib
@@ -41,7 +42,6 @@ class Subject:
 
         print("Launching FSL scripts for subject {}".format(self.subj_name))
         self.nii_path, self.out_dir = self.run_fsl(subj_location)
-        #self.nii_path, self.out_dir = "/home/tpremoli/Desktop/MRI_AD_Diagnosis/out/preprocessed_samples/test_run/002_S_0295_processed.nii.gz"
 
         print("FSL scripts complete. Retrieving data from output")
         self.data = self.get_data_from_nii()
@@ -50,6 +50,10 @@ class Subject:
         # sagittal = self.data[26, :, :] <- 26th slice along sagittal
         # coronal = self.data[:, 30, :] <- 30th slice along coronal
         # axial = self.data[:, :, 50] <- 50th slice along axial
+
+        # Saving our object as a pickle
+        with open(Path(self.out_dir,"{}_processed.pkl".format(self.subj_name)), "wb") as pkl_file:
+            pickle.dump(self, pkl_file, pickle.HIGHEST_PROTOCOL)
 
     def run_fsl(self, subj_location):
         niifile = ""
@@ -69,7 +73,7 @@ class Subject:
             filedir, "../out/preprocessed_samples/tmp", self.run_name).resolve()
 
         # Running fsl_anat
-        #fsl_anat(img=niifile, out=tmp_dir)
+        fsl_anat(img=niifile, out=tmp_dir)
 
         # fsl_anat adds .anat to end of output directory
         anat_dir = Path("{}.anat".format(tmp_dir))
