@@ -1,11 +1,10 @@
-import os
 import shutil
 import numpy as np
 import pandas as pd
+import nibabel as nib
+import matplotlib.pyplot as plt
 import fsl.wrappers.fsl_anat as fsl_anat
-# https://open.win.ox.ac.uk/pages/fsl/fslpy/fsl.wrappers.fsl_anat.html?highlight=fsl_anat#module-fsl.wrappers.fsl_anat fsl anat
 import fsl.wrappers.fslmaths as fsl_maths
-# https://open.win.ox.ac.uk/pages/fsl/fslpy/fsl.wrappers.fslmaths.html?highlight=maths#module-fsl.wrappers.fslmaths fsl maths
 from pathlib import Path
 
 cwd = Path().resolve()
@@ -40,8 +39,17 @@ class Subject:
             self.group = entry["Group"]
             self.sex = entry["Sex"]
 
-        print("Launching fsl scripts for subject {}".format(self.subj_name))
-        self.run_fsl(subj_location)
+        print("Launching FSL scripts for subject {}".format(self.subj_name))
+        self.nii_path, self.out_dir = self.run_fsl(subj_location)
+        #self.nii_path, self.out_dir = "/home/tpremoli/Desktop/MRI_AD_Diagnosis/out/preprocessed_samples/test_run/002_S_0295_processed.nii.gz"
+
+        print("FSL scripts complete. Retrieving data from output")
+        self.data = self.get_data_from_nii()
+
+        # To access slices:
+        # sagittal = self.data[26, :, :] <- 26th slice along sagittal
+        # coronal = self.data[:, 30, :] <- 30th slice along coronal
+        # axial = self.data[:, :, 50] <- 50th slice along axial
 
     def run_fsl(self, subj_location):
         niifile = ""
@@ -60,18 +68,20 @@ class Subject:
         tmp_dir = Path(
             filedir, "../out/preprocessed_samples/tmp", self.run_name).resolve()
 
+        # Running fsl_anat
         #fsl_anat(img=niifile, out=tmp_dir)
 
         # fsl_anat adds .anat to end of output directory
         anat_dir = Path("{}.anat".format(tmp_dir))
-        
+
         # This is the outputted nonlinear transformed brain
-        mni_nonlin = Path(anat_dir,"T1_to_MNI_nonlin.nii.gz")
+        mni_nonlin = Path(anat_dir, "T1_to_MNI_nonlin.nii.gz")
 
         # This is the outputted brain mask
-        brain_mask = Path(anat_dir,"MNI152_T1_2mm_brain_mask_dil1.nii.gz")
+        brain_mask = Path(anat_dir, "MNI152_T1_2mm_brain_mask_dil1.nii.gz")
 
-        final_brain = Path(out_dir, "{}_processed.nii.gz".format(self.subj_name))
+        final_brain = Path(
+            out_dir, "{}_processed.nii.gz".format(self.subj_name))
 
         # We multiply the MNI registered brain by the brain mask to have a final preprocessed brain
         fsl_maths(mni_nonlin).mul(brain_mask).run(final_brain)
@@ -84,7 +94,16 @@ class Subject:
         # clearing all the .anat files (unnecessary now)
         shutil.rmtree(anat_dir)
 
+        return final_brain, out_dir
+
+    def get_data_from_nii(self):
+        imgfile = nib.load(self.nii_path)
+        return np.array(imgfile.dataobj)
+
+    def show_img(self):
+        nib.viewers.OrthoSlicer3D(self.data).show()  
+        
+
+
 subjects_csv = pd.read_csv("unprocessed_samples/test_sample.csv")
 s = Subject("unprocessed_samples/ADNI/002_S_0295", "test_run", subjects_csv)
-
-print(s.__dict__)
