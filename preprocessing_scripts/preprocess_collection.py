@@ -14,6 +14,7 @@ def preprocess_collection(collection_dir, collection_csv, run_name):
 
     subjects = []
 
+    # Do this multiprocessed
     for subject in subjects:
         subj_folder = Path(collection_dir, subject["Subject"])
         s = Subject(subj_folder, run_name, group=subject["Group"], sex=subject["Sex"])
