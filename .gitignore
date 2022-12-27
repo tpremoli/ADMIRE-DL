@@ -1,2 +1,3 @@
 unprocessed_samples/ADNI
 out/preprocessed_samples/*
+preprocessing_scripts/__pycache__

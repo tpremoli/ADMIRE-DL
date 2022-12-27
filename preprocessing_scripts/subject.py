@@ -12,7 +12,7 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 class Subject:
-    def __init__(self, subj_folder: str, run_name: str, collection_df=None, group=None, sex=None):
+    def __init__(self, subj_folder: str, run_name: str, subj_name=None, collection_df=None, group=None, sex=None):
         if collection_df is None and (group is None or sex is None):
             raise ValueError(
                 "ERROR: Subject instatiation requires either a dataframe of collection info or group, sex, and age values!")
@@ -20,7 +20,10 @@ class Subject:
         subj_location = Path(cwd, subj_folder).resolve()
 
         # The subject name is the parent folder (i.e 005_S_0221)
-        self.subj_name = subj_location.name
+        if subj_name == None:
+            self.subj_name = subj_location.name
+        else:
+            self.subj_name = subj_name
         self.run_name = run_name
 
         # Should log this in out
@@ -75,8 +78,8 @@ class Subject:
         tmp_dir = Path(
             filedir, "../out/preprocessed_samples/tmp", self.run_name).resolve()
 
-        # Running fsl_anat
-        fsl_anat(img=niifile, out=tmp_dir)
+        # Running fsl_anat (we don't need tissue segmentation nor subcortical segmentation)
+        fsl_anat(img=niifile, out=tmp_dir, noseg=True,nosubcortseg=True)
 
         # fsl_anat adds .anat to end of output directory
         anat_dir = Path("{}.anat".format(tmp_dir))
@@ -99,7 +102,7 @@ class Subject:
         shutil.copyfile(logfile, final_logfile)
 
         # clearing all the .anat files (unnecessary now)
-        shutil.rmtree(anat_dir)
+        # shutil.rmtree(anat_dir)
 
         return final_brain, out_dir
 
