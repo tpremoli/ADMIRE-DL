@@ -1,7 +1,14 @@
-This folder contains unprocessed samples from the ADNI database for testing purposes.
+This folder contains unprocessed samples from the ADNI & Kaggle datasets for testing purposes.
 
-You should have a collection of MRI images using the MP-RAGE modality (can specify in subject description)
+ADNI:
+    You should have a collection of MRI images using the MP-RAGE modality (can specify in subject description)
 
-You must download the image collection with the desired subjects, and the csv file containing metadata (i.e research group etc)
+    You must download the image collection with the desired subjects, and the csv file containing metadata (i.e research group etc)
 
-A sample is provided in test_sample.csv
+    A sample is provided in test_sample.csv
+
+Kaggle:
+    You should download kaggle images from:
+        https://www.kaggle.com/datasets/uraninjo/augmented-alzheimer-mri-dataset
+
+    Then when running the CLI, you pass the parent dir with all subfolders intact

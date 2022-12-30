@@ -1,3 +1,4 @@
 unprocessed_samples/ADNI
+unprocessed_samples/kaggle
 out/preprocessed_samples/*
 preprocessing/__pycache__
