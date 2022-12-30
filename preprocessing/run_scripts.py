@@ -1,4 +1,5 @@
 import pandas as pd
+import constants
 from scan import Scan
 from pathlib import Path
 
@@ -23,4 +24,25 @@ def prep_adni(collection_dir, collection_csv, run_name):
             s = Scan(scan_folder, run_name, scan_name=subj_name, group=subject["Group"], sex=subject["Sex"])
 
 
-prep_adni("unprocessed_samples/ADNI", "unprocessed_samples/test_sample.csv", "test_sample_1")
+def prep_kaggle(kaggle_dir, run_name):
+    kaggle_dir = Path(cwd, kaggle_dir).resolve()
+
+    for i, image in enumerate(Path(kaggle_dir, constants.NON_DEMENTED).resolve().glob("*")):
+        filename = "{}_{}".format(i, constants.NON_DEMENTED)
+        s = Scan(image, run_name, category=constants.NON_DEMENTED, name_overwrite=filename)
+
+    for i, image in enumerate(Path(kaggle_dir, constants.VERY_MILD_DEMENTED).resolve().glob("*")):
+        filename = "{}_{}".format(i, constants.VERY_MILD_DEMENTED)
+        s = Scan(image, run_name, category=constants.VERY_MILD_DEMENTED, name_overwrite=filename)
+
+    for i, image in enumerate(Path(kaggle_dir, constants.MILD_DEMENTED).resolve().glob("*")):
+        filename = "{}_{}".format(i, constants.MILD_DEMENTED)
+        s = Scan(image, run_name, category=constants.MILD_DEMENTED, name_overwrite=filename)
+
+    for i, image in enumerate(Path(kaggle_dir, constants.MODERATE_DEMENTED).resolve().glob("*")):
+        filename = "{}_{}".format(i, constants.MODERATE_DEMENTED)
+        s = Scan(image, run_name, category=constants.MODERATE_DEMENTED, name_overwrite=filename)
+
+
+
+prep_kaggle("unprocessed_samples/kaggle", "kaggle run")

@@ -1,13 +1,13 @@
 import shutil
 import pickle
 import numpy as np
-import pandas as pd
 import nibabel as nib
-from pathlib import Path
-from datetime import datetime
 import matplotlib.pyplot as plt
 import fsl.wrappers.fsl_anat as fsl_anat
 import fsl.wrappers.fslmaths as fsl_maths
+from PIL import Image
+from pathlib import Path
+from datetime import datetime
 
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
@@ -82,6 +82,35 @@ class Scan:
             f.write("\ntotal time elapsed:")
             f.write(str(end_time-start_time))
 
+    def __init__(self, img_dir:str, run_name: str, category: str, name_overwrite=None):
+        self.kaggle = True
+        self.scan_name = None
+        self.run_name = None
+        self.group = None
+        self.data = None
+
+        img_location = Path(cwd, img_dir).resolve()
+
+        if name_overwrite:
+            self.scan_name = name_overwrite
+        else:
+            self.scan_name = img_location.name
+            
+        self.run_name = run_name
+        self.group = category
+
+        # should convert to b/w
+        image = np.asarray(Image.open(img_location))
+
+        self.data = image
+        self.out_dir = Path(
+            filedir, "../out/preprocessed_samples", self.run_name).resolve()
+        self.out_dir.mkdir(parents=True, exist_ok=True)
+
+        # Saving our object as a pickle
+        with open(Path(self.out_dir, "{}_processed.pkl".format(self.scan_name)), "wb") as pkl_file:
+            pickle.dump(self, pkl_file, pickle.HIGHEST_PROTOCOL)
+        
     def from_pickle(existing_pkl):
         with open(existing_pkl, "rb") as f:
             return pickle.load(f)
