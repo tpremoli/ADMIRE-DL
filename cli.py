@@ -1,4 +1,5 @@
 import argparse
+from preprocessing.run_scripts import prep_adni, prep_kaggle
 
 def main():
     parser = argparse.ArgumentParser(description='This is the CLI tool to use the {APP_NAME} tool')
@@ -27,6 +28,7 @@ def main():
 
     args = parser.parse_args()
 
+    print(args)
     if args.tool == "prep":
         # -k args are mutually exclusive with -d and -c
         if args.kaggle and args.collection_dir or args.kaggle and args.collection_csv:
@@ -37,12 +39,14 @@ def main():
         # One of the options must be used 
         if not args.kaggle and not args.collection_dir and not args.collection_csv:
             raise argparse.ArgumentTypeError('Must specify COLLECTION_DIR and COLLECTION_CSV or KAGGLE to prep datasets!')
-
-        
+    
+        if args.kaggle:
+            prep_kaggle(args.kaggle, args.run_name)
+        else:
+            prep_adni(args.collection_dir,args.collection_csv,args.run_name)
     else:
         raise argparse.ArgumentTypeError('Must specify CLI mode! Options: (prep, train, test, predict)')
 
-    print(args)
 
 
 
