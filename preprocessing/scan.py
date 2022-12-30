@@ -14,6 +14,15 @@ filedir = Path(__file__).parent.resolve()
 
 class Scan:
     def __init__(self, scan_folder: str, run_name: str, scan_name=None, collection_df=None, group=None, sex=None):
+        self.kaggle = False
+        self.scan_name = None
+        self.run_name = None
+        self.group = None
+        self.sex = None
+        self.out_dir = None
+        self.nii_path = None
+        self.data = None
+
         if collection_df is None and (group is None or sex is None):
             raise ValueError(
                 "ERROR: Scan instatiation requires either a dataframe of collection info or group, sex, and age values!")
@@ -43,8 +52,13 @@ class Scan:
             self.group = entry["Group"]
             self.sex = entry["Sex"]
 
+        # defining ouput dir (out/preprocessed_samples/run_name)
+        self.out_dir = Path(
+            filedir, "../out/preprocessed_samples", self.run_name).resolve()
+        self.out_dir.mkdir(parents=True, exist_ok=True)
+
         print("Launching FSL scripts for scan {}".format(self.scan_name))
-        self.nii_path, self.out_dir = self.run_fsl(scan_location)
+        self.nii_path = self.run_fsl(scan_location)
 
         print("FSL scripts complete. Retrieving data from output")
         self.data = self.get_data_from_nii()
@@ -80,11 +94,6 @@ class Scan:
                 niifile = p
                 break
 
-        # defining ouput dir (out/preprocessed_samples/run_name)
-        out_dir = Path(
-            filedir, "../out/preprocessed_samples", self.run_name).resolve()
-        out_dir.mkdir(parents=True, exist_ok=True)
-
         # The tmp_dir directory will be used to store all the fsl_anat info
         tmp_dir = Path(
             filedir, "../out/preprocessed_samples/tmp", self.scan_name).resolve()
@@ -102,7 +111,7 @@ class Scan:
         brain_mask = Path(anat_dir, "MNI152_T1_2mm_brain_mask_dil1.nii.gz")
 
         final_brain = Path(
-            out_dir, "{}_processed.nii.gz".format(self.scan_name))
+            self.out_dir, "{}_processed.nii.gz".format(self.scan_name))
 
         # We multiply the MNI registered brain by the brain mask to have a final preprocessed brain
         fsl_maths(mni_nonlin).mul(brain_mask).run(final_brain)
@@ -115,7 +124,7 @@ class Scan:
         # clearing all the .anat files (unnecessary now)
         shutil.rmtree(anat_dir)
 
-        return final_brain, out_dir
+        return final_brain
 
     def get_data_from_nii(self):
         imgfile = nib.load(self.nii_path)
