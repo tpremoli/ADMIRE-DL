@@ -5,7 +5,7 @@ from pathlib import Path
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
-def preprocess_collection(collection_dir, collection_csv, run_name):
+def prep_adni(collection_dir, collection_csv, run_name):
     # Resetting path locs
     collection_dir = Path(cwd, collection_dir).resolve()
     collection_csv = Path(cwd, collection_csv).resolve()
@@ -23,4 +23,4 @@ def preprocess_collection(collection_dir, collection_csv, run_name):
             s = Scan(scan_folder, run_name, scan_name=subj_name, group=subject["Group"], sex=subject["Sex"])
 
 
-preprocess_collection("unprocessed_samples/ADNI", "unprocessed_samples/test_sample.csv", "test_sample_1")
+prep_adni("unprocessed_samples/ADNI", "unprocessed_samples/test_sample.csv", "test_sample_1")
