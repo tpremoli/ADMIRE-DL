@@ -1,4 +1,4 @@
-# {APPNAME} Design
+# {APP_NAME} Design
 
 ## Introduction
 
@@ -30,9 +30,9 @@ If you are using the kaggle data set, you can create the object files using the 
 - **kaggle** `-k`: The directory of the kaggle mri images. These should be in their original folder structure (i.e nondemented, mildlydemented etc.)
   
 
-### `train`: Preprocessing databases
+### `train`: Preprocessing datasets
 
-The train tool runs a training task on a prepped database. The train tool is ran by using the command
+The train tool runs a training task on a prepped dataset. The train tool is ran by using the command
 
     py cli.py test <options>
 
@@ -64,3 +64,12 @@ To clarify the config options:
 - **method**: The training method to use. This can be `pretrain` or `finetune`.
 - **pooling**: The pooling method to use. Default is `None`, however `avg` and `max` can be used to experiment with performance.
 - **train_pct**: The amount of the dataset to be used as training data. At the beginning of the training task, the dataset will be split according to this percentage and the classes. The split will be written to a file and exported with the final trained model.
+  
+### `test`: Testing created models
+
+*TBD*
+
+### `predict`: Using models
+
+*TBD*
+
