@@ -1,0 +1,10 @@
+# ADNI group constants
+COGNITIVELY_NORMAL="CN"
+ALZHEIMERS_DISEASE="AD"
+MILD_COGNITIVE_IMPAIRMENT="MCI"
+
+# Kaggle group constants
+NON_DEMENTED="NonDemented"
+VERY_MILD_DEMENTED="VeryMildDemented"
+MILD_DEMENTED="MildDemented"
+MODERATE_DEMENTED="ModerateDemented"
