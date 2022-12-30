@@ -2,7 +2,6 @@ import shutil
 import pickle
 import numpy as np
 import nibabel as nib
-import matplotlib.pyplot as plt
 import fsl.wrappers.fsl_anat as fsl_anat
 import fsl.wrappers.fslmaths as fsl_maths
 from PIL import Image
@@ -13,8 +12,8 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 class Scan:
-    def __init__(self, scan_folder: str, run_name: str, scan_name=None, collection_df=None, group=None, sex=None):
-        self.kaggle = False
+    def __init__(self, scan_loc:str, run_name:str, scan_name:str, kaggle:bool, collection_df=None, group=None, sex=None):
+        self.kaggle = kaggle
         self.scan_name = None
         self.run_name = None
         self.group = None
@@ -23,94 +22,82 @@ class Scan:
         self.nii_path = None
         self.data = None
 
-        if collection_df is None and (group is None or sex is None):
-            raise ValueError(
-                "ERROR: Scan instatiation requires either a dataframe of collection info or group, sex, and age values!")
+        if kaggle == True:
+            img_location = Path(cwd, scan_loc).resolve()
 
-        start_time = datetime.now()
-
-        scan_location = Path(cwd, scan_folder).resolve()
-
-        # The scan name is the parent folder (i.e 005_S_0221_0)
-        if scan_name == None:
-            self.scan_name = scan_location.name
-        else:
             self.scan_name = scan_name
-        self.run_name = run_name
-
-        # Should log this in out
-        print("Loading scan {} for preprocessing".format(self.scan_name))
-
-        # Setting sample sex group and age
-        if collection_df is None:
+                
+            self.run_name = run_name
             self.group = group
-            self.sex = sex
-        else:
-            # Different scans are different "datapoints"
-            entry = collection_df[collection_df["Subject"]
-                                  == self.scan_name].iloc[0]
-            self.group = entry["Group"]
-            self.sex = entry["Sex"]
 
-        # defining ouput dir (out/preprocessed_samples/run_name)
-        self.out_dir = Path(
-            filedir, "../out/preprocessed_samples", self.run_name).resolve()
-        self.out_dir.mkdir(parents=True, exist_ok=True)
+            # should convert to b/w
+            image = np.asarray(Image.open(img_location))
 
-        print("Launching FSL scripts for scan {}".format(self.scan_name))
-        self.nii_path = self.run_fsl(scan_location)
+            self.data = image
+            self.out_dir = Path(
+                filedir, "../out/preprocessed_samples", self.run_name).resolve()
+            self.out_dir.mkdir(parents=True, exist_ok=True)
 
-        print("FSL scripts complete. Retrieving data from output")
-        self.data = self.get_data_from_nii()
+            # Saving our object as a pickle
+            with open(Path(self.out_dir, "{}_processed.pkl".format(self.scan_name)), "wb") as pkl_file:
+                pickle.dump(self, pkl_file, pickle.HIGHEST_PROTOCOL)
+        elif kaggle == False:
+            if collection_df is None and (group is None or sex is None):
+                raise ValueError(
+                    "ERROR: Scan instatiation requires either a dataframe of collection info or group, sex, and age values!")
 
-        # To access slices:
-        # sagittal = self.data[26, :, :] <- 26th slice along sagittal
-        # coronal = self.data[:, 30, :] <- 30th slice along coronal
-        # axial = self.data[:, :, 50] <- 50th slice along axial
+            start_time = datetime.now()
 
-        # Saving our object as a pickle
-        with open(Path(self.out_dir, "{}_processed.pkl".format(self.scan_name)), "wb") as pkl_file:
-            pickle.dump(self, pkl_file, pickle.HIGHEST_PROTOCOL)
-        
-        end_time = datetime.now()
-        with open(Path(self.out_dir, "{}.txt".format(self.scan_name)), "w") as f:
-            f.write("start time: ")
-            f.write(str(start_time))
-            f.write("\n")
-            f.write("end time: ")
-            f.write(str(end_time))
-            f.write("\ntotal time elapsed:")
-            f.write(str(end_time-start_time))
+            scan_location = Path(cwd, scan_loc).resolve()
 
-    def __init__(self, img_dir:str, run_name: str, category: str, name_overwrite=None):
-        self.kaggle = True
-        self.scan_name = None
-        self.run_name = None
-        self.group = None
-        self.data = None
+            # The scan name is the parent folder (i.e 005_S_0221_0)
+            self.scan_name = scan_name
+            self.run_name = run_name
 
-        img_location = Path(cwd, img_dir).resolve()
+            # Should log this in out
+            print("Loading scan {} for preprocessing".format(self.scan_name))
 
-        if name_overwrite:
-            self.scan_name = name_overwrite
-        else:
-            self.scan_name = img_location.name
+            # Setting sample sex group and age
+            if collection_df is None:
+                self.group = group
+                self.sex = sex
+            else:
+                # Different scans are different "datapoints"
+                entry = collection_df[collection_df["Subject"]
+                                    == self.scan_name].iloc[0]
+                self.group = entry["Group"]
+                self.sex = entry["Sex"]
+
+            # defining ouput dir (out/preprocessed_samples/run_name)
+            self.out_dir = Path(
+                filedir, "../out/preprocessed_samples", self.run_name).resolve()
+            self.out_dir.mkdir(parents=True, exist_ok=True)
+
+            print("Launching FSL scripts for scan {}".format(self.scan_name))
+            self.nii_path = self.run_fsl(scan_location)
+
+            print("FSL scripts complete. Retrieving data from output")
+            self.data = self.get_data_from_nii()
+
+            # To access slices:
+            # sagittal = self.data[26, :, :] <- 26th slice along sagittal
+            # coronal = self.data[:, 30, :] <- 30th slice along coronal
+            # axial = self.data[:, :, 50] <- 50th slice along axial
+
+            # Saving our object as a pickle
+            with open(Path(self.out_dir, "{}_processed.pkl".format(self.scan_name)), "wb") as pkl_file:
+                pickle.dump(self, pkl_file, pickle.HIGHEST_PROTOCOL)
             
-        self.run_name = run_name
-        self.group = category
+            end_time = datetime.now()
+            with open(Path(self.out_dir, "{}.txt".format(self.scan_name)), "w") as f:
+                f.write("start time: ")
+                f.write(str(start_time))
+                f.write("\n")
+                f.write("end time: ")
+                f.write(str(end_time))
+                f.write("\ntotal time elapsed:")
+                f.write(str(end_time-start_time))
 
-        # should convert to b/w
-        image = np.asarray(Image.open(img_location))
-
-        self.data = image
-        self.out_dir = Path(
-            filedir, "../out/preprocessed_samples", self.run_name).resolve()
-        self.out_dir.mkdir(parents=True, exist_ok=True)
-
-        # Saving our object as a pickle
-        with open(Path(self.out_dir, "{}_processed.pkl".format(self.scan_name)), "wb") as pkl_file:
-            pickle.dump(self, pkl_file, pickle.HIGHEST_PROTOCOL)
-        
     def from_pickle(existing_pkl):
         with open(existing_pkl, "rb") as f:
             return pickle.load(f)

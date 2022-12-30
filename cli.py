@@ -28,7 +28,6 @@ def main():
 
     args = parser.parse_args()
 
-    print(args)
     if args.tool == "prep":
         # -k args are mutually exclusive with -d and -c
         if args.kaggle and args.collection_dir or args.kaggle and args.collection_csv:
@@ -46,8 +45,6 @@ def main():
             prep_adni(args.collection_dir,args.collection_csv,args.run_name)
     else:
         raise argparse.ArgumentTypeError('Must specify CLI mode! Options: (prep, train, test, predict)')
-
-
 
 
 
