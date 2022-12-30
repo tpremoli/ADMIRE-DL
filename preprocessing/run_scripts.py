@@ -44,5 +44,4 @@ def prep_kaggle(kaggle_dir, run_name):
         s = Scan(image, run_name, category=constants.MODERATE_DEMENTED, name_overwrite=filename)
 
 
-
 prep_kaggle("unprocessed_samples/kaggle", "kaggle run")
