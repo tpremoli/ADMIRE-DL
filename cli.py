@@ -10,7 +10,7 @@ def main():
     # prep parser
     parser_prep = subparsers.add_parser("prep")
     parser_prep.add_argument(
-        '-r', '--run_name', required=True, type=str, help=' The name of the run. Files will be saved in `out/preprocessed_samples/{run_name}`')
+        '-r', '--run_name', required=True, type=str, help=' The name of the run. Files will be saved in `out/preprocessed_datasets/{run_name}`')
     
     parser_prep.add_argument(
         '-d', '--collection_dir', type=str, help='The directory of the collection. If the collection was downloaded from ADNI, this should be the "ADNI" folder')

@@ -1,4 +1,5 @@
-unprocessed_samples/ADNI
-unprocessed_samples/kaggle
-out/preprocessed_samples/*
+unprocessed_datasets/ADNI
+unprocessed_datasets/kaggle
+out/preprocessed_datasets/*
+out/trained_models/*
 preprocessing/__pycache__

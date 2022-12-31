@@ -35,7 +35,7 @@ class Scan:
 
             self.data = image
             self.out_dir = Path(
-                filedir, "../out/preprocessed_samples", self.run_name).resolve()
+                filedir, "../out/preprocessed_datasets", self.run_name).resolve()
             self.out_dir.mkdir(parents=True, exist_ok=True)
 
             # Saving our object as a pickle
@@ -68,9 +68,9 @@ class Scan:
                 self.group = entry["Group"]
                 self.sex = entry["Sex"]
 
-            # defining ouput dir (out/preprocessed_samples/run_name)
+            # defining ouput dir (out/preprocessed_datasets/run_name)
             self.out_dir = Path(
-                filedir, "../out/preprocessed_samples", self.run_name).resolve()
+                filedir, "../out/preprocessed_datasets", self.run_name).resolve()
             self.out_dir.mkdir(parents=True, exist_ok=True)
 
             print("Launching FSL scripts for scan {}".format(self.scan_name))
@@ -112,7 +112,7 @@ class Scan:
 
         # The tmp_dir directory will be used to store all the fsl_anat info
         tmp_dir = Path(
-            filedir, "../out/preprocessed_samples/tmp", self.scan_name).resolve()
+            filedir, "../out/preprocessed_datasets/tmp", self.scan_name).resolve()
 
         # Running fsl_anat (we don't need tissue segmentation nor subcortical segmentation)
         fsl_anat(img=niifile, out=tmp_dir, noseg=True,nosubcortseg=True)
