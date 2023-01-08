@@ -12,7 +12,7 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 class Scan:
-    def __init__(self, scan_loc:str, run_name:str, scan_name:str, kaggle:bool, collection_df=None, group=None, sex=None):
+    def __init__(self, scan_loc:str, run_name:str, scan_name:str, kaggle:bool, group=None, sex=None):
         self.kaggle = kaggle
         self.scan_name = None
         self.run_name = None
@@ -42,9 +42,9 @@ class Scan:
             with open(Path(self.out_dir, "{}_processed.pkl".format(self.scan_name)), "wb") as pkl_file:
                 pickle.dump(self, pkl_file, pickle.HIGHEST_PROTOCOL)
         elif kaggle == False:
-            if collection_df is None and (group is None or sex is None):
+            if group is None or sex is None:
                 raise ValueError(
-                    "ERROR: Scan instatiation requires either a dataframe of collection info or group, sex, and age values!")
+                    "ERROR: Scan instatiation requires group, sex, and age values!")
 
             start_time = datetime.now()
 
@@ -58,15 +58,8 @@ class Scan:
             print("Loading scan {} for preprocessing".format(self.scan_name))
 
             # Setting sample sex group and age
-            if collection_df is None:
-                self.group = group
-                self.sex = sex
-            else:
-                # Different scans are different "datapoints"
-                entry = collection_df[collection_df["Subject"]
-                                    == self.scan_name].iloc[0]
-                self.group = entry["Group"]
-                self.sex = entry["Sex"]
+            self.group = group
+            self.sex = sex
 
             # defining ouput dir (out/preprocessed_datasets/run_name)
             self.out_dir = Path(

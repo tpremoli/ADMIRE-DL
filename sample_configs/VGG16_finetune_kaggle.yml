@@ -1,9 +1,9 @@
 task_name: densenet121_finetune_slices
-dataset: out/preprocessed_datasets/adni_processed
+dataset: out/preprocessed_datasets/kaggle_processed
 options:
-    architecture: DenseNet121
+    architecture: VGG16
     approach: slice
     method: finetune
     pooling: avg
-    kaggle: False    
+    kaggle: True    
     train_pct: 0.7

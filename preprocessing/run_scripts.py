@@ -32,29 +32,30 @@ def prep_adni(collection_dir, collection_csv, run_name):
 def prep_kaggle(kaggle_dir, run_name):
     kaggle_dir = Path(cwd, kaggle_dir).resolve()
 
+
     if not Path.exists(kaggle_dir):
         raise ValueError("Kaggle path {} does not exist!".format(kaggle_dir))
     elif not any(Path(kaggle_dir).iterdir()):
         raise ValueError("Kaggle path {} empty!".format(kaggle_dir))
 
     print("Launching non-demented prep")
-    for i, image in enumerate(Path(kaggle_dir, NON_DEMENTED).resolve().glob("*")):
+    for i, image in enumerate(Path(kaggle_dir, NON_DEMENTED).resolve().iterdir()):
         filename = "{}_{}".format(NON_DEMENTED, i)
         s = Scan(image, run_name, filename, kaggle=True)
 
     print("Launching very mild-demented prep")
-    for i, image in enumerate(Path(kaggle_dir, VERY_MILD_DEMENTED).resolve().glob("*")):
+    for i, image in enumerate(Path(kaggle_dir, VERY_MILD_DEMENTED).resolve().iterdir()):
         filename = "{}_{}".format(VERY_MILD_DEMENTED, i)
         s = Scan(image, run_name, filename, kaggle=True)
 
     print("Launching mild-demented prep")
-    for i, image in enumerate(Path(kaggle_dir, MILD_DEMENTED).resolve().glob("*")):
+    for i, image in enumerate(Path(kaggle_dir, MILD_DEMENTED).resolve().iterdir()):
         filename = "{}_{}".format(MILD_DEMENTED, i)
         s = Scan(image, run_name, filename, kaggle=True)
 
     print("Launching moderate-demented prep")
-    for i, image in enumerate(Path(kaggle_dir, MODERATE_DEMENTED).resolve().glob("*")):
+    for i, image in enumerate(Path(kaggle_dir, MODERATE_DEMENTED).resolve().iterdir()):
         filename = "{}_{}".format(MODERATE_DEMENTED, i)
         s = Scan(image, run_name, filename, kaggle=True)
-    
+        
     print("finished prepping kaggle dataset")
