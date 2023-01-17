@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+import shutil
 from .constants import NON_DEMENTED, VERY_MILD_DEMENTED, MILD_DEMENTED, MODERATE_DEMENTED
 from .scan import Scan
 from pathlib import Path
@@ -24,6 +25,7 @@ def prep_adni(collection_dir, collection_csv, run_name):
     
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    scan_count = 0
     # Do this multiprocessed
     for subject in subjects:
         subj_folder = Path(collection_dir, subject["Subject"], "MP-RAGE")
@@ -32,8 +34,21 @@ def prep_adni(collection_dir, collection_csv, run_name):
             # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on
             scan_name = "{}_{}".format(subject["Subject"], count)
 
-            s = Scan(scan_folder, run_name, scan_name, str(out_dir), kaggle=False, group=subject["Group"], sex=subject["Sex"])
+            Scan(scan_folder, run_name, scan_name, str(out_dir), kaggle=False, group=subject["Group"], sex=subject["Sex"])
+            scan_count += 1
 
+    # Writing meta file
+    with open(Path(out_dir, "meta"), "w") as meta_file:
+        metadata ={
+            "kaggle":False,
+            "run_name":run_name,
+            "original_dir": str(out_dir),
+            "scan_count":scan_count
+        }
+        json.dump(metadata, meta_file,indent=4)
+        
+    # Writing collection.csv file
+    shutil.copyfile(collection_csv, Path(out_dir, "collection.csv"))
 
 def prep_kaggle(kaggle_dir, run_name):
     kaggle_dir = Path(cwd, kaggle_dir).resolve()
