@@ -12,7 +12,7 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 class Scan:
-    def __init__(self, scan_loc:str, run_name:str, scan_name:str, kaggle:bool, group=None, sex=None):
+    def __init__(self, scan_loc:str, run_name:str, scan_name:str, out_dir:str, kaggle:bool, group=None, sex=None):
         self.kaggle = kaggle
         self.scan_name = None
         self.run_name = None
@@ -34,13 +34,12 @@ class Scan:
             image = np.asarray(Image.open(img_location))
 
             self.data = image
-            self.out_dir = Path(
-                filedir, "../out/preprocessed_datasets", self.run_name).resolve()
-            self.out_dir.mkdir(parents=True, exist_ok=True)
+            self.out_dir = out_dir
 
             # Saving our object as a pickle
             with open(Path(self.out_dir, "{}_processed.pkl".format(self.scan_name)), "wb") as pkl_file:
                 pickle.dump(self, pkl_file, pickle.HIGHEST_PROTOCOL)
+                
         elif kaggle == False:
             if group is None or sex is None:
                 raise ValueError(
@@ -62,9 +61,7 @@ class Scan:
             self.sex = sex
 
             # defining ouput dir (out/preprocessed_datasets/run_name)
-            self.out_dir = Path(
-                filedir, "../out/preprocessed_datasets", self.run_name).resolve()
-            self.out_dir.mkdir(parents=True, exist_ok=True)
+            self.out_dir = out_dir
 
             print("Launching FSL scripts for scan {}".format(self.scan_name))
             self.nii_path = self.run_fsl(scan_location)
