@@ -1,5 +1,6 @@
 from pathlib import Path
 from ..classes.scan import Scan
+from ..classes.constants import *
 
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()

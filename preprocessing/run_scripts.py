@@ -1,7 +1,7 @@
 import pandas as pd
 import json
 import shutil
-from .constants import NON_DEMENTED, VERY_MILD_DEMENTED, MILD_DEMENTED, MODERATE_DEMENTED
+from ..classes.constants import NON_DEMENTED, VERY_MILD_DEMENTED, MILD_DEMENTED, MODERATE_DEMENTED
 from ..classes.scan import Scan
 from pathlib import Path
 
