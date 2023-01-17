@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 from .constants import NON_DEMENTED, VERY_MILD_DEMENTED, MILD_DEMENTED, MODERATE_DEMENTED
 from .scan import Scan
 from pathlib import Path
@@ -46,26 +47,45 @@ def prep_kaggle(kaggle_dir, run_name):
         filedir, "../out/preprocessed_datasets", run_name).resolve()
     
     out_dir.mkdir(parents=True, exist_ok=True)
-    
 
     print("Launching non-demented prep")
+    nondemented_count = 0
     for i, image in enumerate(Path(kaggle_dir, NON_DEMENTED).resolve().iterdir()):
         filename = "{}_{}".format(NON_DEMENTED, i)
-        s = Scan(image, run_name, filename, str(out_dir), kaggle=True)
+        Scan(image, run_name, filename, str(out_dir), kaggle=True)
+        nondemented_count+=1
 
     print("Launching very mild-demented prep")
+    verymilddemented_count = 0
     for i, image in enumerate(Path(kaggle_dir, VERY_MILD_DEMENTED).resolve().iterdir()):
         filename = "{}_{}".format(VERY_MILD_DEMENTED, i)
-        s = Scan(image, run_name, filename, str(out_dir), kaggle=True)
+        Scan(image, run_name, filename, str(out_dir), kaggle=True)
+        verymilddemented_count+=1
 
     print("Launching mild-demented prep")
+    milddemented_count = 0
     for i, image in enumerate(Path(kaggle_dir, MILD_DEMENTED).resolve().iterdir()):
         filename = "{}_{}".format(MILD_DEMENTED, i)
-        s = Scan(image, run_name, filename, str(out_dir), kaggle=True)
+        Scan(image, run_name, filename, str(out_dir), kaggle=True)
+        milddemented_count+=1
 
     print("Launching moderate-demented prep")
+    moderatedemented_count = 0
     for i, image in enumerate(Path(kaggle_dir, MODERATE_DEMENTED).resolve().iterdir()):
         filename = "{}_{}".format(MODERATE_DEMENTED, i)
-        s = Scan(image, run_name, filename, str(out_dir), kaggle=True)
+        Scan(image, run_name, filename, str(out_dir), kaggle=True)
+        moderatedemented_count+=1
+        
+    with open(Path(out_dir, "meta"), "w") as meta_file:
+        metadata ={
+            "kaggle":True,
+            "run_name":run_name,
+            "original_dir": str(kaggle_dir),
+            "nondemented":nondemented_count,
+            "verymilddemented":verymilddemented_count,
+            "milddemented":milddemented_count,
+            "moderatedemented":moderatedemented_count
+        }
+        json.dump(metadata, meta_file,indent=4)
         
     print("finished prepping kaggle dataset")
