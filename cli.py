@@ -1,6 +1,7 @@
 import argparse
 from preprocessing.run_scripts import prep_adni, prep_kaggle
 
+# Test commit forWSL
 def main():
     parser = argparse.ArgumentParser(description='This is the CLI tool to use the {APP_NAME} tool')
 
