@@ -10,5 +10,16 @@ def load_scans_from_folder(folder, kaggle=False):
     
     if kaggle:
         print("Utilizing Kaggle dataset. Loading up scans")
+        
+        scans ={
+            NON_DEMENTED: [],
+            VERY_MILD_DEMENTED: [],
+            MILD_DEMENTED: [],
+            MODERATE_DEMENTED: [],
+        }
+        
+        for scan in scan_folder.glob("{}*".format(NON_DEMENTED)):
+            print(scan.__dict__)
+        
     else:
         print("Not a kaggle dataset")

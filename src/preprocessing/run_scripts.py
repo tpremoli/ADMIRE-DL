@@ -21,7 +21,7 @@ def prep_adni(collection_dir, collection_csv, run_name):
     subjects = pd.read_csv(collection_csv).drop_duplicates(keep='first', subset="Subject").to_dict(orient="records")
 
     out_dir = Path(
-        filedir, "../out/preprocessed_datasets", run_name).resolve()
+        filedir, "../../out/preprocessed_datasets", run_name).resolve()
     
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -59,7 +59,7 @@ def prep_kaggle(kaggle_dir, run_name):
         raise ValueError("Kaggle path {} empty!".format(kaggle_dir))
     
     out_dir = Path(
-        filedir, "../out/preprocessed_datasets", run_name).resolve()
+        filedir, "../../out/preprocessed_datasets", run_name).resolve()
     
     out_dir.mkdir(parents=True, exist_ok=True)
 
