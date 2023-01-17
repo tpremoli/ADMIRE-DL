@@ -1,5 +1,5 @@
 import argparse
-from preprocessing.run_scripts import prep_adni, prep_kaggle
+from src.preprocessing.run_scripts import prep_adni, prep_kaggle
 
 def main():
     parser = argparse.ArgumentParser(description='This is the CLI tool to use the {APP_NAME} tool')
