@@ -52,6 +52,10 @@ options:
     pooling: avg
     kaggle: False
     train_pct: 0.7  
+    # optimizer: Adam ???
+    # loss: categorical_crossentropy ??
+    # learning_rate: 5e-4 ??
+    # metrics: accuracy ??
 ```
 
 Trained models will be saved in `out/trained_models/{task_name}`.
