@@ -89,6 +89,12 @@ class Scan:
                 f.write(str(end_time))
                 f.write("\ntotal time elapsed:")
                 f.write(str(end_time-start_time))
+    
+    def __eq__(self, other):
+        return self.scan_no == other.scan_no
+
+    def __lt__(self, other):
+        return self.scan_no < other.scan_no
 
     def from_pickle(existing_pkl):
         pkl_loc = Path(cwd, existing_pkl).resolve()
