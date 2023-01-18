@@ -90,7 +90,8 @@ class Scan:
 
     def from_pickle(existing_pkl):
         with open(existing_pkl, "rb") as f:
-            return pickle.load(f)
+            scan = pickle.load(f)
+            return scan
 
     def run_fsl(self, scan_location):
         niifile = ""

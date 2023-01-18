@@ -1,4 +1,5 @@
 import argparse
+from src.classes.utils import load_scans_from_folder
 from src.preprocessing.run_scripts import prep_adni, prep_kaggle
 
 def main():
@@ -49,4 +50,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    load_scans_from_folder("out/preprocessed_datasets/kaggle_processed", kaggle=True)
+    
+    
