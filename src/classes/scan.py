@@ -12,10 +12,11 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 class Scan:
-    def __init__(self, scan_loc:str, run_name:str, scan_name:str, out_dir:str, kaggle:bool, group=None, sex=None):
+    def __init__(self, scan_loc:str, run_name:str, scan_no:int, scan_name:str, out_dir:str, kaggle:bool, group=None, sex=None):
         self.kaggle = kaggle
         self.scan_name = None
-        self.run_name = None
+        self.scan_no = None # useful for sorting
+        self.run_name = None # filename/run name
         self.group = None
         self.sex = None
         self.out_dir = None
@@ -26,7 +27,7 @@ class Scan:
             img_location = Path(cwd, scan_loc).resolve()
 
             self.scan_name = scan_name
-                
+            self.scan_no = scan_no
             self.run_name = run_name
             self.group = group
 
@@ -50,6 +51,7 @@ class Scan:
             scan_location = Path(cwd, scan_loc).resolve()
 
             # The scan name is the parent folder (i.e 005_S_0221_0)
+            self.scan_no = scan_no
             self.scan_name = scan_name
             self.run_name = run_name
 
@@ -89,7 +91,8 @@ class Scan:
                 f.write(str(end_time-start_time))
 
     def from_pickle(existing_pkl):
-        with open(existing_pkl, "rb") as f:
+        pkl_loc = Path(cwd, existing_pkl).resolve()
+        with open(pkl_loc, "rb") as f:
             scan = pickle.load(f)
             return scan
 

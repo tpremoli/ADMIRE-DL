@@ -34,7 +34,14 @@ def prep_adni(collection_dir, collection_csv, run_name):
             # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on
             scan_name = "{}_{}".format(subject["Subject"], count)
 
-            Scan(scan_folder, run_name, scan_name, str(out_dir), kaggle=False, group=subject["Group"], sex=subject["Sex"])
+            Scan(scan_folder=scan_folder, 
+                 run_name=run_name, 
+                 scan_no=count,
+                 scan_name=scan_name,
+                 out_dir=str(out_dir), 
+                 kaggle=False, 
+                 group=subject["Group"], 
+                 sex=subject["Sex"])
             scan_count += 1
 
     # Writing meta file
@@ -67,28 +74,48 @@ def prep_kaggle(kaggle_dir, run_name):
     nondemented_count = 0
     for i, image in enumerate(Path(kaggle_dir, NON_DEMENTED).resolve().iterdir()):
         filename = "{}_{}".format(NON_DEMENTED, i)
-        Scan(image, run_name, filename, str(out_dir), kaggle=True)
+        Scan(scan_loc=image, 
+             run_name=run_name, 
+             scan_no=i,
+             scan_name=filename, 
+             out_dir=str(out_dir), 
+             kaggle=True)
         nondemented_count+=1
 
     print("Launching very mild-demented prep")
     verymilddemented_count = 0
     for i, image in enumerate(Path(kaggle_dir, VERY_MILD_DEMENTED).resolve().iterdir()):
         filename = "{}_{}".format(VERY_MILD_DEMENTED, i)
-        Scan(image, run_name, filename, str(out_dir), kaggle=True)
+        Scan(scan_loc=image, 
+             run_name=run_name, 
+             scan_no=i,
+             scan_name=filename, 
+             out_dir=str(out_dir), 
+             kaggle=True)
         verymilddemented_count+=1
 
     print("Launching mild-demented prep")
     milddemented_count = 0
     for i, image in enumerate(Path(kaggle_dir, MILD_DEMENTED).resolve().iterdir()):
         filename = "{}_{}".format(MILD_DEMENTED, i)
-        Scan(image, run_name, filename, str(out_dir), kaggle=True)
+        Scan(scan_loc=image, 
+             run_name=run_name, 
+             scan_no=i,
+             scan_name=filename, 
+             out_dir=str(out_dir), 
+             kaggle=True)
         milddemented_count+=1
 
     print("Launching moderate-demented prep")
     moderatedemented_count = 0
     for i, image in enumerate(Path(kaggle_dir, MODERATE_DEMENTED).resolve().iterdir()):
         filename = "{}_{}".format(MODERATE_DEMENTED, i)
-        Scan(image, run_name, filename, str(out_dir), kaggle=True)
+        Scan(scan_loc=image, 
+             run_name=run_name, 
+             scan_no=i,
+             scan_name=filename, 
+             out_dir=str(out_dir), 
+             kaggle=True)
         moderatedemented_count+=1
         
     with open(Path(out_dir, "meta"), "w") as meta_file:
