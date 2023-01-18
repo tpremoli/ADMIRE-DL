@@ -56,6 +56,7 @@ options:
     # loss: categorical_crossentropy ??
     # learning_rate: 5e-4 ??
     # metrics: accuracy ??
+    # activation: softmax ??
 ```
 
 Trained models will be saved in `out/trained_models/{task_name}`.

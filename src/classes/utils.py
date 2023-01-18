@@ -20,9 +20,9 @@ def load_scans_from_folder(folder, kaggle=False):
         
         # For each category
         for scan_class in loaded_scans.keys():
-            # Get each file for each class
             print("Loading {} scans".format(scan_class))
-            for scan in scan_folder.glob("{}*".format(scan_class)):
+            # Get each file for each class
+            for scan in sorted(scan_folder.glob("{}*".format(scan_class))):
                 # load the pickle and add to dict
                 loaded_scans[scan_class].append(Scan.from_pickle(scan))
                 
