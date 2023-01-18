@@ -1,6 +1,9 @@
 unprocessed_datasets/ADNI
 unprocessed_datasets/kaggle
+
 out/preprocessed_datasets/*
 out/trained_models/*
+
 src/preprocessing/__pycache__
 src/classes/__pycache__
+src/training/__pycache__
