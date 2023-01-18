@@ -32,7 +32,7 @@ def prep_adni(collection_dir, collection_csv, run_name):
         # For each scan in the subject subject
         for count, scan_folder in enumerate(Path.glob(subj_folder, "*")):
             # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on. min 6 chars
-            scan_name = "{}_{0:06d}".format(subject["Subject"], count)
+            scan_name = "{}_{:06d}".format(subject["Subject"], count)
 
             Scan(scan_folder=scan_folder, 
                  run_name=run_name, 
@@ -73,7 +73,7 @@ def prep_kaggle(kaggle_dir, run_name):
     print("Launching non-demented prep")
     nondemented_count = 0
     for i, image in enumerate(Path(kaggle_dir, NON_DEMENTED).resolve().iterdir()):
-        filename = "{}_{0:06d}".format(NON_DEMENTED, i)
+        filename = "{}_{:06d}".format(NON_DEMENTED, i)
         Scan(scan_loc=image, 
              run_name=run_name, 
              scan_no=i,
@@ -85,7 +85,7 @@ def prep_kaggle(kaggle_dir, run_name):
     print("Launching very mild-demented prep")
     verymilddemented_count = 0
     for i, image in enumerate(Path(kaggle_dir, VERY_MILD_DEMENTED).resolve().iterdir()):
-        filename = "{}_{0:06d}".format(VERY_MILD_DEMENTED, i)
+        filename = "{}_{:06d}".format(VERY_MILD_DEMENTED, i)
         Scan(scan_loc=image, 
              run_name=run_name, 
              scan_no=i,
@@ -97,7 +97,7 @@ def prep_kaggle(kaggle_dir, run_name):
     print("Launching mild-demented prep")
     milddemented_count = 0
     for i, image in enumerate(Path(kaggle_dir, MILD_DEMENTED).resolve().iterdir()):
-        filename = "{}_{0:06d}".format(MILD_DEMENTED, i)
+        filename = "{}_{:06d}".format(MILD_DEMENTED, i)
         Scan(scan_loc=image, 
              run_name=run_name, 
              scan_no=i,
@@ -109,7 +109,7 @@ def prep_kaggle(kaggle_dir, run_name):
     print("Launching moderate-demented prep")
     moderatedemented_count = 0
     for i, image in enumerate(Path(kaggle_dir, MODERATE_DEMENTED).resolve().iterdir()):
-        filename = "{}_{0:06d}".format(MODERATE_DEMENTED, i)
+        filename = "{}_{:06d}".format(MODERATE_DEMENTED, i)
         Scan(scan_loc=image, 
              run_name=run_name, 
              scan_no=i,
