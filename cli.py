@@ -1,5 +1,5 @@
 import argparse
-from src.training.experiments import run
+# from src.training.experiments import run
 from src.preprocessing.run_scripts import prep_adni, prep_kaggle
 
 def main():
@@ -41,9 +41,14 @@ def main():
             raise argparse.ArgumentTypeError('Must specify COLLECTION_DIR and COLLECTION_CSV or KAGGLE to prep datasets!')
     
         if args.kaggle:
+            print("Option chosen: prep kaggle dataset {}".format(args.kaggle))
             prep_kaggle(args.kaggle, args.run_name)
         else:
+            print("Option chosen: prep ADNI dataset {}".format(args.collection_dir))
             prep_adni(args.collection_dir,args.collection_csv,args.run_name)
+    elif args.tool == "train":
+        from src.training.experiments import run
+        run()
     else:
         raise argparse.ArgumentTypeError('Must specify CLI mode! Options: (prep, train, test, predict)')
 

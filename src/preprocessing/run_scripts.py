@@ -1,6 +1,8 @@
 import pandas as pd
 import json
 import shutil
+import splitfolders
+from datetime import datetime
 from ..classes.constants import NON_DEMENTED, VERY_MILD_DEMENTED, MILD_DEMENTED, MODERATE_DEMENTED
 from ..classes.scan import Scan
 from pathlib import Path
@@ -22,7 +24,9 @@ def prep_adni(collection_dir, collection_csv, run_name):
 
     out_dir = Path(
         filedir, "../../out/preprocessed_datasets", run_name).resolve()
-    
+
+    print("output dir: {}".format(out_dir))
+
     out_dir.mkdir(parents=True, exist_ok=True)
 
     scan_count = 0
@@ -68,65 +72,26 @@ def prep_kaggle(kaggle_dir, run_name):
     out_dir = Path(
         filedir, "../../out/preprocessed_datasets", run_name).resolve()
     
+    print("output dir: {}".format(out_dir))
+    
     out_dir.mkdir(parents=True, exist_ok=True)
+    split_seed =datetime.now().timestamp()
+    
+    splitfolders.ratio(kaggle_dir,output=out_dir, seed=split_seed, ratio=(0.9,0.05,0.05))
 
-    print("Launching non-demented prep")
-    nondemented_count = 0
-    for i, image in enumerate(Path(kaggle_dir, NON_DEMENTED).resolve().iterdir()):
-        filename = "{}_{:06d}".format(NON_DEMENTED, i)
-        Scan(scan_loc=image, 
-             run_name=run_name, 
-             scan_no=i,
-             scan_name=filename, 
-             out_dir=str(out_dir), 
-             kaggle=True)
-        nondemented_count+=1
-
-    print("Launching very mild-demented prep")
-    verymilddemented_count = 0
-    for i, image in enumerate(Path(kaggle_dir, VERY_MILD_DEMENTED).resolve().iterdir()):
-        filename = "{}_{:06d}".format(VERY_MILD_DEMENTED, i)
-        Scan(scan_loc=image, 
-             run_name=run_name, 
-             scan_no=i,
-             scan_name=filename, 
-             out_dir=str(out_dir), 
-             kaggle=True)
-        verymilddemented_count+=1
-
-    print("Launching mild-demented prep")
-    milddemented_count = 0
-    for i, image in enumerate(Path(kaggle_dir, MILD_DEMENTED).resolve().iterdir()):
-        filename = "{}_{:06d}".format(MILD_DEMENTED, i)
-        Scan(scan_loc=image, 
-             run_name=run_name, 
-             scan_no=i,
-             scan_name=filename, 
-             out_dir=str(out_dir), 
-             kaggle=True)
-        milddemented_count+=1
-
-    print("Launching moderate-demented prep")
-    moderatedemented_count = 0
-    for i, image in enumerate(Path(kaggle_dir, MODERATE_DEMENTED).resolve().iterdir()):
-        filename = "{}_{:06d}".format(MODERATE_DEMENTED, i)
-        Scan(scan_loc=image, 
-             run_name=run_name, 
-             scan_no=i,
-             scan_name=filename, 
-             out_dir=str(out_dir), 
-             kaggle=True)
-        moderatedemented_count+=1
+    train_count = len(list(Path(out_dir, "train").glob('**/*')))
+    test_count = len(list(Path(out_dir, "test").glob('**/*')))
+    val_count = len(list(Path(out_dir, "val").glob('**/*')))
         
     with open(Path(out_dir, "meta"), "w") as meta_file:
         metadata ={
             "kaggle":True,
             "run_name":run_name,
             "original_dir": str(kaggle_dir),
-            "nondemented":nondemented_count,
-            "verymilddemented":verymilddemented_count,
-            "milddemented":milddemented_count,
-            "moderatedemented":moderatedemented_count
+            "train_count":train_count,
+            "test_count":test_count,
+            "val_count":val_count,
+            "dataset_split_seed":split_seed,
         }
         json.dump(metadata, meta_file,indent=4)
         
