@@ -61,7 +61,7 @@ def prep_adni(collection_dir, collection_csv, run_name):
     # Writing collection.csv file
     shutil.copyfile(collection_csv, Path(out_dir, "collection.csv"))
 
-def prep_kaggle(kaggle_dir, run_name):
+def prep_kaggle(kaggle_dir, run_name, split_ratio):
     kaggle_dir = Path(cwd, kaggle_dir).resolve()
 
     if not Path.exists(kaggle_dir):
@@ -74,10 +74,14 @@ def prep_kaggle(kaggle_dir, run_name):
     
     print("output dir: {}".format(out_dir))
     
-    out_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        out_dir.mkdir(parents=True, exist_ok=False)
+    except:
+        raise ValueError("Output dir {} already exists! Pick a different run name or delete the existing directory.".format(out_dir))
+    
     split_seed =datetime.now().timestamp()
     
-    splitfolders.ratio(kaggle_dir,output=out_dir, seed=split_seed, ratio=(0.9,0.05,0.05))
+    splitfolders.ratio(kaggle_dir,output=out_dir, seed=split_seed, ratio=split_ratio)
 
     train_count = len(list(Path(out_dir, "train").glob('**/*')))
     test_count = len(list(Path(out_dir, "test").glob('**/*')))
@@ -88,6 +92,7 @@ def prep_kaggle(kaggle_dir, run_name):
             "kaggle":True,
             "run_name":run_name,
             "original_dir": str(kaggle_dir),
+            "split": str(split_ratio),
             "train_count":train_count,
             "test_count":test_count,
             "val_count":val_count,
