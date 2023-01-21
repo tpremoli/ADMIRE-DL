@@ -1,5 +1,4 @@
 import argparse
-# from src.training.experiments import run
 from src.preprocessing.run_scripts import prep_adni, prep_kaggle
 
 
@@ -69,5 +68,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-    # run()
+    # main()
+    from src.training.experiments import run
+    run()

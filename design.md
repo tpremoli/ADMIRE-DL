@@ -19,16 +19,20 @@ The prep tool runs preprocessing steps for a given adni dataset. The prep tool i
 
 where the options are
 
-- **collection_dir** `-d`: The directory of the collection. If the collection was downloaded from ADNI, this should be the "ADNI" folder
-- **collection_csv** `-c`: The directory of the collection's csv (Metadata) file. This allows the program to identify which research group the collection belongs to.
 - **run_name** `-r`: The name of the run. Files will be saved in `out/preprocessed_datasets/{run_name}`
-
-This will output preprocessed MRI images and objects, ready to be trained on. Each scan will be treated as a different datapoint, even if a subject has multiple scans attributed to them.
+- **ratio** `--ratio`: The train/test/validation ratio. Files will be saved in `{run_name}/train`,`{run_name}/test`,`{run_name}/val` respectively.
 
 If you are using the kaggle data set, you can create the object files using the option
 
 - **kaggle** `-k`: The directory of the kaggle mri images. These should be in their original folder structure (i.e nondemented, mildlydemented etc.)
-  
+
+If you're using an ADNI dataset, you must input
+
+- **collection_dir** `-d`: The directory of the collection. If the collection was downloaded from ADNI, this should be the "ADNI" folder
+- **collection_csv** `-c`: The directory of the collection's csv (Metadata) file. This allows the program to identify which research group the collection belongs to.
+
+This will output preprocessed MRI images and objects, ready to be trained on. Each scan will be treated as a different datapoint, even if a subject has multiple scans attributed to them.
+
 
 ### `train`: Preprocessing datasets
 
@@ -51,7 +55,6 @@ options:
     method: finetune
     pooling: avg
     kaggle: False
-    train_pct: 0.7  
     # optimizer: Adam ???
     # loss: categorical_crossentropy ??
     # learning_rate: 5e-4 ??

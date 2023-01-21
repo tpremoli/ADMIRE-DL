@@ -1,35 +1,48 @@
-import tensorflow.keras.applications as apps
+import keras.applications as apps
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
+from tensorflow.config import list_logical_devices
+from pathlib import Path
 from datetime import datetime
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import ReduceLROnPlateau
 from keras.layers import Dense, Flatten
 from keras.models import Model
 from keras import optimizers
 from ..classes.constants import *
-from ..classes.utils import load_scans_from_folder
 
 def run():
-    train_datagen = ImageDataGenerator(rescale=1./255,
-        validation_split=0.2) # set validation split    
-    data_loc = "/home/tpremoli/MRI_AD_Diagnosis/unprocessed_datasets/kaggle"
+    print("Devices: ",list_logical_devices())
+    
+    
+    train_datagen = ImageDataGenerator(rescale=1./255) # set validation split    
+    test_datagen = ImageDataGenerator(rescale=1./255) # set validation split    
+    validation_datagen = ImageDataGenerator(rescale=1./255) # set validation split    
+
+    data_loc = "/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/new_kaggle_method"
     
     train_images = train_datagen.flow_from_directory(
-        data_loc,
+        Path(data_loc, "train"),
         target_size=KAGGLE_IMAGE_DIMENSIONS,
         batch_size=32,
         class_mode='categorical',
-        subset='training') # set as training data
+    ) 
+    
+    test_images = test_datagen.flow_from_directory(
+        Path(data_loc, "test"), # same directory as training data
+        target_size=KAGGLE_IMAGE_DIMENSIONS,
+        batch_size=32,
+        class_mode='categorical',
+    )
 
-    validation_images = train_datagen.flow_from_directory(
-        data_loc , # same directory as training data
+    validation_images = validation_datagen.flow_from_directory(
+        Path(data_loc, "val"), # same directory as training data
         target_size=KAGGLE_IMAGE_DIMENSIONS,
         batch_size=32,
         class_mode='categorical',
-        subset='validation') # set as validation data
+    )
     
     
     vgg16 = apps.VGG16(
@@ -66,7 +79,7 @@ def run():
     callbacks = [checkpoint, lr_reducer]
     
     start = datetime.now()
-    history = model.fit_generator(train_images, 
+    history = model.fit(train_images, 
                     steps_per_epoch=len(train_images), 
                     epochs = 18, verbose=5, 
                     validation_data = validation_images, 
@@ -83,4 +96,10 @@ def run():
     plt.ylabel("“Accuracy”")
     plt.xlabel("“Epoch”")
     plt.legend(["Accuracy","Validation Accuracy","loss","validation loss"])
-    plt.savefig('model.png')
+    plt.savefig('experiment_model.png')
+    
+    score = model.evaluate(test_images)
+    print('Test Loss:', score[0])
+    print('Test accuracy:', score[1])
+    
+    model.save('experiment_model')
