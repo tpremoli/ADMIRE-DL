@@ -80,18 +80,31 @@ def run_fsl(scan_location, scan_name, group, out_dir):
 
     return final_brain
 
-def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range):
+def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(35,55)):
     brain_data = get_data_from_nii(nii_path)
     
-    curr_slice = brain_data[:, :, slice_range[0]]
-    
-    image_data = Image.fromarray(curr_slice).convert('RGB')
-    
-    image_dir = Path(out_dir,"image_slices/{}/{}_slice{}.jpg".format(group,scan_name,slice_range[0])).resolve()
-    nparray_dir = Path(out_dir,"image_slices/{}/{}_slice{}.nparray".format(group,scan_name,slice_range[0])).resolve()
+    for i in range(slice_range[0],slice_range[1]):
+        # Vital to make sure that the np.float64 is correctly scaled to np.uint8
+        curr_slice = normalize_array_range(brain_data[:, :, i])
+        
+        image_data = Image.fromarray(curr_slice)
+        
+        # Saved as image_slices/{group}/{subject}_slice{number}
+        image_dir = Path(out_dir,"image_slices/{}/{}_slice{}.png".format(group,scan_name,(i-slice_range[0]))).resolve()
+        image_data.save(image_dir)
 
-    np.savetxt(nparray_dir, curr_slice)
-    image_data.save(image_dir)
+def normalize_array_range(img):
+    TARGET_TYPE_MIN = 0
+    TARGET_TYPE_MAX = 255
+    TARGET_TYPE = np.uint8
+    
+    imin = np.min(img)
+    imax = np.max(img)
+
+    a = (TARGET_TYPE_MAX - TARGET_TYPE_MIN) / (imax - imin)
+    b = TARGET_TYPE_MAX - a * imax
+    new_img = (a * img + b).astype(TARGET_TYPE)
+    return new_img
 
 def get_data_from_nii(nii_path):
     imgfile = nib.load(nii_path)
