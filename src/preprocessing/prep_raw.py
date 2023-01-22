@@ -11,7 +11,7 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 
-def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, slice_range=(110,130)):
+def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, slice_range=(35,55)):
     if group is None or sex is None:
         raise ValueError(
             "ERROR: Scan instatiation requires group, sex, and age values!")
@@ -31,8 +31,8 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, slice_range=(110,130)
     print("splitting MRI into individual slice images, slices {}-{}.".format(slice_range[0],slice_range[1]))
     create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range)
 
-    # TODO: make sure saved into groups
-    print("splitting MRI into multichannal slice images, slices X-X.")
+    print("splitting MRI into multichannal slice images, slices {}-{}.".format(slice_range[0],slice_range[1]))
+    create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range)
     
     # TODO: make sure saved into groups
     print("splitting images into train/test/val folders, with ratio X/X/X.")
@@ -79,7 +79,7 @@ def run_fsl(scan_location, scan_name, group, out_dir):
 
     return final_brain
 
-def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(35,55)):
+def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range):
     brain_data = get_data_from_nii(nii_path)
     
     for i in range(slice_range[0],slice_range[1]):
@@ -92,7 +92,7 @@ def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(3
         image_dir = Path(out_dir,"image_slices/{}/{}_slice{}.png".format(group,scan_name,(i-slice_range[0]))).resolve()
         image_data.save(image_dir)
 
-def create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(35,55)):
+def create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range):
     brain_data = get_data_from_nii(nii_path)
     
     for i in range(slice_range[0],slice_range[1]):

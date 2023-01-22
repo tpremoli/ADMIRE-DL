@@ -22,6 +22,7 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     elif not any(Path(collection_dir).iterdir()):
         raise ValueError("Collection path {} empty!".format(collection_dir))
 
+    # Getting individual subjects
     subjects = pd.read_csv(collection_csv).drop_duplicates(
         keep='first', subset="Subject").to_dict(orient="records")
 
@@ -52,7 +53,7 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     Path(out_dir, "multi_channel/AD").resolve().mkdir(parents=True, exist_ok=True)
 
 
-    scan_count = 0
+    slice_count = 0 # This will be summed with slice_range[1] - slice_range[0]
     # Do this multiprocessed
     for subject in subjects:
         subj_folder = Path(collection_dir, subject["Subject"], "MP-RAGE")
@@ -61,17 +62,17 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
             start_time = datetime.now()
             
             # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on. min 6 chars
-            scan_name = "{}_{:03d}".format(subject["Subject"], count)
+            scan_name = "{}_{:02d}".format(subject["Subject"], count)
             prep_raw_mri(scan_folder,scan_name,out_dir,subject["Group"],subject["Sex"])
         
             end_time = datetime.now()
 
-            # TODO: Write to LOG. end_time - start_time            
+            # TODO: Write to LOG. end_time - start_time
 
+    print("Done processing raw MRIs. Saving mata data")
 
-    # train_count = len(list(Path(out_dir, "train").glob('**/*')))
-    # test_count = len(list(Path(out_dir, "test").glob('**/*')))
-    # val_count = len(list(Path(out_dir, "val").glob('**/*')))
+    scan_count = len(list(Path(out_dir, "nii_files").glob('**/*')))
+    slice_count = len(list(Path(out_dir, "image_slices").glob('**/*')))
 
     # Writing meta file
     with open(Path(out_dir, "meta.json"), "w") as meta_file:
@@ -80,15 +81,17 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
             "run_name": run_name,
             "original_dir": str(collection_dir),
             "split": list(split_ratio),
-            # "train_count": train_count,
-            # "test_count": test_count,
-            # "val_count": val_count,
-            # "dataset_split_seed": split_seed,
+            "scan_count": scan_count,
+            "slice_count":slice_count,
+            # "dataset_split_seed": split_seed, TODO: add split and split_seed option
+            # TODO: maybe add CLI option to skip_fsl stuff and just sort into slices + folders???
         }
         json.dump(metadata, meta_file, indent=4)
 
     # Writing collection.csv file
     shutil.copyfile(collection_csv, Path(out_dir, "collection.csv"))
+    
+    print("Done! Result files found in {}".format(out_dir))
 
 
 def prep_kaggle(kaggle_dir, run_name, split_ratio):
@@ -111,7 +114,8 @@ def prep_kaggle(kaggle_dir, run_name, split_ratio):
             "Output dir {} already exists! Pick a different run name or delete the existing directory.".format(out_dir))
 
     split_seed = datetime.now().timestamp()
-
+    
+    print("Splitting folders with split ratio {}".format(split_ratio))
     splitfolders.ratio(kaggle_dir, output=out_dir,
                        seed=split_seed, ratio=split_ratio)
 
@@ -132,4 +136,4 @@ def prep_kaggle(kaggle_dir, run_name, split_ratio):
         }
         json.dump(metadata, meta_file, indent=4)
 
-    print("finished prepping kaggle dataset")
+    print("Done! Result files found in {}".format(out_dir))

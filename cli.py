@@ -54,7 +54,7 @@ def main():
                 'Train/test/validation RATIO must add up to 1!')
 
         if args.kaggle:
-            print("Option chosen: prep kaggle dataset {}\nTrain/test/validation ratio: {}".format(args.kaggle, str(args.ratio)))
+            print("Option chosen: prep kaggle dataset {}".format(args.kaggle))
             prep_kaggle(args.kaggle, args.run_name, tuple(args.ratio))
         else:
             print("Option chosen: prep ADNI dataset {}".format(args.collection_dir))
