@@ -92,6 +92,25 @@ def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(3
         image_dir = Path(out_dir,"image_slices/{}/{}_slice{}.png".format(group,scan_name,(i-slice_range[0]))).resolve()
         image_data.save(image_dir)
 
+def create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(35,55)):
+    brain_data = get_data_from_nii(nii_path)
+    
+    for i in range(slice_range[0],slice_range[1]):
+        # Vital to make sure that the np.float64 is correctly scaled to np.uint8
+        # We do 3 slices (r=i-1,g=i,b=i+1)
+        r_slice = normalize_array_range(brain_data[:, :, i-1])
+        g_slice = normalize_array_range(brain_data[:, :, i])
+        b_slice = normalize_array_range(brain_data[:, :, i+1])
+        
+        # We stack these into one nparray that will have shape (91,109,3)
+        slice_3d = np.stack((r_slice,g_slice,b_slice), axis=2)
+        
+        image_data = Image.fromarray(slice_3d)
+        
+        # Saved as image_slices/{group}/{subject}_slice{number}
+        image_dir = Path(out_dir,"multi_channel/{}/{}_slice{}.png".format(group,scan_name,(i-slice_range[0]))).resolve()
+        image_data.save(image_dir)
+
 def normalize_array_range(img):
     TARGET_TYPE_MIN = 0
     TARGET_TYPE_MAX = 255
