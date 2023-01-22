@@ -4,7 +4,7 @@ import shutil
 import splitfolders
 from datetime import datetime
 from ..classes.constants import NON_DEMENTED, VERY_MILD_DEMENTED, MILD_DEMENTED, MODERATE_DEMENTED
-from ..classes.scan import Scan
+from .prep_raw import prep_raw_mri
 from pathlib import Path
 
 cwd = Path().resolve()
@@ -38,17 +38,16 @@ def prep_adni(collection_dir, collection_csv, run_name):
         subj_folder = Path(collection_dir, subject["Subject"], "MP-RAGE")
         # For each scan in the subject subject
         for count, scan_folder in enumerate(Path.glob(subj_folder, "*")):
+            start_time = datetime.now()
+            
             # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on. min 6 chars
-            scan_name = "{}_{:06d}".format(subject["Subject"], count)
+            scan_name = "{}_{:03d}".format(subject["Subject"], count)
+            prep_raw_mri(scan_folder,scan_name,out_dir,subject["Group"],subject["Sex"])
+        
+            end_time = datetime.now()
 
-            Scan(scan_loc=scan_folder,
-                 run_name=run_name,
-                 scan_no=count,
-                 scan_name=scan_name,
-                 out_dir=str(out_dir),
-                 group=subject["Group"],
-                 sex=subject["Sex"])
-            scan_count += 1
+            # TODO: Write to LOG. end_time - start_time            
+
 
     # Writing meta file
     with open(Path(out_dir, "meta.json"), "w") as meta_file:

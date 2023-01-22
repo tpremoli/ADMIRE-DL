@@ -1,10 +1,8 @@
 import shutil
-import pickle
 import numpy as np
 import nibabel as nib
 import fsl.wrappers.fsl_anat as fsl_anat
 import fsl.wrappers.fslmaths as fsl_maths
-from PIL import Image
 from pathlib import Path
 from datetime import datetime
 
@@ -16,8 +14,6 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex):
     if group is None or sex is None:
         raise ValueError(
             "ERROR: Scan instatiation requires group, sex, and age values!")
-
-    start_time = datetime.now()
 
     scan_location = Path(cwd, scan_loc).resolve()
 
@@ -31,14 +27,19 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex):
     # coronal = self.data[:, 30, :] <- 30th slice along coronal
     # axial = self.data[:, :, 50] <- 50th slice along axial
 
-    end_time = datetime.now()
+    # TODO: make sure saved into groups
+    print("splitting MRI into individual slice images, slices X-X.")
 
-    return end_time-start_time
+    # TODO: make sure saved into groups
+    print("splitting MRI into multichannal slice images, slices X-X.")
+    
+    # TODO: make sure saved into groups
+    print("splitting images into train/test/val folders, with ratio X/X/X.")
 
 
 def run_fsl(scan_location, scan_name, out_dir):
     niifile = ""
-    # Finding nii file. This just does it for the first file found in subfolders, but this should run for multiple samples in the future
+    # finding nii file. Each of a subject's scans is in a different scan_location, so this works w multiple scans for a subject
     for p in scan_location.rglob("*"):
         if p.name.endswith(".nii"):
             niifile = p
@@ -60,8 +61,9 @@ def run_fsl(scan_location, scan_name, out_dir):
     # This is the outputted brain mask
     brain_mask = Path(anat_dir, "MNI152_T1_2mm_brain_mask_dil1.nii.gz")
 
+    # TODO: split into groups
     final_brain = Path(
-        out_dir, "MRIs/{}_processed.nii.gz".format(scan_name))
+        out_dir, "nii_files/{}_processed.nii.gz".format(scan_name))
 
     # We multiply the MNI registered brain by the brain mask to have a final preprocessed brain
     fsl_maths(mni_nonlin).mul(brain_mask).run(final_brain)
