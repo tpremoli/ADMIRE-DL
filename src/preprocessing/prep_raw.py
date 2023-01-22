@@ -17,8 +17,8 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex):
 
     scan_location = Path(cwd, scan_loc).resolve()
 
-    print("Launching FSL scripts for scan {}".format(scan_name))
-    nii_path = run_fsl(scan_location, scan_name, out_dir)
+    print("Launching FSL scripts for scan {} in group {}".format(scan_name, group))
+    nii_path = run_fsl(scan_location, scan_name, group, out_dir)
 
     print("FSL scripts complete. Processed MRI found in {}".format(nii_path))
 
@@ -37,7 +37,7 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex):
     print("splitting images into train/test/val folders, with ratio X/X/X.")
 
 
-def run_fsl(scan_location, scan_name, out_dir):
+def run_fsl(scan_location, scan_name, group, out_dir):
     niifile = ""
     # finding nii file. Each of a subject's scans is in a different scan_location, so this works w multiple scans for a subject
     for p in scan_location.rglob("*"):
@@ -61,9 +61,9 @@ def run_fsl(scan_location, scan_name, out_dir):
     # This is the outputted brain mask
     brain_mask = Path(anat_dir, "MNI152_T1_2mm_brain_mask_dil1.nii.gz")
 
-    # TODO: split into groups
+    # File is saved into group subfolder in nii_files output loc
     final_brain = Path(
-        out_dir, "nii_files/{}_processed.nii.gz".format(scan_name))
+        out_dir, "nii_files/{}/{}_processed.nii.gz".format(group,scan_name))
 
     # We multiply the MNI registered brain by the brain mask to have a final preprocessed brain
     fsl_maths(mni_nonlin).mul(brain_mask).run(final_brain)
