@@ -2,7 +2,6 @@ from tensorflow.keras.preprocessing import image
 import tensorflow.keras.applications as apps
 import numpy as np
 
-from .scan import Scan
 
 class Model:
     def __init__(self, kaggle=False):

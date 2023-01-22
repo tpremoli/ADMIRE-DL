@@ -28,7 +28,6 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, slice_range=(110,130)
     # coronal = data[:, 30, :] <- 30th slice along coronal
     # axial = data[:, :, 50] <- 50th slice along axial
 
-    # TODO: make sure saved into groups
     print("splitting MRI into individual slice images, slices {}-{}.".format(slice_range[0],slice_range[1]))
     create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range)
 

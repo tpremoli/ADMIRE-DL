@@ -1,5 +1,4 @@
 from pathlib import Path
-from .scan import Scan
 from .constants import *
 
 cwd = Path().resolve()
