@@ -41,12 +41,11 @@ def prep_adni(collection_dir, collection_csv, run_name):
             # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on. min 6 chars
             scan_name = "{}_{:06d}".format(subject["Subject"], count)
 
-            Scan(scan_folder=scan_folder,
+            Scan(scan_loc=scan_folder,
                  run_name=run_name,
                  scan_no=count,
                  scan_name=scan_name,
                  out_dir=str(out_dir),
-                 kaggle=False,
                  group=subject["Group"],
                  sex=subject["Sex"])
             scan_count += 1

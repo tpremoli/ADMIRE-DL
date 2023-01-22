@@ -12,8 +12,7 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 class Scan:
-    def __init__(self, scan_loc:str, run_name:str, scan_no:int, scan_name:str, out_dir:str, kaggle:bool, group=None, sex=None):
-        self.kaggle = kaggle
+    def __init__(self, scan_loc:str, run_name:str, scan_no:int, scan_name:str, out_dir:str, group=None, sex=None):
         self.scan_name = None
         self.scan_no = None # useful for sorting
         self.run_name = None # filename/run name
@@ -23,72 +22,54 @@ class Scan:
         self.nii_path = None
         self.data = None
 
-        if kaggle == True:
-            img_location = Path(cwd, scan_loc).resolve()
+        
+        if group is None or sex is None:
+            raise ValueError(
+                "ERROR: Scan instatiation requires group, sex, and age values!")
 
-            self.scan_name = scan_name
-            self.scan_no = scan_no
-            self.run_name = run_name
-            self.group = group
+        start_time = datetime.now()
 
-            # should convert to b/w
-            image = np.asarray(Image.open(img_location))
+        scan_location = Path(cwd, scan_loc).resolve()
 
-            self.data = image
-            self.out_dir = out_dir
+        # The scan name is the parent folder (i.e 005_S_0221_0)
+        self.scan_no = scan_no
+        self.scan_name = scan_name
+        self.run_name = run_name
 
-            # Saving our object as a pickle
-            with open(Path(self.out_dir, "{}_processed.pkl".format(self.scan_name)), "wb") as pkl_file:
-                pickle.dump(self, pkl_file, pickle.HIGHEST_PROTOCOL)
-                
-        elif kaggle == False:
-            if group is None or sex is None:
-                raise ValueError(
-                    "ERROR: Scan instatiation requires group, sex, and age values!")
+        # Should log this in out
+        print("Loading scan {} for preprocessing".format(self.scan_name))
 
-            start_time = datetime.now()
+        # Setting sample sex group and age
+        self.group = group
+        self.sex = sex
 
-            scan_location = Path(cwd, scan_loc).resolve()
+        # defining ouput dir (out/preprocessed_datasets/run_name)
+        self.out_dir = out_dir
 
-            # The scan name is the parent folder (i.e 005_S_0221_0)
-            self.scan_no = scan_no
-            self.scan_name = scan_name
-            self.run_name = run_name
+        print("Launching FSL scripts for scan {}".format(self.scan_name))
+        self.nii_path = self.run_fsl(scan_location)
 
-            # Should log this in out
-            print("Loading scan {} for preprocessing".format(self.scan_name))
+        print("FSL scripts complete. Retrieving data from output")
+        # self.data = self.get_data_from_nii()
 
-            # Setting sample sex group and age
-            self.group = group
-            self.sex = sex
+        # To access slices:
+        # sagittal = self.data[26, :, :] <- 26th slice along sagittal
+        # coronal = self.data[:, 30, :] <- 30th slice along coronal
+        # axial = self.data[:, :, 50] <- 50th slice along axial
 
-            # defining ouput dir (out/preprocessed_datasets/run_name)
-            self.out_dir = out_dir
-
-            print("Launching FSL scripts for scan {}".format(self.scan_name))
-            self.nii_path = self.run_fsl(scan_location)
-
-            print("FSL scripts complete. Retrieving data from output")
-            self.data = self.get_data_from_nii()
-
-            # To access slices:
-            # sagittal = self.data[26, :, :] <- 26th slice along sagittal
-            # coronal = self.data[:, 30, :] <- 30th slice along coronal
-            # axial = self.data[:, :, 50] <- 50th slice along axial
-
-            # Saving our object as a pickle
-            with open(Path(self.out_dir, "{}_processed.pkl".format(self.scan_name)), "wb") as pkl_file:
-                pickle.dump(self, pkl_file, pickle.HIGHEST_PROTOCOL)
-            
-            end_time = datetime.now()
-            with open(Path(self.out_dir, "{}.txt".format(self.scan_name)), "w") as f:
-                f.write("start time: ")
-                f.write(str(start_time))
-                f.write("\n")
-                f.write("end time: ")
-                f.write(str(end_time))
-                f.write("\ntotal time elapsed:")
-                f.write(str(end_time-start_time))
+        # Saving our object as a pickle
+        # with open(Path(self.out_dir, "{}_processed.pkl".format(self.scan_name)), "wb") as pkl_file:
+            # pickle.dump(self, pkl_file, pickle.HIGHEST_PROTOCOL)
+        
+        end_time = datetime.now()
+        with open(Path(self.out_dir, "{}.txt".format(self.scan_name)), "w") as f:
+            f.write("start time: ")
+            f.write(str(start_time))
+            f.write("\n")
+            f.write("end time: ")
+            f.write(str(end_time))
+            f.write("\ntotal time elapsed:")
+            f.write(str(end_time-start_time))
     
     def __eq__(self, other):
         return self.scan_no == other.scan_no
@@ -112,7 +93,7 @@ class Scan:
 
         # The tmp_dir directory will be used to store all the fsl_anat info
         tmp_dir = Path(
-            filedir, "../out/preprocessed_datasets/tmp", self.scan_name).resolve()
+            filedir, "../../out/preprocessed_datasets/tmp", self.scan_name).resolve()
 
         # Running fsl_anat (we don't need tissue segmentation nor subcortical segmentation)
         fsl_anat(img=niifile, out=tmp_dir, noseg=True,nosubcortseg=True)
