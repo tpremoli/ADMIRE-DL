@@ -3,14 +3,15 @@ import numpy as np
 import nibabel as nib
 import fsl.wrappers.fsl_anat as fsl_anat
 import fsl.wrappers.fslmaths as fsl_maths
+import matplotlib as plt
 from pathlib import Path
-from datetime import datetime
+from PIL import Image
 
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 
-def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex):
+def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, slice_range=(110,130)):
     if group is None or sex is None:
         raise ValueError(
             "ERROR: Scan instatiation requires group, sex, and age values!")
@@ -23,12 +24,13 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex):
     print("FSL scripts complete. Processed MRI found in {}".format(nii_path))
 
     # To access slices:
-    # sagittal = self.data[26, :, :] <- 26th slice along sagittal
-    # coronal = self.data[:, 30, :] <- 30th slice along coronal
-    # axial = self.data[:, :, 50] <- 50th slice along axial
+    # sagittal = data[26, :, :] <- 26th slice along sagittal
+    # coronal = data[:, 30, :] <- 30th slice along coronal
+    # axial = data[:, :, 50] <- 50th slice along axial
 
     # TODO: make sure saved into groups
-    print("splitting MRI into individual slice images, slices X-X.")
+    print("splitting MRI into individual slice images, slices {}-{}.".format(slice_range[0],slice_range[1]))
+    create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range)
 
     # TODO: make sure saved into groups
     print("splitting MRI into multichannal slice images, slices X-X.")
@@ -78,8 +80,20 @@ def run_fsl(scan_location, scan_name, group, out_dir):
 
     return final_brain
 
+def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range):
+    brain_data = get_data_from_nii(nii_path)
+    
+    curr_slice = brain_data[:, :, slice_range[0]]
+    
+    image_data = Image.fromarray(curr_slice).convert('RGB')
+    
+    image_dir = Path(out_dir,"image_slices/{}/{}_slice{}.jpg".format(group,scan_name,slice_range[0])).resolve()
+    nparray_dir = Path(out_dir,"image_slices/{}/{}_slice{}.nparray".format(group,scan_name,slice_range[0])).resolve()
 
-def get_data_from_nii(self):
-    imgfile = nib.load(self.nii_path)
+    np.savetxt(nparray_dir, curr_slice)
+    image_data.save(image_dir)
+
+def get_data_from_nii(nii_path):
+    imgfile = nib.load(nii_path)
     return np.array(imgfile.dataobj)
 
