@@ -11,7 +11,7 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 
-def prep_adni(collection_dir, collection_csv, run_name):
+def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     # Resetting path locs
     collection_dir = Path(cwd, collection_dir).resolve()
     collection_csv = Path(cwd, collection_csv).resolve()
@@ -30,7 +30,27 @@ def prep_adni(collection_dir, collection_csv, run_name):
 
     print("output dir: {}".format(out_dir))
 
-    out_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        out_dir.mkdir(parents=True, exist_ok=False)
+    except:
+        raise ValueError(
+            "Output dir {} already exists! Pick a different run name or delete the existing directory.".format(out_dir))
+    
+    # Creating group subdirs for output nii images
+    Path(out_dir, "nii_files/CN").resolve().mkdir(parents=True, exist_ok=True)
+    Path(out_dir, "nii_files/MCI").resolve().mkdir(parents=True, exist_ok=True)
+    Path(out_dir, "nii_files/AD").resolve().mkdir(parents=True, exist_ok=True)
+    
+    # Creating group subdirs for output image slices
+    Path(out_dir, "image_slices/CN").resolve().mkdir(parents=True, exist_ok=True)
+    Path(out_dir, "image_slices/MCI").resolve().mkdir(parents=True, exist_ok=True)
+    Path(out_dir, "image_slices/AD").resolve().mkdir(parents=True, exist_ok=True)
+
+    # Creating group subdirs for output multi-channel image slices
+    Path(out_dir, "multi_channel/CN").resolve().mkdir(parents=True, exist_ok=True)
+    Path(out_dir, "multi_channel/MCI").resolve().mkdir(parents=True, exist_ok=True)
+    Path(out_dir, "multi_channel/AD").resolve().mkdir(parents=True, exist_ok=True)
+
 
     scan_count = 0
     # Do this multiprocessed
@@ -49,13 +69,21 @@ def prep_adni(collection_dir, collection_csv, run_name):
             # TODO: Write to LOG. end_time - start_time            
 
 
+    # train_count = len(list(Path(out_dir, "train").glob('**/*')))
+    # test_count = len(list(Path(out_dir, "test").glob('**/*')))
+    # val_count = len(list(Path(out_dir, "val").glob('**/*')))
+
     # Writing meta file
     with open(Path(out_dir, "meta.json"), "w") as meta_file:
         metadata = {
             "kaggle": False,
             "run_name": run_name,
-            "original_dir": str(out_dir),
-            "scan_count": scan_count
+            "original_dir": str(collection_dir),
+            "split": list(split_ratio),
+            # "train_count": train_count,
+            # "test_count": test_count,
+            # "val_count": val_count,
+            # "dataset_split_seed": split_seed,
         }
         json.dump(metadata, meta_file, indent=4)
 
