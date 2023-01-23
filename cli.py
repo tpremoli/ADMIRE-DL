@@ -58,7 +58,7 @@ def main():
             prep_kaggle(args.kaggle, args.run_name, tuple(args.ratio))
         else:
             print("Option chosen: prep ADNI dataset {}".format(args.collection_dir))
-            prep_adni(args.collection_dir, args.collection_csv, args.run_name)
+            prep_adni(args.collection_dir, args.collection_csv, args.run_name, tuple(args.ratio))
     elif args.tool == "train":
         from src.training.experiments import run
         run()
@@ -68,6 +68,13 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    from src.training.experiments import run
-    run()
+    main()
+    
+    # from src.preprocessing.prep_raw import create_multichannel_slices_from_brain, create_slices_from_brain
+    # create_multichannel_slices_from_brain("/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/adni_processed/002_S_0295_000001_processed.nii.gz",
+    #                          "/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/adnitest2","my_scan2","CN")
+    # create_slices_from_brain("/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/adni_processed/002_S_0295_000001_processed.nii.gz",
+    #                          "/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/adnitest2","my_scan2","CN")
+
+    # from src.training.experiments import run
+    # run()
