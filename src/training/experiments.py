@@ -1,7 +1,6 @@
 import keras.applications as apps
 import numpy as np
 import matplotlib.pyplot as plt
-import tensorflow as tf
 from tensorflow.config import list_logical_devices
 from pathlib import Path
 from datetime import datetime
