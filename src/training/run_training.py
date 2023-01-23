@@ -63,11 +63,11 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, a
     model = create_model(architecture, method, is_kaggle)
 
     start = datetime.now()
+    
     history = model.fit(train_images,
-                        steps_per_epoch=len(train_images),
-                        epochs=18, verbose=5,  # idk if should change this
-                        validation_data=val_images,
-                        validation_steps=len(val_images))
+                        validation_data=val_images
+                        epochs=18, # add opt for this
+                        verbose=1)
 
     duration = datetime.now() - start
     print("Training completed in time: ", duration)

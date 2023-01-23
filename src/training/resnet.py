@@ -1,5 +1,4 @@
 import tensorflow.keras.applications as apps
-from tensorflow.config import list_logical_devices
 from keras.layers import Dense, Flatten
 from keras.models import Model
 from keras import optimizers
@@ -25,7 +24,7 @@ def create_resnet50(is_kaggle, method="finetune", pooling=None):
 
         x = Flatten()(resnet50.output)
 
-        prediction = Dense(4, activation='softmax')(x)  # there's 4 categories
+        prediction = Dense((4 if is_kaggle else 2), activation='softmax')(x)  # there's 4 categories
         model = Model(inputs=resnet50.input, outputs=prediction)
         model.compile(loss='categorical_crossentropy',
                     optimizer=optimizers.Adam(),
@@ -50,7 +49,7 @@ def create_resnet157(is_kaggle, method="finetune", pooling=None):
 
         x = Flatten()(resnet157.output)
 
-        prediction = Dense(4, activation='softmax')(x)  # there's 4 categories
+        prediction = Dense((4 if is_kaggle else 2), activation='softmax')(x)  # there's 4 categories
         model = Model(inputs=resnet157.input, outputs=prediction)
         model.compile(loss='categorical_crossentropy',
                     optimizer=optimizers.Adam(),
