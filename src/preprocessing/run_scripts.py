@@ -11,6 +11,25 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
+    """Runs prep scripts for an ADNI image directory.
+        Will create 5 subdirs
+            -  nii_files: Containing the FSL-processed nii images, separated by class
+            -  image_slices: Containing the individual image slices, separated by class
+            -  multi_channel: Containing the multi-channel image slices, separated by class
+            -  slice_dataset: Containing the individual image slices, separated by class and into train/test/val
+            -  multichannel_dataset: Containing the multi-channel image slices, separated by class and into train/test/val
+            
+    Args:
+        collection_dir (str): The image collection directory
+        collection_csv (str): The image metadata file directory
+        run_name (str): Name of the prep run. Outputs will be stored in out/preprocessed_datasets/{run_name}
+        split_ratio (tuple): The train/test/val split ratio.
+
+    Raises:
+        ValueError: Checks if collection dir exists
+        ValueError: Checks if collection dir has images
+        ValueError: Checks if output dir has been used (avoids overwriting)
+    """
     # Resetting path locs
     collection_dir = Path(cwd, collection_dir).resolve()
     collection_csv = Path(cwd, collection_csv).resolve()
@@ -105,6 +124,19 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
 
 
 def prep_kaggle(kaggle_dir, run_name, split_ratio):
+    """Runs prep scripts for a kaggle image directory.
+        Will create train/test/val split folders
+
+    Args:
+        kaggle_dir (str): directory of where to find the kaggle images
+        run_name (str): Name of the prep run. Outputs will be stored in out/preprocessed_datasets/{run_name}
+        split_ratio (tuple): The train/test/val split ratio.
+
+    Raises:
+        ValueError: Checks if kaggle dir exists
+        ValueError: Checks if kaggle dir has images
+        ValueError: Checks if output dir has been used (avoids overwriting)
+    """
     kaggle_dir = Path(cwd, kaggle_dir).resolve()
 
     if not Path.exists(kaggle_dir):
