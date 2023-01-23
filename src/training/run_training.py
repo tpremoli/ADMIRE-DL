@@ -34,6 +34,7 @@ def load_training_task(file_loc):
         if "kaggle" not in optionkeys:
             raise ValueError("Task config requires a kaggle attribute!")
 
+        # TODO: change access to .get("key", "default") for default vals
         architecture = yamlfile["options"]["architecture"]
         task_name = yamlfile["task_name"]
         dataset_dir = Path(cwd,yamlfile["dataset"]).resolve()

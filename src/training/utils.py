@@ -1,7 +1,7 @@
 from keras.preprocessing.image import ImageDataGenerator
 from pathlib import Path
 from ..classes.constants import *
-from .vgg import create_vgg16
+from .vgg import create_vgg16, create_vgg19
 import matplotlib.pyplot as plt
 
 def gen_subsets(dataset_dir, is_kaggle, batch_size=32):
@@ -37,7 +37,7 @@ def create_model(architecture, method, is_kaggle):
     if architecture == VGG_16:
         return create_vgg16(is_kaggle, method)
     if architecture == VGG_19:
-        pass
+        return create_vgg19(is_kaggle, method)
     if architecture == RES_NET_50:
         pass
     if architecture == RES_NET_157:

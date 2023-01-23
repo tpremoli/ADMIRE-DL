@@ -1,0 +1,8 @@
+task_name: vgg19_finetune_slices
+dataset: out/preprocessed_datasets/kaggle_processed
+options:
+    architecture: VGG19
+    approach: slice
+    method: finetune
+    pooling: avg
+    kaggle: True    
