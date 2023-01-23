@@ -1,11 +1,8 @@
-from tensorflow.keras.preprocessing import image
 from keras.preprocessing.image import ImageDataGenerator
 from pathlib import Path
 from ..classes.constants import *
 from .vgg import create_vgg16
-import tensorflow.keras.applications as apps
 import matplotlib.pyplot as plt
-import numpy as np
 
 def gen_subsets(dataset_dir, is_kaggle, batch_size=32):
     train_datagen = ImageDataGenerator(rescale=1./255)

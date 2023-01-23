@@ -51,7 +51,7 @@ task_name: densenet121_finetune_slices
 dataset: out/adni_processed
 options:
     architecture: DenseNet121
-    approach: slice
+    approach: slice # is this necessary?
     method: finetune
     pooling: avg
     kaggle: False
@@ -62,7 +62,7 @@ options:
     # activation: softmax ??
 ```
 
-Trained models will be saved in `out/trained_models/{task_name}`.
+Trained models will be saved in `out/trained_models/{task_name}_model`.
 
 To clarify the config options:
 

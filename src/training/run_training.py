@@ -1,13 +1,6 @@
-import tensorflow.keras.applications as apps
-import matplotlib.pyplot as plt
-import numpy as np
+import yaml
 from tensorflow.config import list_logical_devices
-from keras.callbacks import ReduceLROnPlateau
-from keras.callbacks import ModelCheckpoint
-from keras.layers import Dense, Flatten
-from keras.models import Model
 from datetime import datetime
-from keras import optimizers
 from pathlib import Path
 from ..classes.constants import *
 from .utils import gen_subsets, create_model, plot_data
@@ -15,8 +8,43 @@ from .utils import gen_subsets, create_model, plot_data
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
+def load_training_task(file_loc):
+    with open(Path(cwd, file_loc).resolve(), "r") as f:
+        yamlfile = yaml.safe_load(f)
+        
+        keys = yamlfile.keys()
+        if "task_name" not in keys:
+            raise ValueError("Task config requires a task_name attribute!")
+        if "dataset" not in keys:
+            raise ValueError("Task config requires a dataset attribute!")
 
-def run_training_task(architecture, run_name, dataset_dir, method, is_kaggle, pooling=None):
+        for path in Path(filedir, "../../out/trained_models").glob(yamlfile["task_name"]):        
+            raise ValueError("Task with name {} already exists in {}!".format(yamlfile["task_name"], path))
+
+        options = yamlfile["options"]
+        optionkeys = options.keys()
+        
+        if "architecture" not in optionkeys:
+            raise ValueError("Task config requires an architecture attribute!")
+        if "approach" not in optionkeys:
+            raise ValueError("Task config requires an approach attribute!")
+        if "method" not in optionkeys:
+            raise ValueError("Task config requires a method attribute!")
+        if "kaggle" not in optionkeys:
+            raise ValueError("Task config requires a kaggle attribute!")
+
+        architecture = yamlfile["options"]["architecture"]
+        task_name = yamlfile["task_name"]
+        dataset_dir = Path(cwd,yamlfile["dataset"]).resolve()
+        method = yamlfile["options"]["method"]
+        is_kaggle = yamlfile["options"]["kaggle"]
+        
+        approach = yamlfile["options"]["approach"]
+        pooling = yamlfile["options"]["pooling"]
+
+        run_training_task(architecture, task_name, dataset_dir, method, is_kaggle)
+
+def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, approach=None, pooling=None):
     trained_models_path = Path(
         filedir, "../../out/trained_models").resolve().mkdir(parents=True, exist_ok=True)
 
@@ -42,7 +70,7 @@ def run_training_task(architecture, run_name, dataset_dir, method, is_kaggle, po
     print('Test Loss:', score[0])
     print('Test accuracy:', score[1])
 
-    model_loc = Path(trained_models_path, "{}_model".format(run_name))
+    model_loc = Path(trained_models_path, task_name)
     model.save(model_loc)
     
     with open(Path(model_loc,"stats"), "w") as f:
@@ -50,4 +78,4 @@ def run_training_task(architecture, run_name, dataset_dir, method, is_kaggle, po
         f.write("Test loss: {}".format(score[0]))
         f.write("Test accuracy: {}".format(score[1]))
 
-    plot_data(history, Path(model_loc, '{}_plt.png'.format(run_name)))
+    plot_data(history, Path(model_loc, '{}_plt.png'.format(task_name)))

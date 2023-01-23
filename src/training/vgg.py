@@ -1,16 +1,10 @@
 import tensorflow.keras.applications as apps
-import matplotlib.pyplot as plt
-import numpy as np
 from tensorflow.config import list_logical_devices
-from keras.callbacks import ReduceLROnPlateau
-from keras.callbacks import ModelCheckpoint
 from keras.layers import Dense, Flatten
 from keras.models import Model
-from datetime import datetime
 from keras import optimizers
 from pathlib import Path
 from ..classes.constants import *
-from .utils import gen_subsets
 
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()

@@ -1,8 +1,0 @@
-VGG16
-VGG19
-
-ResNet50
-ResNet157
-
-DenseNet121
-DenseNet201

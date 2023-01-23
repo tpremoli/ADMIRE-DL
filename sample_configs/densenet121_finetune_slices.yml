@@ -1,9 +1,0 @@
-task_name: densenet121_finetune_slices
-dataset: out/preprocessed_datasets/adni_processed
-options:
-    architecture: DenseNet121
-    approach: slice
-    method: finetune
-    pooling: avg
-    kaggle: False    
-    train_pct: 0.7

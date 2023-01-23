@@ -1,4 +1,5 @@
 import argparse
+from src.training.run_training import load_training_task
 from src.preprocessing.run_scripts import prep_adni, prep_kaggle
 
 
@@ -60,12 +61,15 @@ def main():
             print("Option chosen: prep ADNI dataset {}".format(args.collection_dir))
             prep_adni(args.collection_dir, args.collection_csv, args.run_name, tuple(args.ratio))
     elif args.tool == "train":
-        from src.training.experiments import run
-        run()
+        if not args.config:
+            raise argparse.ArgumentTypeError(
+                "Missing config file! Training tasks require -c config.yml option")
+        
+        load_training_task(args.config)
     else:
         raise argparse.ArgumentTypeError(
             'Must specify CLI mode! Options: (prep, train, test, predict)')
-
+        
 
 if __name__ == "__main__":
     main()

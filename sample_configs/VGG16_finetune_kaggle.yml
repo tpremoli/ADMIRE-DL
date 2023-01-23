@@ -1,4 +1,4 @@
-task_name: densenet121_finetune_slices
+task_name: vgg16_finetune_slices
 dataset: out/preprocessed_datasets/kaggle_processed
 options:
     architecture: VGG16
@@ -6,4 +6,3 @@ options:
     method: finetune
     pooling: avg
     kaggle: True    
-    train_pct: 0.7
