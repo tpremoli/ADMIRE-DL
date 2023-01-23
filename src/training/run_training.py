@@ -45,7 +45,7 @@ def load_training_task(file_loc):
 
         model_loc = run_training_task(architecture, task_name, dataset_dir, method, is_kaggle)
 
-        shutil.copyfile(Path(cwd, file_loc).resolve(), Path(model_loc, "config.yml").resolve())
+        shutil.copyfile(Path(cwd, file_loc).resolve(), Path(model_loc, "task_config.yml").resolve())
 
 def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, approach=None, pooling=None):
     trained_models_path = Path(
@@ -75,7 +75,6 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, a
     print('Test Loss:', score[0])
     print('Test accuracy:', score[1])
 
-    print(trained_models_path,task_name)
     model_loc = Path(trained_models_path, task_name)
     model.save(model_loc)
     

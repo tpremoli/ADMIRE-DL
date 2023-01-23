@@ -1,6 +1,4 @@
 import argparse
-from src.training.run_training import load_training_task
-from src.preprocessing.run_scripts import prep_adni, prep_kaggle
 
 
 def main():
@@ -33,6 +31,8 @@ def main():
     args = parser.parse_args()
 
     if args.tool == "prep":
+        from src.preprocessing.run_scripts import prep_adni, prep_kaggle
+
         # -k args are mutually exclusive with -d and -c
         if args.kaggle and args.collection_dir or args.kaggle and args.collection_csv:
             raise argparse.ArgumentTypeError(
@@ -61,6 +61,8 @@ def main():
             print("Option chosen: prep ADNI dataset {}".format(args.collection_dir))
             prep_adni(args.collection_dir, args.collection_csv, args.run_name, tuple(args.ratio))
     elif args.tool == "train":
+        from src.training.run_training import load_training_task
+    
         if not args.config:
             raise argparse.ArgumentTypeError(
                 "Missing config file! Training tasks require -c config.yml option")
