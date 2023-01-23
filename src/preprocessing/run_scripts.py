@@ -10,7 +10,6 @@ from pathlib import Path
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
-
 def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     # Resetting path locs
     collection_dir = Path(cwd, collection_dir).resolve()
@@ -39,17 +38,14 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
 
     # Creating group subdirs for output nii images
     Path(out_dir, "nii_files/CN").resolve().mkdir(parents=True, exist_ok=True)
-    Path(out_dir, "nii_files/MCI").resolve().mkdir(parents=True, exist_ok=True)
     Path(out_dir, "nii_files/AD").resolve().mkdir(parents=True, exist_ok=True)
 
     # Creating group subdirs for output image slices
     Path(out_dir, "image_slices/CN").resolve().mkdir(parents=True, exist_ok=True)
-    Path(out_dir, "image_slices/MCI").resolve().mkdir(parents=True, exist_ok=True)
     Path(out_dir, "image_slices/AD").resolve().mkdir(parents=True, exist_ok=True)
 
     # Creating group subdirs for output multi-channel image slices
     Path(out_dir, "multi_channel/CN").resolve().mkdir(parents=True, exist_ok=True)
-    Path(out_dir, "multi_channel/MCI").resolve().mkdir(parents=True, exist_ok=True)
     Path(out_dir, "multi_channel/AD").resolve().mkdir(parents=True, exist_ok=True)
     
     log_file = open(Path(out_dir,"log"), "w")
