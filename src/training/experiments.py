@@ -10,7 +10,7 @@ from keras.callbacks import ReduceLROnPlateau
 from keras.layers import Dense, Flatten
 from keras.models import Model
 from keras import optimizers
-from ..classes.constants import *
+from ..constants import *
 
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()

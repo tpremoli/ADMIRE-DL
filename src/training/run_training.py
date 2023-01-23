@@ -3,7 +3,7 @@ import shutil
 from tensorflow.config import list_logical_devices
 from datetime import datetime
 from pathlib import Path
-from ..classes.constants import *
+from ..constants import *
 from .utils import gen_subsets, create_model, plot_data
 
 cwd = Path().resolve()

@@ -9,9 +9,9 @@ from ..constants import *
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
-def create_vgg16(is_kaggle, method="finetune", pooling=None):
+def create_resnet50(is_kaggle, method="finetune", pooling=None):
     if method == "finetune":
-        vgg16 = apps.VGG16(
+        resnet50 = apps.ResNet50(
             include_top=False,  # This is if we want the final FC layers
             weights="imagenet",
             # 3D as the imgs are same across 3 channels
@@ -20,13 +20,13 @@ def create_vgg16(is_kaggle, method="finetune", pooling=None):
             pooling = pooling,
         )
 
-        for layer in vgg16.layers:
+        for layer in resnet50.layers:
             layer.trainable = False
 
-        x = Flatten()(vgg16.output)
+        x = Flatten()(resnet50.output)
 
         prediction = Dense(4, activation='softmax')(x)  # there's 4 categories
-        model = Model(inputs=vgg16.input, outputs=prediction)
+        model = Model(inputs=resnet50.input, outputs=prediction)
         model.compile(loss='categorical_crossentropy',
                     optimizer=optimizers.Adam(),
                     metrics=['accuracy'])
@@ -34,9 +34,9 @@ def create_vgg16(is_kaggle, method="finetune", pooling=None):
         
         return model
 
-def create_vgg19(is_kaggle, method="finetune", pooling=None):
+def create_resnet157(is_kaggle, method="finetune", pooling=None):
     if method == "finetune":
-        vgg19 = apps.VGG19(
+        resnet157 = apps.ResNet157(
             include_top=False,  # This is if we want the final FC layers
             weights="imagenet",
             # 3D as the imgs are same across 3 channels
@@ -45,13 +45,13 @@ def create_vgg19(is_kaggle, method="finetune", pooling=None):
             pooling = pooling,
         )
 
-        for layer in vgg19.layers:
+        for layer in resnet157.layers:
             layer.trainable = False
 
-        x = Flatten()(vgg19.output)
+        x = Flatten()(resnet157.output)
 
         prediction = Dense(4, activation='softmax')(x)  # there's 4 categories
-        model = Model(inputs=vgg19.input, outputs=prediction)
+        model = Model(inputs=resnet157.input, outputs=prediction)
         model.compile(loss='categorical_crossentropy',
                     optimizer=optimizers.Adam(),
                     metrics=['accuracy'])
@@ -59,4 +59,3 @@ def create_vgg19(is_kaggle, method="finetune", pooling=None):
         
         return model
 
-    

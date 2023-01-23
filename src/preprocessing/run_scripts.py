@@ -3,7 +3,7 @@ import json
 import shutil
 import splitfolders
 from datetime import datetime
-from ..classes.constants import NON_DEMENTED, VERY_MILD_DEMENTED, MILD_DEMENTED, MODERATE_DEMENTED
+from ..constants import NON_DEMENTED, VERY_MILD_DEMENTED, MILD_DEMENTED, MODERATE_DEMENTED
 from .prep_raw import prep_raw_mri
 from pathlib import Path
 

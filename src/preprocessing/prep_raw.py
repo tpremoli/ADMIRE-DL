@@ -52,10 +52,6 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, slice_range=(35, 55))
     create_multichannel_slices_from_brain(
         nii_path, out_dir, scan_name, group, slice_range)
 
-    # TODO: make sure saved into groups
-    print("splitting images into train/test/val folders, with ratio X/X/X.")
-
-
 def run_fsl(scan_location, scan_name, group, out_dir):
     """Runs fsl_anat and performs brain extraction for the given scan.
 
