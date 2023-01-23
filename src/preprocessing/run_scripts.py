@@ -51,23 +51,29 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     Path(out_dir, "multi_channel/CN").resolve().mkdir(parents=True, exist_ok=True)
     Path(out_dir, "multi_channel/MCI").resolve().mkdir(parents=True, exist_ok=True)
     Path(out_dir, "multi_channel/AD").resolve().mkdir(parents=True, exist_ok=True)
+    
+    log_file = open(Path(out_dir,"log"), "w")
+    fsl_start_time = datetime.now()
 
-    slice_count = 0  # This will be summed with slice_range[1] - slice_range[0]
     # Do this multiprocessed
     for subject in subjects:
         subj_folder = Path(collection_dir, subject["Subject"], "MP-RAGE")
         # For each scan in the subject subject
         for count, scan_folder in enumerate(Path.glob(subj_folder, "*")):
-            start_time = datetime.now()
+            subject_start_time = datetime.now()
 
             # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on. min 6 chars
             scan_name = "{}_{:02d}".format(subject["Subject"], count)
             prep_raw_mri(scan_folder, scan_name, out_dir,
                          subject["Group"], subject["Sex"])
 
-            end_time = datetime.now()
+            subject_end_time = datetime.now()
+            
+            log_file.write("subject {} took {} to preprocess\n".format(scan_name,str(subject_end_time-subject_start_time)))
 
-            # TODO: Write to LOG. end_time - start_time
+    fsl_end_time = datetime.now()
+    log_file.write("All FSL scripts took {} to run".format(str(fsl_end_time-fsl_start_time)))
+    log_file.close()
 
     split_seed = datetime.now().timestamp()
     print("Splitting slice folders with split ratio {}".format(split_ratio))
