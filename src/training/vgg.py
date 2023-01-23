@@ -40,4 +40,3 @@ def create_vgg16(is_kaggle, method="finetune", pooling=None):
         
         return model
     
-    
