@@ -1,4 +1,5 @@
 import yaml
+import shutil
 from tensorflow.config import list_logical_devices
 from datetime import datetime
 from pathlib import Path
@@ -42,11 +43,15 @@ def load_training_task(file_loc):
         approach = yamlfile["options"]["approach"]
         pooling = yamlfile["options"]["pooling"]
 
-        run_training_task(architecture, task_name, dataset_dir, method, is_kaggle)
+        model_loc = run_training_task(architecture, task_name, dataset_dir, method, is_kaggle)
+
+        shutil.copyfile(Path(cwd, file_loc).resolve(), Path(model_loc, "config.yml").resolve())
 
 def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, approach=None, pooling=None):
     trained_models_path = Path(
-        filedir, "../../out/trained_models").resolve().mkdir(parents=True, exist_ok=True)
+        filedir, "../../out/trained_models").resolve()
+    
+    trained_models_path.mkdir(parents=True, exist_ok=True)
 
     print("Devices: ", list_logical_devices())
 
@@ -70,6 +75,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, a
     print('Test Loss:', score[0])
     print('Test accuracy:', score[1])
 
+    print(trained_models_path,task_name)
     model_loc = Path(trained_models_path, task_name)
     model.save(model_loc)
     
@@ -79,3 +85,5 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, a
         f.write("Test accuracy: {}".format(score[1]))
 
     plot_data(history, Path(model_loc, '{}_plt.png'.format(task_name)))
+    
+    return model_loc

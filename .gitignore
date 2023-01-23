@@ -7,3 +7,5 @@ out/trained_models/*
 src/preprocessing/__pycache__
 src/classes/__pycache__
 src/training/__pycache__
+src/__pycache__
+

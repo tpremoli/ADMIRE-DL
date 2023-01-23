@@ -100,7 +100,8 @@ def run():
     print('Test accuracy:', score[1])
 
     trained_models_path = Path(
-        filedir, "../../out/trained_models").resolve().mkdir(parents=True, exist_ok=True)
+        filedir, "../../out/trained_models").resolve()
+    trained_models_path.mkdir(parents=True, exist_ok=True)
 
     model.save(Path(trained_models_path, "experiment_model"))
     plt.savefig(Path(trained_models_path, 'experiment_model.png'))
