@@ -1,3 +1,8 @@
+# ADMIRE-DL
+### Alzheimer's Disease MRI Interpretation, Recognition, and Evaluation - Deep Learning
+
+
+
     conda env create -f environment.yml
     conda activate training_env
 

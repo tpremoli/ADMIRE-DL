@@ -3,7 +3,7 @@ architectures:
     VGG19
 
     ResNet50
-    ResNet157
+    ResNet152
 
     DenseNet121
     DenseNet201

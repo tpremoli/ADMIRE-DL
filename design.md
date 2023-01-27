@@ -55,7 +55,6 @@ options:
     method: finetune
     pooling: avg
     kaggle: False
-    # optimizer: Adam ???
     # loss: categorical_crossentropy ??
     # learning_rate: 5e-4 ??
     # metrics: accuracy ??

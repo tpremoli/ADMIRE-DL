@@ -33,9 +33,9 @@ def create_resnet50(is_kaggle, method="finetune", pooling=None):
         
         return model
 
-def create_resnet157(is_kaggle, method="finetune", pooling=None):
+def create_resnet152(is_kaggle, method="finetune", pooling=None):
     if method == "finetune":
-        resnet157 = apps.ResNet157(
+        resnet152 = apps.ResNet152(
             include_top=False,  # This is if we want the final FC layers
             weights="imagenet",
             # 3D as the imgs are same across 3 channels
@@ -44,13 +44,13 @@ def create_resnet157(is_kaggle, method="finetune", pooling=None):
             pooling = pooling,
         )
 
-        for layer in resnet157.layers:
+        for layer in resnet152.layers:
             layer.trainable = False
 
-        x = Flatten()(resnet157.output)
+        x = Flatten()(resnet152.output)
 
         prediction = Dense((4 if is_kaggle else 2), activation='softmax')(x)  # there's 4 categories
-        model = Model(inputs=resnet157.input, outputs=prediction)
+        model = Model(inputs=resnet152.input, outputs=prediction)
         model.compile(loss='categorical_crossentropy',
                     optimizer=optimizers.Adam(),
                     metrics=['accuracy'])
