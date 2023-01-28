@@ -2,6 +2,7 @@ import pandas as pd
 import json
 import shutil
 import splitfolders
+from multiprocessing import Pool
 from datetime import datetime
 from ..constants import NON_DEMENTED, VERY_MILD_DEMENTED, MILD_DEMENTED, MODERATE_DEMENTED
 from .prep_raw import prep_raw_mri
@@ -10,7 +11,7 @@ from pathlib import Path
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
-def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
+def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_processes=4):
     """Runs prep scripts for an ADNI image directory.
         Will create 5 subdirs
             -  nii_files: Containing the FSL-processed nii images, separated by class
@@ -24,6 +25,7 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
         collection_csv (str): The image metadata file directory
         run_name (str): Name of the prep run. Outputs will be stored in out/preprocessed_datasets/{run_name}
         split_ratio (tuple): The train/test/val split ratio.
+        concurrent_processes (int): The number of MRI preps to run at once. Defaults to 4.
 
     Raises:
         ValueError: Checks if collection dir exists
@@ -70,21 +72,48 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     log_file = open(Path(out_dir,"log"), "w")
     fsl_start_time = datetime.now()
 
-    # Do this multiprocessed
+    queued_mris = [] # queued_mris is the current queue of mris to prep concurrently
+    current_batch = 0
+    
     for subject in subjects:
         subj_folder = Path(collection_dir, subject["Subject"], "MP-RAGE")
         # For each scan in the subject subject
         for count, scan_folder in enumerate(Path.glob(subj_folder, "*")):
-            subject_start_time = datetime.now()
 
             # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on. min 6 chars
             scan_name = "{}_{:02d}".format(subject["Subject"], count)
-            prep_raw_mri(scan_folder, scan_name, out_dir,
-                         subject["Group"], subject["Sex"])
-
-            subject_end_time = datetime.now()
             
-            log_file.write("subject {} took {} to preprocess\n".format(scan_name,str(subject_end_time-subject_start_time)))
+            current_subject = [scan_folder, scan_name, out_dir, subject["Group"], subject["Sex"]]
+            
+            queued_mris.append(current_subject)
+            
+            # If we've collected the # of concurrent mris we can then run the prep multiprocessed
+            if len(queued_mris) == concurrent_processes:
+                batch_start_time = datetime.now()
+                
+                # prep all the queued MRIs at once
+                pool = Pool(processes=concurrent_processes)
+                pool.starmap(prep_raw_mri,queued_mris)
+                
+                batch_end_time = datetime.now()
+                
+                log_file.write("batch {} took {} to preprocess\n".format(current_batch,str(batch_end_time-batch_start_time)))
+                
+                # clear the queue
+                queued_mris.clear()
+                current_batch+=1
+    
+    if len(queued_mris) != 0:
+        batch_start_time = datetime.now()
+        
+        # prep all the queued MRIs at once
+        pool = Pool(processes=concurrent_processes)
+        pool.starmap(prep_raw_mri,queued_mris)
+        
+        batch_end_time = datetime.now()
+        
+        log_file.write("batch {} took {} to preprocess\n".format(current_batch,str(batch_end_time-batch_start_time)))
+
 
     fsl_end_time = datetime.now()
     log_file.write("All FSL scripts took {} to run".format(str(fsl_end_time-fsl_start_time)))
@@ -121,7 +150,6 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     shutil.copyfile(collection_csv, Path(out_dir, "collection.csv"))
 
     print("Done! Result files found in {}".format(out_dir))
-
 
 def prep_kaggle(kaggle_dir, run_name, split_ratio):
     """Runs prep scripts for a kaggle image directory.
