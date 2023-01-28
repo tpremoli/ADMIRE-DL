@@ -6,3 +6,4 @@ pyYAML==5.3.1
 tensorflow==2.11.0
 matplotlib==3.5.2
 split-folders==0.5.1
+boto3==1.26.59

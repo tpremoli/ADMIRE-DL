@@ -3,7 +3,8 @@ import numpy as np
 import nibabel as nib
 import fsl.wrappers.fsl_anat as fsl_anat
 import fsl.wrappers.fslmaths as fsl_maths
-import matplotlib as plt
+import boto3
+from ..settings import *
 from pathlib import Path
 from PIL import Image
 
@@ -11,7 +12,7 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 
-def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, slice_range=(35, 55)):
+def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, run_name, slice_range=(35, 55)):
     """Prepares a singular raw mri image. This means that FSL is ran, indiviudal 
     slices are extracted, and multichannel slices are extracted. 2 datasets are 
     created, one for multichannel images, and one for simple slices.
@@ -37,6 +38,14 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, slice_range=(35, 55))
     nii_path = run_fsl(scan_location, scan_name, group, out_dir)
 
     print("FSL scripts complete. Processed MRI found in {}".format(nii_path))
+        
+    if USE_S3:
+        s3_loc = Path("{}/{}/{}_processed.nii.gz".format(run_name,group,scan_name))
+        print("Uploading processed MRI to s3 bucker {} in {}".format(AWS_S3_BUCKET_NAME, s3_loc))
+        s3_bucket  = boto3.resource('s3').Bucket('processed-nii-files')
+
+        s3_bucket.upload_file(str(nii_path), str(s3_loc))
+
 
     # To access slices:
     # sagittal = data[26, :, :] <- 26th slice along sagittal
