@@ -1,8 +1,6 @@
 from keras.preprocessing.image import ImageDataGenerator
 from pathlib import Path
 from ..constants import *
-from .vgg import create_vgg16, create_vgg19
-from .resnet import create_resnet50, create_resnet152
 import tensorflow.keras.applications as apps
 import matplotlib.pyplot as plt
 
@@ -34,20 +32,6 @@ def gen_subsets(dataset_dir, is_kaggle, batch_size=32):
     
     return train_images, test_images, val_images,
 
-
-def create_model(architecture, method, is_kaggle, fullyconnected_count=1): #Fully connected affects no. of FC layers
-    if architecture == VGG_16:
-        return create_vgg16(is_kaggle, method)
-    if architecture == VGG_19:
-        return create_vgg19(is_kaggle, method)
-    if architecture == RES_NET_50:
-        return create_resnet50(is_kaggle, method)
-    if architecture == RES_NET_152:
-        return create_resnet152(is_kaggle, method)
-    if architecture == DENSE_NET_121:
-        pass
-    if architecture == DENSE_NET_201:
-        pass
 
 def plot_data(history, save_loc):
     plt.plot(history.history["accuracy"])

@@ -40,24 +40,28 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, run_name, slice_range
     print("FSL scripts complete. Processed MRI found in {}".format(nii_path))
         
     if USE_S3:
-        s3_loc = Path("{}/{}/{}_processed.nii.gz".format(run_name,group,scan_name))
-        print("Uploading processed MRI to s3 bucker {} in {}".format(AWS_S3_BUCKET_NAME, s3_loc))
+        # Upload processed MRI to s3 bucket
+        s3_loc = Path("{}/{}/{}_processed.nii.gz".format(run_name, group, scan_name))
+        print("Uploading processed MRI to s3 bucket {} in {}".format(AWS_S3_BUCKET_NAME, s3_loc))
         s3_bucket  = boto3.resource('s3').Bucket('processed-nii-files')
 
         s3_bucket.upload_file(str(nii_path), str(s3_loc))
-
 
     # To access slices:
     # sagittal = data[26, :, :] <- 26th slice along sagittal
     # coronal = data[:, 30, :] <- 30th slice along coronal
     # axial = data[:, :, 50] <- 50th slice along axial
 
+    # Print the slices that we are splitting into
     print("splitting MRI into individual slice images, slices {}-{}.".format(
         slice_range[0], slice_range[1]))
+    # Split into individual slices
     create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range)
 
+    # Print the slices that we are splitting into
     print("splitting MRI into multichannal slice images, slices {}-{}.".format(
         slice_range[0], slice_range[1]))
+    # Split into multichannel slices
     create_multichannel_slices_from_brain(
         nii_path, out_dir, scan_name, group, slice_range)
 

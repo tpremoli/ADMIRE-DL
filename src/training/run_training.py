@@ -6,7 +6,8 @@ from tensorflow.keras.callbacks import ReduceLROnPlateau
 from datetime import datetime
 from pathlib import Path
 from ..constants import *
-from .utils import gen_subsets, create_model, plot_data
+from .utils import gen_subsets, plot_data
+from .model import create_model
 
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
@@ -67,7 +68,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, a
     train_images, test_images, val_images = gen_subsets(dataset_dir, is_kaggle)
 
     # retrieve a model created w given architecture and method
-    model = create_model(architecture, method, is_kaggle)
+    model = create_model(architecture, is_kaggle, method)
 
     start = datetime.now()
 
