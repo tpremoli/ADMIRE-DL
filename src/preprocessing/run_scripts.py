@@ -105,13 +105,10 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
     
     if len(queued_mris) != 0:
         batch_start_time = datetime.now()
-        
         # prep all the queued MRIs at once
         pool = Pool(processes=concurrent_processes)
         pool.starmap(prep_raw_mri,queued_mris)
-        
         batch_end_time = datetime.now()
-        
         log_file.write("batch {} took {} to preprocess\n".format(current_batch,str(batch_end_time-batch_start_time)))
 
 

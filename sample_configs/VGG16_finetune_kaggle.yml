@@ -2,7 +2,6 @@ task_name: vgg16_finetune_slices
 dataset: out/preprocessed_datasets/kaggle_processed
 options:
     architecture: VGG16
-    approach: slice
     method: finetune
     pooling: avg
     kaggle: True    

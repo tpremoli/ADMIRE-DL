@@ -2,7 +2,6 @@ task_name: resnet50_finetune_slices
 dataset: out/preprocessed_datasets/kaggle_processed
 options:
     architecture: ResNet50
-    approach: slice
     method: finetune
     pooling: avg
     kaggle: True    

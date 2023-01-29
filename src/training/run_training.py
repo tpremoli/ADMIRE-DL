@@ -14,26 +14,31 @@ filedir = Path(__file__).parent.resolve()
 
 
 def load_training_task(file_loc):
+    """Loads a training task from a yaml file, validates the config, and runs the training task.
+
+    Args:
+        file_loc (str): location of the yaml file containing the task config
+
+    Raises:
+        ValueError: Raised when the task config is invalid.
+    """
     with open(Path(cwd, file_loc).resolve(), "r") as f:
         yamlfile = yaml.safe_load(f)
-
         keys = yamlfile.keys()
+        options = yamlfile["options"]
+        optionkeys = options.keys()
+        
+        for path in Path(filedir, "../../out/trained_models").glob(yamlfile["task_name"]):
+            raise ValueError("Task with name {} already exists in {}!".format(
+                yamlfile["task_name"], path))
+            
         if "task_name" not in keys:
             raise ValueError("Task config requires a task_name attribute!")
         if "dataset" not in keys:
             raise ValueError("Task config requires a dataset attribute!")
 
-        for path in Path(filedir, "../../out/trained_models").glob(yamlfile["task_name"]):
-            raise ValueError("Task with name {} already exists in {}!".format(
-                yamlfile["task_name"], path))
-
-        options = yamlfile["options"]
-        optionkeys = options.keys()
-
         if "architecture" not in optionkeys:
             raise ValueError("Task config requires an architecture attribute!")
-        if "approach" not in optionkeys:
-            raise ValueError("Task config requires an approach attribute!")
         if "method" not in optionkeys:
             raise ValueError("Task config requires a method attribute!")
         if "kaggle" not in optionkeys:
@@ -45,8 +50,8 @@ def load_training_task(file_loc):
         dataset_dir = Path(cwd, yamlfile["dataset"]).resolve()
         method = yamlfile["options"]["method"]
         is_kaggle = yamlfile["options"]["kaggle"]
-
-        approach = yamlfile["options"]["approach"]
+        
+        # Optional parameters
         pooling = yamlfile["options"]["pooling"]
 
         model_loc = run_training_task(
@@ -56,17 +61,27 @@ def load_training_task(file_loc):
             model_loc, "task_config.yml").resolve())
 
 
-def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, approach=None, pooling=None):
+def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None):
+    """Creates a model, trains it, and saves the model and training stats.
+
+    Args:
+        architecture (str): The architecture of the model to be trained. This must be a string corresponding to an application in Keras.applications.
+        task_name (str): The name of the task. This is used to name the folder where the model and training stats are saved.
+        dataset_dir (str): The Location of the dataset to be used for training.
+        method (str): The method to be used in training the Model. This must be "finetune" or "pretrain" TODO: make transferlearning and finetuning separate
+        is_kaggle (bool): If the dataset is from kaggle, this should be True. This is used to determine the preprocessing method.
+        pooling (str, optional): A custom pooling method to be used. Must be from the pooling methods supported by Keras models. Defaults to None.
+
+    Returns:
+        (str): The location of the saved model and training stats.
+    """
     trained_models_path = Path(
         filedir, "../../out/trained_models").resolve()
-
     trained_models_path.mkdir(parents=True, exist_ok=True)
 
     print("Devices: ", list_logical_devices())
-
     # Generating 3 datasets
     train_images, test_images, val_images = gen_subsets(dataset_dir, is_kaggle)
-
     # retrieve a model created w given architecture and method
     model = create_model(architecture, is_kaggle, method)
 
@@ -77,7 +92,6 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, a
                                    cooldown=0,
                                    patience=5,
                                    min_lr=0.5e-6)
-
     callbacks = [lr_reducer]
 
     history = model.fit(train_images,
@@ -87,7 +101,6 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, a
 
     duration = datetime.now() - start
     print("Training completed in time: ", duration)
-
     score = model.evaluate(test_images)
     print('Test Loss:', score[0])
     print('Test accuracy:', score[1])

@@ -8,6 +8,3 @@ architectures:
     DenseNet121
     DenseNet201
 
-approaches:
-    slice
-    multichannel
