@@ -34,10 +34,11 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, run_name, slice_range
 
     scan_location = Path(cwd, scan_loc).resolve()
 
-    print("Launching FSL scripts for scan {} in group {}".format(scan_name, group))
-    nii_path = run_fsl(scan_location, scan_name, group, out_dir)
+    if not SKIP_FSL:
+        print("Launching FSL scripts for scan {} in group {}".format(scan_name, group))
+        nii_path = run_fsl(scan_location, scan_name, group, out_dir)
 
-    print("FSL scripts complete. Processed MRI found in {}".format(nii_path))
+        print("FSL scripts complete. Processed MRI found in {}".format(nii_path))
         
     if USE_S3:
         # Upload processed MRI to s3 bucket
@@ -64,6 +65,11 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, run_name, slice_range
     # Split into multichannel slices
     create_multichannel_slices_from_brain(
         nii_path, out_dir, scan_name, group, slice_range)
+    
+    if DELETE_NII_ON_COMPLETION and not SKIP_FSL:
+        # Removing file to save space
+        shutil.rmtree(nii_path)
+
 
 def run_fsl(scan_location, scan_name, group, out_dir):
     """Runs fsl_anat and performs brain extraction for the given scan.

@@ -1,4 +1,5 @@
 import argparse
+from src.settings import *
 
 
 def main():
@@ -33,19 +34,11 @@ def main():
     if args.tool == "prep":
         from src.preprocessing.run_scripts import prep_adni, prep_kaggle
 
-        # -k args are mutually exclusive with -d and -c
-        if args.kaggle and args.collection_dir or args.kaggle and args.collection_csv:
-            raise argparse.ArgumentTypeError(
-                'KAGGLE arg and COLLECTION_DIR/COLLECTION_CSV args are mutually exclusive! The dataset to be prepped is either kaggle or ADNI')
-        # both c and d are required if either of them are used
-        if args.collection_dir and not args.collection_csv or args.collection_csv and not args.collection_dir:
-            raise argparse.ArgumentTypeError(
-                'Must specify COLLECTION_DIR and COLLECTION_CSV when using ADNI dataset!')
         # One of the options must be used
         if not args.kaggle and not args.collection_dir and not args.collection_csv:
             raise argparse.ArgumentTypeError(
                 'Must specify COLLECTION_DIR and COLLECTION_CSV or KAGGLE to prep datasets!')
-        
+
         # Ratio option errors
         if len(args.ratio) != 3:
             raise argparse.ArgumentTypeError(
@@ -55,27 +48,50 @@ def main():
                 'Train/test/validation RATIO must add up to 1!')
 
         if args.kaggle:
+            # -k args are mutually exclusive with -d and -c
+            if args.collection_dir or args.collection_csv:
+                raise argparse.ArgumentTypeError(
+                    'KAGGLE arg and COLLECTION_DIR/COLLECTION_CSV args are mutually exclusive! The dataset to be prepped is either kaggle or ADNI')
+
             print("Option chosen: prep kaggle dataset {}".format(args.kaggle))
             prep_kaggle(args.kaggle, args.run_name, tuple(args.ratio))
         else:
             print("Option chosen: prep ADNI dataset {}".format(args.collection_dir))
-            prep_adni(args.collection_dir, args.collection_csv, args.run_name, tuple(args.ratio))
+
+            if SKIP_FSL:
+                print("SKIP_FSL option chosen! Will generate slices from passed collection_dir and split into train/test/val")
+                # d is required if we're skipping FSL
+                if not args.collection_dir:
+                    raise argparse.ArgumentTypeError(
+                        'Must specify COLLECTION_DIR when using ADNI dataset with SKIP_FSL enabled!')
+                
+                prep_adni(collection_dir=args.collection_dir, 
+                          run_name=args.run_name, 
+                          split_ratio=tuple(args.ratio))
+            else:
+                # both c and d are required if we're not skipping FSL scripts
+                if not args.collection_csv or not args.collection_dir:
+                    raise argparse.ArgumentTypeError(
+                        'Must specify COLLECTION_DIR and COLLECTION_CSV when using ADNI dataset with SKIP_FSL disabled!')
+
+                prep_adni(args.collection_dir, args.collection_csv,
+                          args.run_name, tuple(args.ratio))
     elif args.tool == "train":
         from src.training.run_training import load_training_task
-    
+
         if not args.config:
             raise argparse.ArgumentTypeError(
                 "Missing config file! Training tasks require -c config.yml option")
-        
+
         load_training_task(args.config)
     else:
         raise argparse.ArgumentTypeError(
             'Must specify CLI mode! Options: (prep, train, test, predict)')
-        
+
 
 if __name__ == "__main__":
     main()
-    
+
     # from src.preprocessing.prep_raw import create_multichannel_slices_from_brain, create_slices_from_brain
     # create_multichannel_slices_from_brain("/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/adni_processed/002_S_0295_000001_processed.nii.gz",
     #                          "/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/adnitest2","my_scan2","CN")

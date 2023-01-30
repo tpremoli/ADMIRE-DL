@@ -148,6 +148,106 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
 
     print("Done! Result files found in {}".format(out_dir))
 
+def prep_adni(collection_dir, run_name, split_ratio, concurrent_processes=4):
+    # Resetting path locs
+    collection_dir = Path(cwd, collection_dir).resolve()
+
+    if not Path.exists(collection_dir):
+        raise ValueError(
+            "Collection dir {} does not exist!".format(collection_dir))
+    elif not any(Path(collection_dir).iterdir()):
+        raise ValueError("Collection path {} empty!".format(collection_dir))
+
+    out_dir = Path(
+        filedir, "../../out/preprocessed_datasets", run_name).resolve()
+
+    print("output dir: {}".format(out_dir))
+
+    try:
+        out_dir.mkdir(parents=True, exist_ok=False)
+    except:
+        raise ValueError(
+            "Output dir {} already exists! Pick a different run name or delete the existing directory.".format(out_dir))
+
+    # Creating group subdirs for output image slices
+    Path(out_dir, "image_slices/CN").resolve().mkdir(parents=True, exist_ok=True)
+    Path(out_dir, "image_slices/AD").resolve().mkdir(parents=True, exist_ok=True)
+
+    # Creating group subdirs for output multi-channel image slices
+    Path(out_dir, "multi_channel/CN").resolve().mkdir(parents=True, exist_ok=True)
+    Path(out_dir, "multi_channel/AD").resolve().mkdir(parents=True, exist_ok=True)
+    
+    log_file = open(Path(out_dir,"log"), "w")
+    total_start_time = datetime.now()
+
+    queued_mris = [] # queued_mris is the current queue of mris to prep concurrently
+    current_batch = 0
+    
+    for scan_loc in Path.rglob(collection_dir, "*.nii.gz"):
+        # 007_S_0070_00_processed.nii.gz
+        scan_name = str(scan_loc)[:13] # removes "_processsed.nii.gz"
+        
+        current_subject = [scan_loc, scan_name, out_dir, scan_loc.parent, "sex", run_name]
+        
+        queued_mris.append(current_subject)
+        
+        # If we've collected the # of concurrent mris we can then run the prep multiprocessed
+        if len(queued_mris) == concurrent_processes:
+            batch_start_time = datetime.now()
+            
+            # prep all the queued MRIs at once
+            pool = Pool(processes=concurrent_processes)
+            pool.starmap(prep_raw_mri,queued_mris)
+            
+            batch_end_time = datetime.now()
+            
+            log_file.write("batch {} took {} to preprocess\n".format(current_batch,str(batch_end_time-batch_start_time)))
+            
+            # clear the queue
+            queued_mris.clear()
+            current_batch+=1
+    
+    if len(queued_mris) != 0:
+        batch_start_time = datetime.now()
+        # prep all the queued MRIs at once
+        pool = Pool(processes=concurrent_processes)
+        pool.starmap(prep_raw_mri,queued_mris)
+        batch_end_time = datetime.now()
+        log_file.write("batch {} took {} to preprocess\n".format(current_batch,str(batch_end_time-batch_start_time)))
+
+
+    total_end_time = datetime.now()
+    log_file.write("All FSL scripts took {} to run".format(str(total_end_time-total_start_time)))
+    log_file.close()
+
+    split_seed = datetime.now().timestamp()
+    print("Splitting slice folders with split ratio {}".format(split_ratio))
+    splitfolders.ratio(Path(out_dir, "image_slices"), output=Path(out_dir, "slice_dataset"),
+                       seed=split_seed, ratio=split_ratio)
+
+    splitfolders.ratio(Path(out_dir, "multi_channel"), output=Path(out_dir, "multichannel_dataset"),
+                       seed=split_seed, ratio=split_ratio)
+
+    print("Done processing raw MRIs. Saving mata data")
+
+    scan_count = len(list(Path(out_dir, "nii_files").glob('**/*')))
+    slice_count = len(list(Path(out_dir, "image_slices").glob('**/*')))
+
+    # Writing meta file
+    with open(Path(out_dir, "meta.json"), "w") as meta_file:
+        metadata = {
+            "kaggle": False,
+            "run_name": run_name,
+            "original_dir": str(collection_dir),
+            "split": list(split_ratio),
+            "scan_count": scan_count,
+            "slice_count": slice_count,
+            "dataset_split_seed": split_seed,
+        }
+        json.dump(metadata, meta_file, indent=4)
+
+    print("Done! Result files found in {}".format(out_dir))
+
 def prep_kaggle(kaggle_dir, run_name, split_ratio):
     """Runs prep scripts for a kaggle image directory.
         Will create train/test/val split folders
