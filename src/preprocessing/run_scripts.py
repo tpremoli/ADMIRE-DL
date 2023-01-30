@@ -185,9 +185,9 @@ def prep_adni(collection_dir, run_name, split_ratio, concurrent_processes=4):
     
     for scan_loc in Path.rglob(collection_dir, "*.nii.gz"):
         # 007_S_0070_00_processed.nii.gz
-        scan_name = str(scan_loc)[:13] # removes "_processsed.nii.gz"
+        scan_name = str(scan_loc.name)[:13] # removes "_processsed.nii.gz"
         
-        current_subject = [scan_loc, scan_name, out_dir, scan_loc.parent, run_name]
+        current_subject = [scan_loc, scan_name, out_dir, scan_loc.parent.name, run_name]
         
         queued_mris.append(current_subject)
         

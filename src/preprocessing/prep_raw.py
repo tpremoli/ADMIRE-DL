@@ -38,8 +38,10 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(35,
         nii_path = run_fsl(scan_location, scan_name, group, out_dir)
 
         print("FSL scripts complete. Processed MRI found in {}".format(nii_path))
+    else:
+        nii_path = scan_location
         
-    if USE_S3:
+    if USE_S3 and not SKIP_FSL:
         # Upload processed MRI to s3 bucket
         s3_loc = Path("{}/{}/{}_processed.nii.gz".format(run_name, group, scan_name))
         print("Uploading processed MRI to s3 bucket {} in {}".format(AWS_S3_BUCKET_NAME, s3_loc))
@@ -52,16 +54,10 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(35,
     # coronal = data[:, 30, :] <- 30th slice along coronal
     # axial = data[:, :, 50] <- 50th slice along axial
 
-    if SKIP_SLICE_CREATION:
-        # Print the slices that we are splitting into
-        print("splitting MRI into individual slice images, slices {}-{}.".format(
-            slice_range[0], slice_range[1]))
+    if not SKIP_SLICE_CREATION:
         # Split into individual slices
         create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range)
 
-        # Print the slices that we are splitting into
-        print("splitting MRI into multichannal slice images, slices {}-{}.".format(
-            slice_range[0], slice_range[1]))
         # Split into multichannel slices
         create_multichannel_slices_from_brain(
             nii_path, out_dir, scan_name, group, slice_range)
@@ -145,6 +141,7 @@ def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(3
         # Saved as image_slices/{group}/{subject}_slice{number}
         image_dir = Path(out_dir, "image_slices/{}/{}_slice{}.png".format(group,
                          scan_name, (i-slice_range[0]))).resolve()
+        
         image_data.save(image_dir)
 
 
