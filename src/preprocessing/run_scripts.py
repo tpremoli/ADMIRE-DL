@@ -83,7 +83,7 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
             # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on. min 6 chars
             scan_name = "{}_{:02d}".format(subject["Subject"], count)
             
-            current_subject = [scan_folder, scan_name, out_dir, subject["Group"], subject["Sex"], run_name]
+            current_subject = [scan_folder, scan_name, out_dir, subject["Group"], run_name]
             
             queued_mris.append(current_subject)
             
@@ -187,7 +187,7 @@ def prep_adni(collection_dir, run_name, split_ratio, concurrent_processes=4):
         # 007_S_0070_00_processed.nii.gz
         scan_name = str(scan_loc)[:13] # removes "_processsed.nii.gz"
         
-        current_subject = [scan_loc, scan_name, out_dir, scan_loc.parent, "sex", run_name]
+        current_subject = [scan_loc, scan_name, out_dir, scan_loc.parent, run_name]
         
         queued_mris.append(current_subject)
         

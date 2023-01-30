@@ -33,6 +33,8 @@ If you're using an ADNI dataset, you must input
 
 This will output preprocessed MRI images and objects, ready to be trained on. Each scan will be treated as a different datapoint, even if a subject has multiple scans attributed to them.
 
+This runs the full suite of prep scripts, however this can be very time consuming (Particularly with the full 3D MRI registration). The behavior of the program can be tweaked using the settings file. More information can be found in [Settings](#Settings) 
+
 
 ### `train`: Preprocessing datasets
 
@@ -80,3 +82,8 @@ To clarify the config options:
 
 *TBD*
 
+## Settings
+
+There are a few settings that can be set to modify the behavior of the program.
+
+TODO: Fill this in

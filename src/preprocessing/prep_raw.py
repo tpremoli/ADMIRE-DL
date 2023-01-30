@@ -12,7 +12,7 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 
-def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, run_name, slice_range=(35, 55)):
+def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(35, 55)):
     """Prepares a singular raw mri image. This means that FSL is ran, indiviudal 
     slices are extracted, and multichannel slices are extracted. 2 datasets are 
     created, one for multichannel images, and one for simple slices.
@@ -22,15 +22,14 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, run_name, slice_range
         scan_name (str): The name of the scan (format NNN_S_NNNN_NN)
         out_dir (str): output directory, where images should be placed.
         group (str): Class of the image. Can be CN, AD, or MCI
-        sex (str): sex of the sample. Can be M or F
         slice_range (tuple, optional): The slices to be extracted. Defaults to (35,55).
 
     Raises:
         ValueError: Raised if any values are missing for the scan.
     """
-    if group is None or sex is None:
+    if group is None:
         raise ValueError(
-            "ERROR: Scan instatiation requires group, sex, and age values!")
+            "ERROR: Scan instatiation requires group (class)!")
 
     scan_location = Path(cwd, scan_loc).resolve()
 
@@ -53,18 +52,19 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, sex, run_name, slice_range
     # coronal = data[:, 30, :] <- 30th slice along coronal
     # axial = data[:, :, 50] <- 50th slice along axial
 
-    # Print the slices that we are splitting into
-    print("splitting MRI into individual slice images, slices {}-{}.".format(
-        slice_range[0], slice_range[1]))
-    # Split into individual slices
-    create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range)
+    if SKIP_SLICE_CREATION:
+        # Print the slices that we are splitting into
+        print("splitting MRI into individual slice images, slices {}-{}.".format(
+            slice_range[0], slice_range[1]))
+        # Split into individual slices
+        create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range)
 
-    # Print the slices that we are splitting into
-    print("splitting MRI into multichannal slice images, slices {}-{}.".format(
-        slice_range[0], slice_range[1]))
-    # Split into multichannel slices
-    create_multichannel_slices_from_brain(
-        nii_path, out_dir, scan_name, group, slice_range)
+        # Print the slices that we are splitting into
+        print("splitting MRI into multichannal slice images, slices {}-{}.".format(
+            slice_range[0], slice_range[1]))
+        # Split into multichannel slices
+        create_multichannel_slices_from_brain(
+            nii_path, out_dir, scan_name, group, slice_range)
     
     if DELETE_NII_ON_COMPLETION and not SKIP_FSL:
         # Removing file to save space
