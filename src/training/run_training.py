@@ -52,7 +52,7 @@ def load_training_task(file_loc):
         is_kaggle = yamlfile["options"]["kaggle"]
         
         # Optional parameters
-        pooling = yamlfile["options"].get("pooling", default=None)
+        pooling = yamlfile["options"].get("pooling", None)
 
         model_loc = run_training_task(
             architecture, task_name, dataset_dir, method, is_kaggle)
@@ -68,7 +68,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
         architecture (str): The architecture of the model to be trained. This must be a string corresponding to an application in Keras.applications.
         task_name (str): The name of the task. This is used to name the folder where the model and training stats are saved.
         dataset_dir (str): The Location of the dataset to be used for training.
-        method (str): The method to be used in training the Model. This must be "transferlearn" or "pretrain" TODO: make transferlearning and finetuning separate
+        method (str): The method to be used in training the Model. This must be "transferlearn" or "pretrain"
         is_kaggle (bool): If the dataset is from kaggle, this should be True. This is used to determine the preprocessing method.
         pooling (str, optional): A custom pooling method to be used. Must be from the pooling methods supported by Keras models. Defaults to None.
 
@@ -81,7 +81,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
 
     print("Devices: ", list_logical_devices())
     # Generating 3 datasets
-    train_images, test_images, val_images = gen_subsets(dataset_dir, is_kaggle)
+    train_images, test_images, val_images = gen_subsets(dataset_dir, is_kaggle, architecture)
     # retrieve a model created w given architecture and method
     model = create_model(architecture, is_kaggle, method)
 

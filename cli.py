@@ -47,6 +47,13 @@ def main():
             raise argparse.ArgumentTypeError(
                 'Train/test/validation RATIO must add up to 1!')
 
+        print("Settings:")
+        print("\tUSE_S3",str(USE_S3))
+        print("\tAWS_S3_BUCKET_NAME",str(AWS_S3_BUCKET_NAME))
+        print("\tDELETE_NII_ON_COMPLETION",str(DELETE_NII_ON_COMPLETION))
+        print("\tSKIP_FSL",str(SKIP_FSL))
+        print("\tSKIP_SLICE_CREATION",str(SKIP_SLICE_CREATION))
+
         if args.kaggle:
             # -k args are mutually exclusive with -d and -c
             if args.collection_dir or args.collection_csv:

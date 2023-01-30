@@ -4,7 +4,7 @@ from ..constants import *
 import tensorflow.keras.applications as apps
 import matplotlib.pyplot as plt
 
-def gen_subsets(dataset_dir, is_kaggle, batch_size=32):
+def gen_subsets(dataset_dir, is_kaggle, architecture, batch_size=32):
     """Generates 3 ImageDataGenerators for the train, test, and validation subsets of the dataset.
 
     Args:
@@ -15,9 +15,16 @@ def gen_subsets(dataset_dir, is_kaggle, batch_size=32):
     Returns:
         (tuple): returns a tuple of 3 ImageDataGenerators for the train, test, and validation subsets of the dataset.
     """
-    train_datagen = ImageDataGenerator(rescale=1./255) # preprocessing_function=apps.resnet.preprocess_input
-    test_datagen = ImageDataGenerator(rescale=1./255)
-    validation_datagen = ImageDataGenerator(rescale=1./255) 
+    # train_datagen = ImageDataGenerator(rescale=1./255) # preprocessing_function=apps.resnet.preprocess_input
+    # test_datagen = ImageDataGenerator(rescale=1./255)
+    # validation_datagen = ImageDataGenerator(rescale=1./255) 
+    
+    # This gets the preprocess_input func i.e apps.resnet.preprocess_input
+    preprocessing_func = apps.__dict__[KERAS_APP[architecture]].preprocess_input
+    
+    train_datagen = ImageDataGenerator(preprocessing_function=preprocessing_func)
+    test_datagen = ImageDataGenerator(preprocessing_function=preprocessing_func)
+    validation_datagen = ImageDataGenerator(preprocessing_function=preprocessing_func) 
 
     IMAGE_DIMENSIONS = KAGGLE_IMAGE_DIMENSIONS if is_kaggle else ADNI_IMAGE_DIMENSIONS
 

@@ -24,3 +24,13 @@ RES_NET_152 = "ResNet152"
 
 DENSE_NET_121 = "DenseNet121"
 DENSE_NET_201 = "DenseNet201"
+
+# Keras app package name
+KERAS_APP = {
+    VGG_16: "vgg16",
+    VGG_19: "vgg19",
+    RES_NET_50: "resnet",
+    RES_NET_152:"resnet",
+    DENSE_NET_121:"densenet",
+    DENSE_NET_201:"densenet"
+}

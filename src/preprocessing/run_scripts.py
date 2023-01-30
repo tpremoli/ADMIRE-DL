@@ -139,7 +139,6 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
             "scan_count": scan_count,
             "slice_count": slice_count,
             "dataset_split_seed": split_seed,
-            # TODO: maybe add CLI option to skip_fsl stuff and just sort into slices + folders???
         }
         json.dump(metadata, meta_file, indent=4)
 

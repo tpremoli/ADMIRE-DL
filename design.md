@@ -57,6 +57,7 @@ options:
     kaggle: True
     pooling: avg
     learning_rate: 0.001
+    # fc_count: 1 TODO implement
     # loss: categorical_crossentropy ??
     # metrics: accuracy ??
     # activation: softmax ??
