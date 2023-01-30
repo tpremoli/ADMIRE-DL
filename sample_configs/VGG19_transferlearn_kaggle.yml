@@ -1,0 +1,7 @@
+task_name: vgg19_transferlearn_slices
+dataset: out/preprocessed_datasets/kaggle_processed
+options:
+    architecture: VGG19
+    method: transferlearn
+    kaggle: True    
+    pooling: null

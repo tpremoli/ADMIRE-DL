@@ -62,7 +62,7 @@ def run():
     prediction = Dense((4 if is_kaggle else 2), activation='softmax')(x)  # there's 4 categories
     model = Model(inputs=vgg16.input, outputs=prediction)
     model.compile(loss='categorical_crossentropy',
-                  optimizer=optimizers.Adam(),
+                  optimizer=optimizers.Adam(learning_rate=0.001),
                   metrics=['accuracy'])
     model.summary()
 

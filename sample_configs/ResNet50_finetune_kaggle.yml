@@ -1,7 +1,0 @@
-task_name: resnet50_finetune_slices
-dataset: out/preprocessed_datasets/kaggle_processed
-options:
-    architecture: ResNet50
-    method: finetune
-    pooling: avg
-    kaggle: True    

@@ -8,13 +8,13 @@ from ..constants import *
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
-def create_model(architecture, is_kaggle, method="finetune", pooling=None, fc_count=1):
+def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, fc_count=1):
     """Creates a model based on the architecture and method specified.
 
     Args:
         architecture (str): The architecture to use in the model. Has to be a valid architecture in the keras.applications module.
         is_kaggle (bool): If the kaggle dataset is being used.
-        method (str, optional): The method to use in the model. Can be "pretrain" or "finetune". Defaults to "finetune".
+        method (str, optional): The method to use in the model. Can be "pretrain" or "transferlearn". Defaults to "transferlearn".
         pooling (str, optional): The type of pooling to use in the model. Defaults to None.
         fc_count (int, optional): The number of fully-connected layers to use. Defaults to 1.
 
@@ -23,10 +23,10 @@ def create_model(architecture, is_kaggle, method="finetune", pooling=None, fc_co
     """
     input_shape = (KAGGLE_IMAGE_DIMENSIONS if is_kaggle else ADNI_IMAGE_DIMENSIONS)  + [3]
     
-    if method == "finetune":
+    if method == "transferlearn":
 
         # Create the base model
-        resnet = apps.__dict__[architecture](
+        base_model = apps.__dict__[architecture](
             include_top=False,  # This is if we want the final FC layers
             weights="imagenet",
             # 3D as the imgs are same across 3 channels
@@ -36,15 +36,15 @@ def create_model(architecture, is_kaggle, method="finetune", pooling=None, fc_co
         )
 
         # Freeze the base model
-        for layer in resnet.layers:
+        for layer in base_model.layers:
             layer.trainable = False
 
         # Create a new last layer that will be trained
-        x = Flatten()(resnet.output)
+        x = Flatten()(base_model.output)
         prediction = Dense((4 if is_kaggle else 2), activation='softmax')(x)  # there's 4 categories
-        model = Model(inputs=resnet.input, outputs=prediction)
+        model = Model(inputs=base_model.input, outputs=prediction)
         model.compile(loss='categorical_crossentropy',
-                    optimizer=optimizers.Adam(),
+                    optimizer=optimizers.Adam(learning_rate=0.001),
                     metrics=['accuracy'])
         model.summary()
         

@@ -1,0 +1,7 @@
+task_name: resnet152_transferlearn_slices
+dataset: out/preprocessed_datasets/kaggle_processed
+options:
+    architecture: ResNet152
+    method: transferlearn
+    kaggle: True    
+    pooling: null
