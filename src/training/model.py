@@ -39,10 +39,17 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         for layer in base_model.layers:
             layer.trainable = False
 
-        # Create a new last layer that will be trained
+        output_count = 4 if is_kaggle else 2
+        
+        # Converting the output of the base model to a 1D vector
         x = Flatten()(base_model.output)
-        prediction = Dense((4 if is_kaggle else 2), activation='softmax')(x)  # there's 4 categories
-        model = Model(inputs=base_model.input, outputs=prediction)
+        
+        # Create the fully-connected layers
+        for _ in range(fc_count):
+            x = Dense(output_count, activation='softmax')(x)
+        
+        # create the model
+        model = Model(inputs=base_model.input, outputs=x)
         model.compile(loss='categorical_crossentropy',
                     optimizer=optimizers.Adam(learning_rate=0.001),
                     metrics=['accuracy'])

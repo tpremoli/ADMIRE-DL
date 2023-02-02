@@ -44,24 +44,25 @@ def load_training_task(file_loc):
         if "kaggle" not in optionkeys:
             raise ValueError("Task config requires a kaggle attribute!")
 
-        # TODO: change access to .get("key", "default") for default vals
+        # getting required parameters
         architecture = yamlfile["options"]["architecture"]
         task_name = yamlfile["task_name"]
         dataset_dir = Path(cwd, yamlfile["dataset"]).resolve()
         method = yamlfile["options"]["method"]
         is_kaggle = yamlfile["options"]["kaggle"]
         
-        # Optional parameters
-        pooling = yamlfile["options"].get("pooling", None)
+        # Getting optional parameters with defaults
+        pooling = yamlfile["options"].get("pooling", None) # Default to None
+        fc_count = yamlfile["options"].get("fc_count", 1)  # Default to 1 fc layer
 
         model_loc = run_training_task(
-            architecture, task_name, dataset_dir, method, is_kaggle)
+            architecture, task_name, dataset_dir, method, is_kaggle, pooling, fc_count)
 
         shutil.copyfile(Path(cwd, file_loc).resolve(), Path(
             model_loc, "task_config.yml").resolve())
 
 
-def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None):
+def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None, fc_count=1):
     """Creates a model, trains it, and saves the model and training stats.
 
     Args:
@@ -83,7 +84,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
     # Generating 3 datasets
     train_images, test_images, val_images = gen_subsets(dataset_dir, is_kaggle, architecture)
     # retrieve a model created w given architecture and method
-    model = create_model(architecture, is_kaggle, method)
+    model = create_model(architecture, is_kaggle, method, pooling=pooling, fc_count=fc_count)
 
     start = datetime.now()
 
