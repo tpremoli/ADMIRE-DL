@@ -1,4 +1,4 @@
-task_name: resnet152_transferlearn_slices
+task_name: resnet152_transferlearn_kaggle
 dataset: out/preprocessed_datasets/kaggle_processed
 options:
     architecture: ResNet152

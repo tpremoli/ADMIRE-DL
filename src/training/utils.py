@@ -20,7 +20,7 @@ def gen_subsets(dataset_dir, is_kaggle, architecture, batch_size=32):
     # validation_datagen = ImageDataGenerator(rescale=1./255) 
     
     # This gets the preprocess_input func i.e apps.resnet.preprocess_input
-    preprocessing_func = apps.__dict__[KERAS_APP[architecture]].preprocess_input
+    preprocessing_func = apps.__dict__[KERAS_APP_PKG[architecture]].preprocess_input
     
     train_datagen = ImageDataGenerator(preprocessing_function=preprocessing_func)
     test_datagen = ImageDataGenerator(preprocessing_function=preprocessing_func)

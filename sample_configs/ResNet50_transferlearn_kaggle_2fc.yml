@@ -1,7 +1,8 @@
-task_name: resnet50_transferlearn_slices
+task_name: resnet50_transferlearn_kaggle_2fc
 dataset: out/preprocessed_datasets/kaggle_processed
 options:
     architecture: ResNet50
     method: transferlearn
     kaggle: True    
     pooling: null
+    fc_count: 2
