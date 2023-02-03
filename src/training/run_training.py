@@ -54,15 +54,16 @@ def load_training_task(file_loc):
         # Getting optional parameters with defaults
         pooling = yamlfile["options"].get("pooling", None) # Default to None
         fc_count = yamlfile["options"].get("fc_count", 1)  # Default to 1 fc layer
+        epochs = yamlfile["options"].get("epochs", 25)  # Default to 25 epochs
 
         model_loc = run_training_task(
-            architecture, task_name, dataset_dir, method, is_kaggle, pooling, fc_count)
+            architecture, task_name, dataset_dir, method, is_kaggle, pooling, fc_count, epochs)
 
         shutil.copyfile(Path(cwd, file_loc).resolve(), Path(
             model_loc, "task_config.yml").resolve())
 
 
-def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None, fc_count=1):
+def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None, fc_count=1, epochs=25):
     """Creates a model, trains it, and saves the model and training stats.
 
     Args:
@@ -97,7 +98,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
 
     history = model.fit(train_images,
                         validation_data=val_images,
-                        epochs=18,  # add opt for this
+                        epochs=epochs,  # add opt for this
                         verbose=1, callbacks=callbacks)
 
     duration = datetime.now() - start

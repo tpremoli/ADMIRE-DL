@@ -41,15 +41,17 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
 
         output_count = 4 if is_kaggle else 2
         
-        # Converting the output of the base model to a 1D vector
+        # convert output of base model to a 1D vector
         x = Flatten()(base_model.output)
         
-        # Create the fully-connected layers
-        for _ in range(fc_count):
-            x = Dense(output_count, activation='softmax')(x)
+        # We create fc_count fully connected layers, relu for all but the last
+        for _ in range(fc_count - 1):
+            x = Dense(output_count, activation='relu')(x) # relu avoids vanishing gradient problem
+            
+        # The final layer is a softmax layer
+        prediction = Dense(output_count, activation='softmax')(x)
         
-        # create the model
-        model = Model(inputs=base_model.input, outputs=x)
+        model = Model(inputs=base_model.input, outputs=prediction)
         model.compile(loss='categorical_crossentropy',
                     optimizer=optimizers.Adam(learning_rate=0.001),
                     metrics=['accuracy'])
