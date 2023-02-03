@@ -4,6 +4,7 @@ import nibabel as nib
 import fsl.wrappers.fsl_anat as fsl_anat
 import fsl.wrappers.fslmaths as fsl_maths
 import boto3
+from termcolor import colored
 from ..settings import *
 from pathlib import Path
 from PIL import Image
@@ -29,7 +30,7 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(35,
     """
     if group is None:
         raise ValueError(
-            "ERROR: Scan instatiation requires group (class)!")
+            colored("ERROR: Scan instatiation requires group (class)!","red"))
 
     scan_location = Path(cwd, scan_loc).resolve()
 

@@ -1,6 +1,6 @@
 import argparse
 from src.settings import *
-
+from termcolor import colored
 
 def main():
     parser = argparse.ArgumentParser(
@@ -37,15 +37,15 @@ def main():
         # One of the options must be used
         if not args.kaggle and not args.collection_dir and not args.collection_csv:
             raise argparse.ArgumentTypeError(
-                'Must specify COLLECTION_DIR and COLLECTION_CSV or KAGGLE to prep datasets!')
+                colored('Must specify COLLECTION_DIR and COLLECTION_CSV or KAGGLE to prep datasets!', "red"))
 
         # Ratio option errors
         if len(args.ratio) != 3:
             raise argparse.ArgumentTypeError(
-                'Train/test/validation RATIO takes in exactly 3 values ({} given)!'.format(len(args.ratio)))
+                colored('Train/test/validation RATIO takes in exactly 3 values ({} given)!'.format(len(args.ratio)), "red"))
         if sum(args.ratio) != 1:
             raise argparse.ArgumentTypeError(
-                'Train/test/validation RATIO must add up to 1!')
+                colored('Train/test/validation RATIO must add up to 1!', "red"))
 
         print("Settings:")
         print("\tUSE_S3",str(USE_S3))
@@ -58,7 +58,7 @@ def main():
             # -k args are mutually exclusive with -d and -c
             if args.collection_dir or args.collection_csv:
                 raise argparse.ArgumentTypeError(
-                    'KAGGLE arg and COLLECTION_DIR/COLLECTION_CSV args are mutually exclusive! The dataset to be prepped is either kaggle or ADNI')
+                    colored('KAGGLE arg and COLLECTION_DIR/COLLECTION_CSV args are mutually exclusive! The dataset to be prepped is either kaggle or ADNI', "red"))
 
             print("Option chosen: prep kaggle dataset {}".format(args.kaggle))
             prep_kaggle(args.kaggle, args.run_name, tuple(args.ratio))
@@ -70,7 +70,7 @@ def main():
                 # d is required if we're skipping FSL
                 if not args.collection_dir:
                     raise argparse.ArgumentTypeError(
-                        'Must specify COLLECTION_DIR when using ADNI dataset with SKIP_FSL enabled!')
+                        colored('Must specify COLLECTION_DIR when using ADNI dataset with SKIP_FSL enabled!', "red"))
                 
                 prep_adni(collection_dir=args.collection_dir, 
                           run_name=args.run_name, 
@@ -79,7 +79,7 @@ def main():
                 # both c and d are required if we're not skipping FSL scripts
                 if not args.collection_csv or not args.collection_dir:
                     raise argparse.ArgumentTypeError(
-                        'Must specify COLLECTION_DIR and COLLECTION_CSV when using ADNI dataset with SKIP_FSL disabled!')
+                        colored('Must specify COLLECTION_DIR and COLLECTION_CSV when using ADNI dataset with SKIP_FSL disabled!', "red"))
 
                 prep_adni(args.collection_dir, args.collection_csv,
                           args.run_name, tuple(args.ratio))
@@ -88,17 +88,20 @@ def main():
 
         if not args.config:
             raise argparse.ArgumentTypeError(
-                "Missing config file! Training tasks require -c config.yml option")
+                colored("Missing config file! Training tasks require -c config.yml option", "red"))
 
         load_training_task(args.config)
     else:
         raise argparse.ArgumentTypeError(
-            'Must specify CLI mode! Options: (prep, train, test, predict)')
+            colored('Must specify CLI mode! Options: (prep, train, test, predict)', "red"))
 
 
 if __name__ == "__main__":
     main()
+    # from tensorflow.config import list_logical_devices
 
+
+    
     # from src.preprocessing.prep_raw import create_multichannel_slices_from_brain, create_slices_from_brain
     # create_multichannel_slices_from_brain("/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/adni_processed/002_S_0295_000001_processed.nii.gz",
     #                          "/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/adnitest2","my_scan2","CN")

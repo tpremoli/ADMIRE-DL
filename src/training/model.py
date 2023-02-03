@@ -55,6 +55,8 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         model.compile(loss='categorical_crossentropy',
                     optimizer=optimizers.Adam(learning_rate=0.001),
                     metrics=['accuracy'])
-        model.summary()
+        
+        # TODO: maybe add a setting to print the model summary
+        # model.summary()
         
         return model

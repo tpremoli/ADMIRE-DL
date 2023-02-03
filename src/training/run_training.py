@@ -1,8 +1,10 @@
 import yaml
 import shutil
 import numpy as np
+import pickle
+from termcolor import cprint, colored
 from tensorflow.config import list_logical_devices
-from tensorflow.keras.callbacks import ReduceLROnPlateau
+from tensorflow.keras.callbacks import ReduceLROnPlateau, CSVLogger
 from datetime import datetime
 from pathlib import Path
 from ..constants import *
@@ -27,22 +29,22 @@ def load_training_task(file_loc):
         keys = yamlfile.keys()
         options = yamlfile["options"]
         optionkeys = options.keys()
-        
-        for path in Path(filedir, "../../out/trained_models").glob(yamlfile["task_name"]):
-            raise ValueError("Task with name {} already exists in {}!".format(
-                yamlfile["task_name"], path))
-            
+
+        for path in Path(filedir, "../../out/trained_models").resolve().glob(yamlfile["task_name"]):
+            raise ValueError(colored("Task with name {} already exists in {}!".format(
+                yamlfile["task_name"], path)),"red")
+
         if "task_name" not in keys:
-            raise ValueError("Task config requires a task_name attribute!")
+            raise ValueError(colored("Task config requires a task_name attribute!","red"))
         if "dataset" not in keys:
-            raise ValueError("Task config requires a dataset attribute!")
+            raise ValueError(colored("Task config requires a dataset attribute!","red"))
 
         if "architecture" not in optionkeys:
-            raise ValueError("Task config requires an architecture attribute!")
+            raise ValueError(colored("Task config requires an architecture attribute!","red"))
         if "method" not in optionkeys:
-            raise ValueError("Task config requires a method attribute!")
+            raise ValueError(colored("Task config requires a method attribute!","red"))
         if "kaggle" not in optionkeys:
-            raise ValueError("Task config requires a kaggle attribute!")
+            raise ValueError(colored("Task config requires a kaggle attribute!","red"))
 
         # getting required parameters
         architecture = yamlfile["options"]["architecture"]
@@ -50,10 +52,11 @@ def load_training_task(file_loc):
         dataset_dir = Path(cwd, yamlfile["dataset"]).resolve()
         method = yamlfile["options"]["method"]
         is_kaggle = yamlfile["options"]["kaggle"]
-        
+
         # Getting optional parameters with defaults
-        pooling = yamlfile["options"].get("pooling", None) # Default to None
-        fc_count = yamlfile["options"].get("fc_count", 1)  # Default to 1 fc layer
+        pooling = yamlfile["options"].get("pooling", None)  # Default to None
+        fc_count = yamlfile["options"].get(
+            "fc_count", 1)  # Default to 1 fc layer
         epochs = yamlfile["options"].get("epochs", 25)  # Default to 25 epochs
 
         model_loc = run_training_task(
@@ -61,7 +64,7 @@ def load_training_task(file_loc):
 
         shutil.copyfile(Path(cwd, file_loc).resolve(), Path(
             model_loc, "task_config.yml").resolve())
-
+        
 
 def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None, fc_count=1, epochs=25):
     """Creates a model, trains it, and saves the model and training stats.
@@ -81,11 +84,21 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
         filedir, "../../out/trained_models").resolve()
     trained_models_path.mkdir(parents=True, exist_ok=True)
 
-    print("Devices: ", list_logical_devices())
+    # Check if GPU is available, and print a warning message if not
+    if len(list_logical_devices('GPU')) == 0:
+        cprint('WARNING: GPU is not available! Training will be slow.', "yellow")
+    elif len(list_logical_devices('GPU')) == 1:
+        cprint('INFO: GPU is available!', "blue")
+
     # Generating 3 datasets
-    train_images, test_images, val_images = gen_subsets(dataset_dir, is_kaggle, architecture)
+    train_images, test_images, val_images = gen_subsets(
+        dataset_dir, is_kaggle, architecture)
+    
     # retrieve a model created w given architecture and method
-    model = create_model(architecture, is_kaggle, method, pooling=pooling, fc_count=fc_count)
+    model = create_model(architecture, is_kaggle, method,
+                         pooling=pooling, fc_count=fc_count)
+    model_loc = Path(trained_models_path, task_name)
+    model_loc.mkdir(parents=True, exist_ok=False)
 
     start = datetime.now()
 
@@ -94,7 +107,13 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
                                    cooldown=0,
                                    patience=5,
                                    min_lr=0.5e-6)
-    callbacks = [lr_reducer]
+
+    # This should save to model_loc, but having errors. Will fix later TODO: fix
+    csvlogger = CSVLogger(
+        Path(model_loc, "trainhistory.csv"), separator=",", append=False) 
+
+    # TODO: add early stopping
+    callbacks = [lr_reducer, csvlogger]
 
     history = model.fit(train_images,
                         validation_data=val_images,
@@ -107,9 +126,12 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
     print('Test Loss:', score[0])
     print('Test accuracy:', score[1])
 
-    model_loc = Path(trained_models_path, task_name)
+    # Saving model and training stats
     model.save(model_loc)
+    with open(Path(model_loc, "model_history"), 'wb') as pkl:
+        pickle.dump(history.history, pkl)
 
+    # Saving important data
     with open(Path(model_loc, "stats"), "w") as f:
         f.write("Training completed in time: {}\n".format(duration))
         f.write("Test loss: {}".format(score[0]))
