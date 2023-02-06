@@ -88,7 +88,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
     if len(list_logical_devices('GPU')) == 0:
         cprint('WARNING: GPU is not available! Training will be slow.', "yellow")
     elif len(list_logical_devices('GPU')) == 1:
-        cprint('INFO: GPU is available!', "blue")
+        cprint('SUCCESS: GPU is available!', "green")
 
     # Generating 3 datasets
     train_images, test_images, val_images = gen_subsets(
@@ -108,7 +108,6 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
                                    patience=5,
                                    min_lr=0.5e-6)
 
-    # This should save to model_loc, but having errors. Will fix later TODO: fix
     csvlogger = CSVLogger(
         Path(model_loc, "trainhistory.csv"), separator=",", append=False) 
 
@@ -134,7 +133,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
     # Saving important data
     with open(Path(model_loc, "stats"), "w") as f:
         f.write("Training completed in time: {}\n".format(duration))
-        f.write("Test loss: {}".format(score[0]))
+        f.write("Test loss: {}\n".format(score[0]))
         f.write("Test accuracy: {}".format(score[1]))
 
     plot_data(history, Path(model_loc, '{}_plt.png'.format(task_name)))

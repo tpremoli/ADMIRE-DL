@@ -56,6 +56,18 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
                     optimizer=optimizers.Adam(learning_rate=0.001),
                     metrics=['accuracy'])
         
+        # categorical_crossentropy is used for multi-class classification:
+        # https://www.sciencedirect.com/science/article/pii/S1389041718309562
+        # https://link.springer.com/chapter/10.1007/978-3-319-70772-3_20
+        # https://link.springer.com/chapter/10.1007/978-3-030-05587-5_34 
+        # https://arxiv.org/abs/1809.03972
+        
+        # Accuracy metric:
+        # https://www.sciencedirect.com/science/article/pii/S1389041718309562 
+        # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7661929/
+        # https://arxiv.org/abs/1809.03972 NOTE: this paper uses the sensitivity and specificity metrics as well
+        
+        
         # TODO: maybe add a setting to print the model summary
         # model.summary()
         

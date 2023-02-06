@@ -1,9 +1,9 @@
-task_name: vgg16_transferlearn_slices
+task_name: densenet121_transferlearn_kaggle
 dataset: out/preprocessed_datasets/kaggle_processed
 options:
-    architecture: VGG16
+    architecture: DenseNet121
     method: transferlearn
-    kaggle: True  
+    kaggle: True    
     pooling: null
     fc_count: 1
     epochs: 25

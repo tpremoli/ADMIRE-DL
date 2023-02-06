@@ -6,6 +6,7 @@ options:
     kaggle: {bool}
     pooling: null | avg | max
     learning_rate: {float}
+    fc_count: {int}
+    epochs: {int}
     # loss: categorical_crossentropy ??
     # metrics: accuracy ??
-    # activation: softmax ??
