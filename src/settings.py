@@ -16,4 +16,6 @@ SKIP_FSL=True
 
 # This setting controls if the program should generate image slices for the dataset
 # being processed.
-SKIP_SLICE_CREATION=False
+
+# This controls the number of concurrent FSL processes that can be ran at once.
+FSL_CONCURRENT_PROCESSES=4

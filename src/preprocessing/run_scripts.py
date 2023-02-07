@@ -5,7 +5,8 @@ import splitfolders
 from termcolor import colored, cprint
 from multiprocessing import Pool
 from datetime import datetime
-from ..constants import NON_DEMENTED, VERY_MILD_DEMENTED, MILD_DEMENTED, MODERATE_DEMENTED
+from ..constants import *
+from ..settings import *
 from .prep_raw import prep_raw_mri
 from pathlib import Path
 
@@ -13,7 +14,7 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 
-def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_processes=4):
+def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     """Runs prep scripts for an ADNI image directory.
         Will create 5 subdirs
             -  nii_files: Containing the FSL-processed nii images, separated by class
@@ -27,7 +28,6 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
         collection_csv (str): The image metadata file directory
         run_name (str): Name of the prep run. Outputs will be stored in out/preprocessed_datasets/{run_name}
         split_ratio (tuple): The train/test/val split ratio.
-        concurrent_processes (int): The number of MRI preps to run at once. Defaults to 4.
 
     Raises:
         ValueError: Checks if collection dir exists
@@ -92,11 +92,11 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
             queued_mris.append(current_subject)
 
             # If we've collected the # of concurrent mris we can then run the prep multiprocessed
-            if len(queued_mris) == concurrent_processes:
+            if len(queued_mris) == FSL_CONCURRENT_PROCESSES:
                 batch_start_time = datetime.now()
 
                 # prep all the queued MRIs at once
-                pool = Pool(processes=concurrent_processes)
+                pool = Pool(processes=FSL_CONCURRENT_PROCESSES)
                 pool.starmap(prep_raw_mri, queued_mris)
 
                 batch_end_time = datetime.now()
@@ -111,7 +111,7 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
     if len(queued_mris) != 0:
         batch_start_time = datetime.now()
         # prep all the queued MRIs at once
-        pool = Pool(processes=concurrent_processes)
+        pool = Pool(processes=len(queued_mris))
         pool.starmap(prep_raw_mri, queued_mris)
         batch_end_time = datetime.now()
         log_file.write("batch {} took {} to preprocess\n".format(
@@ -154,7 +154,24 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
     cprint("Done! Result files found in {}".format(out_dir), "green")
 
 
-def prep_adni(collection_dir, run_name, split_ratio, concurrent_processes=4):
+def prep_adni(collection_dir, run_name, split_ratio):
+    """Preps the ADNI dataset WITHOUT running FSL scripts. Note how no collection_csv is passed in
+        Will create 4 subdirs
+            -  image_slices: Containing the individual image slices, separated by class
+            -  multi_channel: Containing the multi-channel image slices, separated by class
+            -  slice_dataset: Containing the individual image slices, separated by class and into train/test/val
+            -  multichannel_dataset: Containing the multi-channel image slices, separated by class and into train/test/val
+
+    Args:
+        collection_dir (str): The image collection directory
+        run_name (str): Name of the prep run. Outputs will be stored in out/preprocessed_datasets/{run_name}
+        split_ratio (tuple): The train/test/val split ratio.
+
+    Raises:
+        ValueError: Checks if collection dir exists
+        ValueError: Checks if collection dir has images
+        ValueError: Checks if output dir has been used (avoids overwriting)
+    """
     # Resetting path locs
     collection_dir = Path(cwd, collection_dir).resolve()
 
@@ -199,11 +216,11 @@ def prep_adni(collection_dir, run_name, split_ratio, concurrent_processes=4):
         queued_mris.append(current_subject)
 
         # If we've collected the # of concurrent mris we can then run the prep multiprocessed
-        if len(queued_mris) == concurrent_processes:
+        if len(queued_mris) == FSL_CONCURRENT_PROCESSES:
             batch_start_time = datetime.now()
 
             # prep all the queued MRIs at once
-            pool = Pool(processes=concurrent_processes)
+            pool = Pool(processes=FSL_CONCURRENT_PROCESSES)
             pool.starmap(prep_raw_mri, queued_mris)
 
             batch_end_time = datetime.now()
@@ -218,7 +235,7 @@ def prep_adni(collection_dir, run_name, split_ratio, concurrent_processes=4):
     if len(queued_mris) != 0:
         batch_start_time = datetime.now()
         # prep all the queued MRIs at once
-        pool = Pool(processes=concurrent_processes)
+        pool = Pool(processes=len(queued_mris))
         pool.starmap(prep_raw_mri, queued_mris)
         batch_end_time = datetime.now()
         log_file.write("batch {} took {} to preprocess\n".format(
