@@ -32,7 +32,7 @@ def main():
     args = parser.parse_args()
 
     if args.tool == "prep":
-        from src.preprocessing.run_scripts import prep_adni, prep_kaggle
+        from src.preprocessing.run_scripts import prep_adni, prep_adni_nofsl, prep_kaggle
 
         # One of the options must be used
         if not args.kaggle and not args.collection_dir and not args.collection_csv:
@@ -72,7 +72,7 @@ def main():
                     raise argparse.ArgumentTypeError(
                         colored('Must specify COLLECTION_DIR when using ADNI dataset with SKIP_FSL enabled!', "red"))
                 
-                prep_adni(collection_dir=args.collection_dir, 
+                prep_adni_nofsl(collection_dir=args.collection_dir, 
                           run_name=args.run_name, 
                           split_ratio=tuple(args.ratio))
             else:
