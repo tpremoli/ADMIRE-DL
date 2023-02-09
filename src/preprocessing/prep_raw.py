@@ -110,11 +110,6 @@ def run_fsl(scan_location, scan_name, group, out_dir):
     # We multiply the MNI registered brain by the brain mask to have a final preprocessed brain
     fsl_maths(mni_nonlin).mul(brain_mask).run(final_brain)
 
-    # Copy log from anat dir to out dir
-    # logfile = Path(anat_dir, "log.txt")
-    # final_logfile = Path(out_dir, "{}.log".format(self.scan_name))
-    # shutil.copyfile(logfile, final_logfile)
-
     # clearing all the .anat files (unnecessary now)
     shutil.rmtree(anat_dir)
 

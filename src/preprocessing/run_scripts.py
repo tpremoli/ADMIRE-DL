@@ -2,10 +2,12 @@ import pandas as pd
 import json
 import shutil
 import splitfolders
+import logging
 from termcolor import colored, cprint
 from multiprocessing import Pool
 from datetime import datetime
-from ..constants import NON_DEMENTED, VERY_MILD_DEMENTED, MILD_DEMENTED, MODERATE_DEMENTED
+from ..constants import *
+from ..settings import *
 from .prep_raw import prep_raw_mri
 from pathlib import Path
 
@@ -13,7 +15,7 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 
-def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_processes=4):
+def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     """Runs prep scripts for an ADNI image directory.
         Will create 5 subdirs
             -  nii_files: Containing the FSL-processed nii images, separated by class
@@ -27,7 +29,6 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
         collection_csv (str): The image metadata file directory
         run_name (str): Name of the prep run. Outputs will be stored in out/preprocessed_datasets/{run_name}
         split_ratio (tuple): The train/test/val split ratio.
-        concurrent_processes (int): The number of MRI preps to run at once. Defaults to 4.
 
     Raises:
         ValueError: Checks if collection dir exists
@@ -52,13 +53,16 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
     out_dir = Path(
         filedir, "../../out/preprocessed_datasets", run_name).resolve()
 
-    print("output dir: {}".format(out_dir))
+    cprint("INFO: output dir: {}".format(out_dir), "blue")
 
     try:
         out_dir.mkdir(parents=True, exist_ok=False)
     except:
         raise ValueError(
             colored("Output dir {} already exists! Pick a different run name or delete the existing directory.".format(out_dir), "red"))
+
+    logging.basicConfig(filename=Path(out_dir, "log"), encoding='utf-8', level=logging.DEBUG,
+                        format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
     # Creating group subdirs for output nii images
     Path(out_dir, "nii_files/CN").resolve().mkdir(parents=True, exist_ok=True)
@@ -72,11 +76,11 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
     Path(out_dir, "multi_channel/CN").resolve().mkdir(parents=True, exist_ok=True)
     Path(out_dir, "multi_channel/AD").resolve().mkdir(parents=True, exist_ok=True)
 
-    log_file = open(Path(out_dir, "log"), "w")
     fsl_start_time = datetime.now()
 
     queued_mris = []  # queued_mris is the current queue of mris to prep concurrently
     current_batch = 0
+    est_batches = len(subjects) / FSL_CONCURRENT_PROCESSES
 
     for subject in subjects:
         subj_folder = Path(collection_dir, subject["Subject"], "MP-RAGE")
@@ -92,17 +96,20 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
             queued_mris.append(current_subject)
 
             # If we've collected the # of concurrent mris we can then run the prep multiprocessed
-            if len(queued_mris) == concurrent_processes:
+            if len(queued_mris) == FSL_CONCURRENT_PROCESSES:
                 batch_start_time = datetime.now()
 
                 # prep all the queued MRIs at once
-                pool = Pool(processes=concurrent_processes)
+                pool = Pool(processes=FSL_CONCURRENT_PROCESSES)
                 pool.starmap(prep_raw_mri, queued_mris)
 
                 batch_end_time = datetime.now()
 
-                log_file.write("batch {} took {} to preprocess\n".format(
-                    current_batch, str(batch_end_time-batch_start_time)))
+                successful_str = "Successfully completed batch {}/{}. It took {} to preprocess".format(
+                    current_batch, est_batches, str(batch_end_time-batch_start_time))
+
+                logging.info(successful_str)
+                cprint(successful_str, "green")
 
                 # clear the queue
                 queued_mris.clear()
@@ -111,26 +118,30 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
     if len(queued_mris) != 0:
         batch_start_time = datetime.now()
         # prep all the queued MRIs at once
-        pool = Pool(processes=concurrent_processes)
+        pool = Pool(processes=len(queued_mris))
         pool.starmap(prep_raw_mri, queued_mris)
         batch_end_time = datetime.now()
-        log_file.write("batch {} took {} to preprocess\n".format(
-            current_batch, str(batch_end_time-batch_start_time)))
+
+        successful_str = "Successfully completed batch {}/{}. It took {} to preprocess".format(
+            current_batch, est_batches, str(batch_end_time-batch_start_time))
+
+        logging.info(successful_str)
+        cprint(successful_str, "green")
 
     fsl_end_time = datetime.now()
-    log_file.write("All FSL scripts took {} to run".format(
+    logging.info("All FSL scripts took {} to run".format(
         str(fsl_end_time-fsl_start_time)))
-    log_file.close()
 
     split_seed = datetime.now().timestamp()
-    print("Splitting slice folders with split ratio {}".format(split_ratio))
+    logging.info("Splitting slice folders with split ratio {}".format(split_ratio))
     splitfolders.ratio(Path(out_dir, "image_slices"), output=Path(out_dir, "slice_dataset"),
                        seed=split_seed, ratio=split_ratio)
 
     splitfolders.ratio(Path(out_dir, "multi_channel"), output=Path(out_dir, "multichannel_dataset"),
                        seed=split_seed, ratio=split_ratio)
 
-    print("Done processing raw MRIs. Saving mata data")
+    logging.info("Done processing raw MRIs. Saving meta data")
+    print("Done processing raw MRIs. Saving meta data")
 
     scan_count = len(list(Path(out_dir, "nii_files").glob('**/*')))
     slice_count = len(list(Path(out_dir, "image_slices").glob('**/*')))
@@ -151,10 +162,28 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio, concurrent_
     # Writing collection.csv file
     shutil.copyfile(collection_csv, Path(out_dir, "collection.csv"))
 
+    logging.info("Done! Result files found in {}".format(out_dir))
     cprint("Done! Result files found in {}".format(out_dir), "green")
 
+# TODO: add logging here
+def prep_adni_nofsl(collection_dir, run_name, split_ratio):
+    """Preps the ADNI dataset WITHOUT running FSL scripts. Note how no collection_csv is passed in
+        Will create 4 subdirs
+            -  image_slices: Containing the individual image slices, separated by class
+            -  multi_channel: Containing the multi-channel image slices, separated by class
+            -  slice_dataset: Containing the individual image slices, separated by class and into train/test/val
+            -  multichannel_dataset: Containing the multi-channel image slices, separated by class and into train/test/val
 
-def prep_adni(collection_dir, run_name, split_ratio, concurrent_processes=4):
+    Args:
+        collection_dir (str): The image collection directory
+        run_name (str): Name of the prep run. Outputs will be stored in out/preprocessed_datasets/{run_name}
+        split_ratio (tuple): The train/test/val split ratio.
+
+    Raises:
+        ValueError: Checks if collection dir exists
+        ValueError: Checks if collection dir has images
+        ValueError: Checks if output dir has been used (avoids overwriting)
+    """
     # Resetting path locs
     collection_dir = Path(cwd, collection_dir).resolve()
 
@@ -162,7 +191,8 @@ def prep_adni(collection_dir, run_name, split_ratio, concurrent_processes=4):
         raise ValueError(
             colored("Collection dir {} does not exist!".format(collection_dir), "red"))
     elif not any(Path(collection_dir).iterdir()):
-        raise colored(ValueError("Collection path {} empty!".format(collection_dir), "red"))
+        raise colored(ValueError(
+            "Collection path {} empty!".format(collection_dir), "red"))
 
     out_dir = Path(
         filedir, "../../out/preprocessed_datasets", run_name).resolve()
@@ -199,11 +229,11 @@ def prep_adni(collection_dir, run_name, split_ratio, concurrent_processes=4):
         queued_mris.append(current_subject)
 
         # If we've collected the # of concurrent mris we can then run the prep multiprocessed
-        if len(queued_mris) == concurrent_processes:
+        if len(queued_mris) == FSL_CONCURRENT_PROCESSES:
             batch_start_time = datetime.now()
 
             # prep all the queued MRIs at once
-            pool = Pool(processes=concurrent_processes)
+            pool = Pool(processes=FSL_CONCURRENT_PROCESSES)
             pool.starmap(prep_raw_mri, queued_mris)
 
             batch_end_time = datetime.now()
@@ -218,7 +248,7 @@ def prep_adni(collection_dir, run_name, split_ratio, concurrent_processes=4):
     if len(queued_mris) != 0:
         batch_start_time = datetime.now()
         # prep all the queued MRIs at once
-        pool = Pool(processes=concurrent_processes)
+        pool = Pool(processes=len(queued_mris))
         pool.starmap(prep_raw_mri, queued_mris)
         batch_end_time = datetime.now()
         log_file.write("batch {} took {} to preprocess\n".format(
@@ -275,9 +305,11 @@ def prep_kaggle(kaggle_dir, run_name, split_ratio):
     kaggle_dir = Path(cwd, kaggle_dir).resolve()
 
     if not Path.exists(kaggle_dir):
-        raise ValueError(colored("Kaggle path {} does not exist!".format(kaggle_dir), "red"))
+        raise ValueError(
+            colored("Kaggle path {} does not exist!".format(kaggle_dir), "red"))
     elif not any(Path(kaggle_dir).iterdir()):
-        raise ValueError(colored("Kaggle path {} empty!".format(kaggle_dir), "red"))
+        raise ValueError(
+            colored("Kaggle path {} empty!".format(kaggle_dir), "red"))
 
     out_dir = Path(
         filedir, "../../out/preprocessed_datasets", run_name).resolve()
