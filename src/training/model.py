@@ -46,7 +46,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         
         # We create fc_count fully connected layers, relu for all but the last
         for _ in range(fc_count - 1):
-            x = Dense(output_count, activation='relu')(x) # relu avoids vanishing gradient problem
+            x = Dense(units=4096, activation='relu')(x) # relu avoids vanishing gradient problem
             
         # The final layer is a softmax layer
         prediction = Dense(output_count, activation='softmax')(x)

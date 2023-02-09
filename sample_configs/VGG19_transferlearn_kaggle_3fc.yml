@@ -1,9 +1,9 @@
-task_name: resnet50_transferlearn_kaggle_1fc
+task_name: vgg19_transferlearn_slices_3fc
 dataset: out/preprocessed_datasets/kaggle_processed
 options:
-    architecture: ResNet50
+    architecture: VGG19
     method: transferlearn
     kaggle: True    
     pooling: null
-    fc_count: 1
+    fc_count: 3
     epochs: 25
