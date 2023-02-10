@@ -1,4 +1,5 @@
 import tensorflow.keras.applications as apps
+from termcolor import cprint
 from keras.layers import Dense, Flatten
 from keras.models import Model
 from keras import optimizers
@@ -22,6 +23,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         Model: returns a keras model with the specified parameters
     """
     input_shape = (KAGGLE_IMAGE_DIMENSIONS if is_kaggle else ADNI_IMAGE_DIMENSIONS)  + [3]
+    output_count = 4 if is_kaggle else 2
     
     if method == "transferlearn":
 
@@ -39,8 +41,6 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         for layer in base_model.layers:
             layer.trainable = False
 
-        output_count = 4 if is_kaggle else 2
-        
         # convert output of base model to a 1D vector
         x = Flatten()(base_model.output)
         
@@ -72,3 +72,40 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         # model.summary()
         
         return model
+    
+    if method == "pretrain":
+        # Create the base model
+        model = apps.__dict__[architecture](
+            include_top=True,  # This is if we want the final FC layers
+            weights=None,
+            input_shape=input_shape,
+            classifier_activation="softmax",
+            pooling = pooling,
+            classes = output_count # set the number of outputs to required count
+        )
+        
+        if (fc_count > 1):
+            cprint("WARNING: fc_count has no effect on pretrain method", "yellow")
+        
+        model.compile(loss='categorical_crossentropy',
+                    optimizer=optimizers.SGD(learning_rate=0.01), # SGD is better for pretraining
+                    metrics=['accuracy'])
+        model.summary()
+        
+        # categorical_crossentropy is used for multi-class classification:
+        # https://www.sciencedirect.com/science/article/pii/S1389041718309562
+        # https://link.springer.com/chapter/10.1007/978-3-319-70772-3_20
+        # https://link.springer.com/chapter/10.1007/978-3-030-05587-5_34 
+        # https://arxiv.org/abs/1809.03972
+        
+        # Accuracy metric:
+        # https://www.sciencedirect.com/science/article/pii/S1389041718309562 
+        # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7661929/
+        # https://arxiv.org/abs/1809.03972 NOTE: this paper uses the sensitivity and specificity metrics as well
+        
+        
+        # TODO: maybe add a setting to print the model summary
+        # model.summary()
+        
+        return model
+

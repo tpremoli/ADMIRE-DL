@@ -1,9 +1,0 @@
-task_name: vgg19_transferlearn_slices_3fc
-dataset: out/preprocessed_datasets/kaggle_processed
-options:
-    architecture: VGG19
-    method: transferlearn
-    kaggle: True    
-    pooling: null
-    fc_count: 3
-    epochs: 25
