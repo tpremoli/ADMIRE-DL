@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 from termcolor import cprint, colored
 from tensorflow.config import list_logical_devices
-from tensorflow.keras.callbacks import ReduceLROnPlateau, CSVLogger
+from tensorflow.keras.callbacks import ReduceLROnPlateau, CSVLogger,EarlyStopping
 from datetime import datetime
 from pathlib import Path
 from ..constants import *
@@ -110,13 +110,14 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
 
     csvlogger = CSVLogger(
         Path(model_loc, "trainhistory.csv"), separator=",", append=False) 
+    
+    earlystopper = EarlyStopping(monitor='val_loss', mode="min", verbose=1, patience=15) # 15 gives a chance for reduceLR to kick in
 
-    # TODO: add early stopping
-    callbacks = [lr_reducer, csvlogger]
+    callbacks = [lr_reducer, csvlogger, earlystopper]
 
     history = model.fit(train_images,
                         validation_data=val_images,
-                        epochs=epochs,  # add opt for this
+                        epochs=epochs, 
                         verbose=1, callbacks=callbacks)
 
     duration = datetime.now() - start
