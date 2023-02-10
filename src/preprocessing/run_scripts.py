@@ -80,6 +80,12 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
 
     queued_mris = []  # queued_mris is the current queue of mris to prep concurrently
     current_batch = 0
+    
+    # This is the csv file that will contain the original path, output path, and group. helps if we have a crash
+    csv_dir = Path(out_dir, "processed.csv").resolve()
+    with open(csv_dir, "w") as f:
+        csv_dir.write('"Original Path","Output Path","Group"\n')
+    
     for subject in subjects:
         subj_folder = Path(collection_dir, subject["Subject"], "MP-RAGE")
         # For each scan in the subject subject

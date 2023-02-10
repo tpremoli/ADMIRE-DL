@@ -4,7 +4,7 @@ import nibabel as nib
 import fsl.wrappers.fsl_anat as fsl_anat
 import fsl.wrappers.fslmaths as fsl_maths
 import boto3
-from termcolor import colored
+from termcolor import colored, cprint
 from ..settings import *
 from pathlib import Path
 from PIL import Image
@@ -45,7 +45,7 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(35,
     if USE_S3 and not SKIP_FSL:
         # Upload processed MRI to s3 bucket
         s3_loc = Path("{}/{}/{}_processed.nii.gz".format(run_name, group, scan_name))
-        print("Uploading processed MRI to s3 bucket {} in {}".format(AWS_S3_BUCKET_NAME, s3_loc))
+        cprint("INFO: uploading processed MRI to s3 bucket {} in {}".format(AWS_S3_BUCKET_NAME, s3_loc), "blue")
         s3_bucket  = boto3.resource('s3').Bucket('processed-nii-files')
 
         s3_bucket.upload_file(str(nii_path), str(s3_loc))
