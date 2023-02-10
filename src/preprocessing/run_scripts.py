@@ -49,6 +49,7 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     # Getting individual subjects
     subjects = pd.read_csv(collection_csv)
     est_batches = len(subjects) / FSL_CONCURRENT_PROCESSES
+    
     subjects = subjects.drop_duplicates(
         keep='first', subset="Subject").to_dict(orient="records")
 
@@ -57,11 +58,36 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
 
     cprint("INFO: output dir: {}".format(out_dir), "blue")
 
+    done_subjects = []
+    max_count = dict.fromkeys([subject["Subject"] for subject in subjects], 0) # This keeps track of the maxcount of each subject
+
     try:
         out_dir.mkdir(parents=True, exist_ok=False)
-    except:
-        raise ValueError(
-            colored("Output dir {} already exists! Pick a different run name or delete the existing directory.".format(out_dir), "red"))
+        
+        # This is the csv file that will contain the original path, output path, and group. helps if we have a crash
+        csv_dir = Path(out_dir, "processed.csv").resolve()
+        with open(csv_dir, "w") as csv:
+            csv.write('"Original Path","Output Path","Group"\n')
+            
+    except:# TODO: check resume status and only process new files
+        done_subjects = pd.read_csv(Path(out_dir, "processed.csv"))
+        cprint("INFO: {} subjects already processed. Skipping...".format(len(done_subjects)), "blue")
+        
+        # Converting paths to Path objects
+        done_subjects["Original Path"] = [Path(s) for s in done_subjects["Original Path"]]
+        done_subjects["Output Path"] = [Path(s) for s in done_subjects["Output Path"]]
+        
+        # Parses the count from the output path
+        done_subjects["Count"] = [int(s.name[11:13]) for s in done_subjects["Output Path"]]
+        done_subjects["Subject Name"] = [s.name[:10] for s in done_subjects["Output Path"]]  # removes "_NN_processsed.nii.gz"
+
+        # This is useful for checking if we've already processed a subject
+        done_subjects["Date Dir"] = [s.parent.parent for s in done_subjects["Original Path"]]  # removes "_NN_processsed.nii.gz"
+
+        # this updates max_count to the max count of each subject that has already been processed
+        for _, subject in done_subjects.iterrows():
+            if subject["Count"] > max_count[subject["Subject Name"]]:
+                max_count[subject["Subject Name"]] = subject["Count"]  
 
     # Creating group subdirs for output nii images
     Path(out_dir, "nii_files/CN").resolve().mkdir(parents=True, exist_ok=True)
@@ -81,18 +107,20 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     queued_mris = []  # queued_mris is the current queue of mris to prep concurrently
     current_batch = 0
     
-    # This is the csv file that will contain the original path, output path, and group. helps if we have a crash
-    csv_dir = Path(out_dir, "processed.csv").resolve()
-    with open(csv_dir, "w") as csv:
-        csv.write('"Original Path","Output Path","Group"\n')
-    
     for subject in subjects:
-        subj_folder = Path(collection_dir, subject["Subject"], "MP-RAGE")
+        subj_folder = Path(collection_dir, subject["Subject"], "MP-RAGE") # TODO: MP-RAGE_repeat isnt covered here
+        
         # For each scan in the subject subject
-        for count, scan_folder in enumerate(Path.glob(subj_folder, "*")):
-
+        for scan_folder in Path.glob(subj_folder, "*"):
+            
+            # This skips the scan_folder if we've already processed it
+            if scan_folder in done_subjects["Date Dir"].values:
+                continue
+            
             # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on. min 6 chars
-            scan_name = "{}_{:02d}".format(subject["Subject"], count)
+            scan_name = "{}_{:02d}".format(subject["Subject"], max_count[subject["Subject"]])
+            
+            max_count[subject["Subject"]] += 1
 
             current_subject = [scan_folder, scan_name,
                                out_dir, subject["Group"], run_name]
@@ -201,7 +229,7 @@ def prep_adni_nofsl(collection_dir, run_name, split_ratio): #TODO: maybe join to
     print("output dir: {}".format(out_dir))
 
     try:
-        out_dir.mkdir(parents=True, exist_ok=False)
+        out_dir.mkdir(parents=True, exist_ok=True)
     except:
         raise ValueError(
             colored("Output dir {} already exists! Pick a different run name or delete the existing directory.".format(out_dir), "red"))
