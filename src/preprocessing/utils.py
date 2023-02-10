@@ -26,17 +26,17 @@ def write_batch_to_log(complete_pairs, out_dir, successful_str):
     with open(csv_dir, "a") as csv:
         for ogbrain, newbrain in complete_pairs:
             csv.write('"')
-            csv.write(Path(ogbrain).resolve())
+            csv.write(str(Path(ogbrain).resolve()))
             csv.write('"')
             csv.write(",")
             
             csv.write('"')
-            csv.write(Path(newbrain).resolve())
+            csv.write(str(Path(newbrain).resolve()))
             csv.write('"')
             csv.write(",")
             
             csv.write('"')
-            csv.write(Path(newbrain).resolve().parent.name)
+            csv.write(str(Path(newbrain).resolve().parent.name))
             csv.write('"')
 
             csv.write("\n")
