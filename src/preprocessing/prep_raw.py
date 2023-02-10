@@ -48,7 +48,11 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(35,
         cprint("INFO: uploading processed MRI to s3 bucket {} in {}".format(AWS_S3_BUCKET_NAME, s3_loc), "blue")
         s3_bucket  = boto3.resource('s3').Bucket('processed-nii-files')
 
-        s3_bucket.upload_file(str(nii_path), str(s3_loc))
+        try:
+            s3_bucket.upload_file(str(nii_path), str(s3_loc))
+        except:
+            cprint("ERROR: Failed to upload file to s3 bucket", "red")
+            cprint("INFO: Will attempt to sync bucket at end of run", "blue") # TODO: implement this
 
     # To access slices:
     # sagittal = data[26, :, :] <- 26th slice along sagittal
