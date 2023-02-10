@@ -59,7 +59,7 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     cprint("INFO: output dir: {}".format(out_dir), "blue")
 
     done_subjects = []
-    max_count = dict.fromkeys([subject["Subject"] for subject in subjects], 0) # This keeps track of the maxcount of each subject
+    max_count = dict.fromkeys([subject["Subject"] for subject in subjects], -1) # This keeps track of the maxcount of each subject
 
     try:
         out_dir.mkdir(parents=True, exist_ok=False)
@@ -117,10 +117,12 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
             if scan_folder in done_subjects["Date Dir"].values:
                 continue
             
+            # Added new subject so we increase the max count
+            max_count[subject["Subject"]] += 1
+            
             # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on. min 6 chars
             scan_name = "{}_{:02d}".format(subject["Subject"], max_count[subject["Subject"]])
             
-            max_count[subject["Subject"]] += 1
 
             current_subject = [scan_folder, scan_name,
                                out_dir, subject["Group"], run_name]
