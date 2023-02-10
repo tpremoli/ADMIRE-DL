@@ -52,7 +52,7 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(35,
             s3_bucket.upload_file(str(nii_path), str(s3_loc))
         except:
             cprint("ERROR: Failed to upload file to s3 bucket", "red")
-            cprint("INFO: Will attempt to sync bucket at end of run", "blue") # TODO: implement this
+            cprint("INFO: Will attempt to sync bucket at end of run", "blue") 
 
     # To access slices:
     # sagittal = data[26, :, :] <- 26th slice along sagittal
