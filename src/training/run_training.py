@@ -31,8 +31,7 @@ def load_training_task(file_loc):
         optionkeys = options.keys()
 
         for path in Path(filedir, "../../out/trained_models").resolve().glob(yamlfile["task_name"]):
-            raise ValueError(colored("Task with name {} already exists in {}!".format(
-                yamlfile["task_name"], path)),"red")
+            raise ValueError(colored(f"Task with name {yamlfile['task_name']} already exists in {path}!","red"))
 
         if "task_name" not in keys:
             raise ValueError(colored("Task config requires a task_name attribute!","red"))
@@ -133,10 +132,10 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
 
     # Saving important data
     with open(Path(model_loc, "stats"), "w") as f:
-        f.write("Training completed in time: {}\n".format(duration))
-        f.write("Test loss: {}\n".format(score[0]))
-        f.write("Test accuracy: {}".format(score[1]))
+        f.write(f"Training completed in time: {duration}\n")
+        f.write(f"Test loss: {score[0]}\n")
+        f.write(f"Test accuracy: {score[1]}")
 
-    plot_data(history, Path(model_loc, '{}_plt.png'.format(task_name)))
+    plot_data(history, Path(model_loc, f'{task_name}_plt.png'))
 
     return model_loc
