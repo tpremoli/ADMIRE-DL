@@ -42,7 +42,7 @@ def main():
         # Ratio option errors
         if len(args.ratio) != 3:
             raise argparse.ArgumentTypeError(
-                colored('Train/test/validation RATIO takes in exactly 3 values ({} given)!'.format(len(args.ratio)), "red"))
+                colored(f'Train/test/validation RATIO takes in exactly 3 values ({len(args.ratio)} given)!', "red"))
         if sum(args.ratio) != 1:
             raise argparse.ArgumentTypeError(
                 colored('Train/test/validation RATIO must add up to 1!', "red"))
@@ -60,10 +60,10 @@ def main():
                 raise argparse.ArgumentTypeError(
                     colored('KAGGLE arg and COLLECTION_DIR/COLLECTION_CSV args are mutually exclusive! The dataset to be prepped is either kaggle or ADNI', "red"))
 
-            print("Option chosen: prep kaggle dataset {}".format(args.kaggle))
+            print(f"Option chosen: prep kaggle dataset {args.kaggle}")
             prep_kaggle(args.kaggle, args.run_name, tuple(args.ratio))
         else:
-            print("Option chosen: prep ADNI dataset {}".format(args.collection_dir))
+            print(f"Option chosen: prep ADNI dataset {args.collection_dir}")
 
             if SKIP_FSL:
                 print("SKIP_FSL option chosen! Will generate slices from passed collection_dir and split into train/test/val")

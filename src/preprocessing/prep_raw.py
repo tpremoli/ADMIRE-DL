@@ -35,17 +35,17 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(35,
     scan_location = Path(cwd, scan_loc).resolve()
 
     if not SKIP_FSL:
-        print("Launching FSL scripts for scan {} in group {}".format(scan_name, group))
+        print(f"Launching FSL scripts for scan {scan_name} in group {group}")
         original_brain, nii_path = run_fsl(scan_location, scan_name, group, out_dir)
 
-        print("FSL scripts complete. Processed MRI found in {}".format(nii_path))
+        print(f"FSL scripts complete. Processed MRI found in {nii_path}")
     else:
         nii_path = scan_location
         
     if USE_S3 and not SKIP_FSL:
         # Upload processed MRI to s3 bucket
-        s3_loc = Path("{}/{}/{}_processed.nii.gz".format(run_name, group, scan_name))
-        cprint("INFO: uploading processed MRI to s3 bucket {} in {}".format(AWS_S3_BUCKET_NAME, s3_loc), "blue")
+        s3_loc = Path(f"{run_name}/{group}/{scan_name}_processed.nii.gz")
+        cprint(print(f"INFO: uploading processed MRI to s3 bucket {AWS_S3_BUCKET_NAME} in {s3_loc}"), "blue")
         s3_bucket  = boto3.resource('s3').Bucket('processed-nii-files')
 
         try:
@@ -102,7 +102,7 @@ def run_fsl(scan_location, scan_name, group, out_dir):
     fsl_anat(img=original_brain, out=tmp_dir, noseg=True, nosubcortseg=True)
 
     # fsl_anat adds .anat to end of output directory
-    anat_dir = Path("{}.anat".format(tmp_dir))
+    anat_dir = Path(f"{tmp_dir}/anat")
 
     # This is the outputted nonlinear transformed brain
     mni_nonlin = Path(anat_dir, "T1_to_MNI_nonlin.nii.gz")
@@ -112,7 +112,7 @@ def run_fsl(scan_location, scan_name, group, out_dir):
 
     # File is saved into group subfolder in nii_files output loc
     final_brain = Path(
-        out_dir, "nii_files/{}/{}_processed.nii.gz".format(group, scan_name))
+        out_dir, f"nii_files/{group}/{scan_name}_processed.nii.gz")
 
     # We multiply the MNI registered brain by the brain mask to have a final preprocessed brain
     fsl_maths(mni_nonlin).mul(brain_mask).run(final_brain)
@@ -142,8 +142,7 @@ def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(3
         image_data = Image.fromarray(curr_slice)
 
         # Saved as image_slices/{group}/{subject}_slice{number}
-        image_dir = Path(out_dir, "image_slices/{}/{}_slice{}.png".format(group,
-                         scan_name, (i-slice_range[0]))).resolve()
+        image_dir = Path(out_dir, f"image_slices/{group}/{scan_name}_slice{(i-slice_range[0])}.png").resolve()
         
         image_data.save(image_dir)
 
@@ -173,8 +172,7 @@ def create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group, s
         image_data = Image.fromarray(slice_3d)
 
         # Saved as image_slices/{group}/{subject}_slice{number}
-        image_dir = Path(out_dir, "multi_channel/{}/{}_slice{}.png".format(group,
-                         scan_name, (i-slice_range[0]))).resolve()
+        image_dir = Path(out_dir, f"multi_channel/{group}/{scan_name}_slice{(i-slice_range[0])}.png").resolve()
         image_data.save(image_dir)
 
 
