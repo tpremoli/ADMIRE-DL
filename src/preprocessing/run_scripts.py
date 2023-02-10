@@ -111,46 +111,52 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     current_batch = 0
     
     for subject in subjects:
-        subj_folder = Path(collection_dir, subject["Subject"], "MP-RAGE") # TODO: MP-RAGE_repeat isnt covered here
+        base_folder = Path(collection_dir, subject["Subject"])
         
-        # For each scan in the subject subject
-        for scan_folder in Path.glob(subj_folder, "*"):
-            
-            # This skips the scan_folder if we've already processed it
-            if scan_folder in done_subjects["Date Dir"].values:
+        for scan_type in Path.glob(base_folder, "*"): # This goes through MP-RAGE, MP-RAGE_repeat, etc
+            subj_folder = Path(base_folder, scan_type)
+            # We only want to process MP-RAGE and MP-RAGE_REPEAT
+            if subj_folder.name.upper() not in ["MP-RAGE", "MP-RAGE_REPEAT"]:
                 continue
-            
-            # Added new subject so we increase the max count
-            max_count[subject["Subject"]] += 1
-            
-            # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on. min 6 chars
-            scan_name = "{}_{:02d}".format(subject["Subject"], max_count[subject["Subject"]])
-            
-            current_subject = [scan_folder, scan_name,
-                               out_dir, subject["Group"], run_name]
 
-            queued_mris.append(current_subject)
+            # For each scan in the subject subject
+            for scan_folder in Path.glob(subj_folder, "*"):
+                # This skips the scan_folder if we've already processed it
+                if scan_folder in done_subjects["Date Dir"].values:
+                    continue
+                
+                # Added new subject so we increase the max count
+                max_count[subject["Subject"]] += 1
+                
+                # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on. min 6 chars
+                scan_name = "{}_{:02d}".format(subject["Subject"], max_count[subject["Subject"]])
+                
+                current_subject = [scan_folder, scan_name,
+                                out_dir, subject["Group"], run_name]
 
-            # If we've collected the # of concurrent mris we can then run the prep multiprocessed
-            if len(queued_mris) == FSL_CONCURRENT_PROCESSES:
-                batch_start_time = datetime.now()
+                queued_mris.append(current_subject)
 
-                # prep all the queued MRIs at once
-                pool = Pool(processes=FSL_CONCURRENT_PROCESSES)
-                complete_pairs = pool.starmap(prep_raw_mri, queued_mris)
+                # If we've collected the # of concurrent mris we can then run the prep multiprocessed
+                if len(queued_mris) == FSL_CONCURRENT_PROCESSES:
+                    batch_start_time = datetime.now()
 
-                batch_end_time = datetime.now()
+                    # prep all the queued MRIs at once
+                    pool = Pool(processes=FSL_CONCURRENT_PROCESSES)
+                    complete_pairs = pool.starmap(prep_raw_mri, queued_mris)
 
-                successful_str = "SUCCESS: Batch {}/{}. It took {} to preprocess".format(
-                    current_batch, est_batches, str(batch_end_time-batch_start_time))
+                    batch_end_time = datetime.now()
 
-                cprint(successful_str, "green")
-                write_batch_to_log(complete_pairs, out_dir, successful_str)
+                    successful_str = "SUCCESS: Batch {}/{}. It took {} to preprocess".format(
+                        current_batch, est_batches, str(batch_end_time-batch_start_time))
 
-                # clear the queue
-                queued_mris.clear()
-                current_batch += 1
+                    cprint(successful_str, "green")
+                    write_batch_to_log(complete_pairs, out_dir, successful_str)
 
+                    # clear the queue
+                    queued_mris.clear()
+                    current_batch += 1
+
+    # finishing up the last batch
     if len(queued_mris) != 0:
         batch_start_time = datetime.now()
         # prep all the queued MRIs at once
@@ -202,8 +208,8 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
             cmd = "aws s3 sync {}/nii_files s3://{}/{}".format(out_dir, AWS_S3_BUCKET_NAME, run_name)
             subprocess.run(cmd, shell=True)
         except:
-            cprint("ERROR: Failed to upload file to s3 bucket", "red")
-            cprint("INFO: Will attempt to sync bucket at end of run", "blue") # TODO: implement this
+            cprint("ERROR: Failed to sync files to s3 bucket", "red")
+            cprint("INFO: Can be done manually using command {}".format(cmd), "blue")
 
 
     cprint("Done! Result files found in {}".format(out_dir), "green")
