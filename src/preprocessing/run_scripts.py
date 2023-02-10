@@ -2,13 +2,13 @@ import pandas as pd
 import json
 import shutil
 import splitfolders
-import logging
 from termcolor import colored, cprint
 from multiprocessing import Pool
 from datetime import datetime
 from ..constants import *
 from ..settings import *
 from .prep_raw import prep_raw_mri
+from .utils import write_batch_to_log
 from pathlib import Path
 
 cwd = Path().resolve()
@@ -47,7 +47,9 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
             colored("Collection path {} empty!".format(collection_dir), "red"))
 
     # Getting individual subjects
-    subjects = pd.read_csv(collection_csv).drop_duplicates(
+    subjects = pd.read_csv(collection_csv)
+    est_batches = len(subjects) / FSL_CONCURRENT_PROCESSES
+    subjects = subjects.drop_duplicates(
         keep='first', subset="Subject").to_dict(orient="records")
 
     out_dir = Path(
@@ -61,27 +63,23 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
         raise ValueError(
             colored("Output dir {} already exists! Pick a different run name or delete the existing directory.".format(out_dir), "red"))
 
-    logging.basicConfig(filename=Path(out_dir, "log"), encoding='utf-8', level=logging.DEBUG,
-                        format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-
     # Creating group subdirs for output nii images
     Path(out_dir, "nii_files/CN").resolve().mkdir(parents=True, exist_ok=True)
     Path(out_dir, "nii_files/AD").resolve().mkdir(parents=True, exist_ok=True)
 
-    # Creating group subdirs for output image slices
-    Path(out_dir, "image_slices/CN").resolve().mkdir(parents=True, exist_ok=True)
-    Path(out_dir, "image_slices/AD").resolve().mkdir(parents=True, exist_ok=True)
+    if not SKIP_SLICE_CREATION:
+        # Creating group subdirs for output image slices
+        Path(out_dir, "image_slices/CN").resolve().mkdir(parents=True, exist_ok=True)
+        Path(out_dir, "image_slices/AD").resolve().mkdir(parents=True, exist_ok=True)
 
-    # Creating group subdirs for output multi-channel image slices
-    Path(out_dir, "multi_channel/CN").resolve().mkdir(parents=True, exist_ok=True)
-    Path(out_dir, "multi_channel/AD").resolve().mkdir(parents=True, exist_ok=True)
+        # Creating group subdirs for output multi-channel image slices
+        Path(out_dir, "multi_channel/CN").resolve().mkdir(parents=True, exist_ok=True)
+        Path(out_dir, "multi_channel/AD").resolve().mkdir(parents=True, exist_ok=True)
 
     fsl_start_time = datetime.now()
 
     queued_mris = []  # queued_mris is the current queue of mris to prep concurrently
     current_batch = 0
-    est_batches = len(subjects) / FSL_CONCURRENT_PROCESSES
-
     for subject in subjects:
         subj_folder = Path(collection_dir, subject["Subject"], "MP-RAGE")
         # For each scan in the subject subject
@@ -101,15 +99,15 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
 
                 # prep all the queued MRIs at once
                 pool = Pool(processes=FSL_CONCURRENT_PROCESSES)
-                pool.starmap(prep_raw_mri, queued_mris)
+                complete_pairs = pool.starmap(prep_raw_mri, queued_mris)
 
                 batch_end_time = datetime.now()
 
-                successful_str = "Successfully completed batch {}/{}. It took {} to preprocess".format(
+                successful_str = "SUCCESS: Batch {}/{}. It took {} to preprocess".format(
                     current_batch, est_batches, str(batch_end_time-batch_start_time))
 
-                logging.info(successful_str)
                 cprint(successful_str, "green")
+                write_batch_to_log(complete_pairs, out_dir, successful_str)
 
                 # clear the queue
                 queued_mris.clear()
@@ -122,26 +120,25 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
         pool.starmap(prep_raw_mri, queued_mris)
         batch_end_time = datetime.now()
 
-        successful_str = "Successfully completed batch {}/{}. It took {} to preprocess".format(
+        successful_str = "SUCCESS: Batch {}/{}. It took {} to preprocess".format(
             current_batch, est_batches, str(batch_end_time-batch_start_time))
 
-        logging.info(successful_str)
         cprint(successful_str, "green")
+        write_batch_to_log(complete_pairs, out_dir, successful_str)
 
     fsl_end_time = datetime.now()
-    logging.info("All FSL scripts took {} to run".format(
-        str(fsl_end_time-fsl_start_time)))
+    cprint("SUCCESS: All FSL scripts took {} to run".format(
+        str(fsl_end_time-fsl_start_time)), "green")
 
     split_seed = datetime.now().timestamp()
-    logging.info("Splitting slice folders with split ratio {}".format(split_ratio))
+    cprint("INFO: Splitting slice folders with split ratio {}".format(split_ratio), "blue")
     splitfolders.ratio(Path(out_dir, "image_slices"), output=Path(out_dir, "slice_dataset"),
                        seed=split_seed, ratio=split_ratio)
 
     splitfolders.ratio(Path(out_dir, "multi_channel"), output=Path(out_dir, "multichannel_dataset"),
                        seed=split_seed, ratio=split_ratio)
 
-    logging.info("Done processing raw MRIs. Saving meta data")
-    print("Done processing raw MRIs. Saving meta data")
+    cprint("SUCCESS: Done processing raw MRIs. Saving meta data", "green")
 
     scan_count = len(list(Path(out_dir, "nii_files").glob('**/*')))
     slice_count = len(list(Path(out_dir, "image_slices").glob('**/*')))
@@ -162,11 +159,9 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     # Writing collection.csv file
     shutil.copyfile(collection_csv, Path(out_dir, "collection.csv"))
 
-    logging.info("Done! Result files found in {}".format(out_dir))
     cprint("Done! Result files found in {}".format(out_dir), "green")
 
-# TODO: add logging here
-def prep_adni_nofsl(collection_dir, run_name, split_ratio):
+def prep_adni_nofsl(collection_dir, run_name, split_ratio): #TODO: maybe join to prep_adni
     """Preps the ADNI dataset WITHOUT running FSL scripts. Note how no collection_csv is passed in
         Will create 4 subdirs
             -  image_slices: Containing the individual image slices, separated by class
@@ -213,6 +208,7 @@ def prep_adni_nofsl(collection_dir, run_name, split_ratio):
     Path(out_dir, "multi_channel/CN").resolve().mkdir(parents=True, exist_ok=True)
     Path(out_dir, "multi_channel/AD").resolve().mkdir(parents=True, exist_ok=True)
 
+    #TODO: Add remove this log stuff
     log_file = open(Path(out_dir, "log"), "w")
     total_start_time = datetime.now()
 

@@ -36,7 +36,7 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(35,
 
     if not SKIP_FSL:
         print("Launching FSL scripts for scan {} in group {}".format(scan_name, group))
-        nii_path = run_fsl(scan_location, scan_name, group, out_dir)
+        original_brain, nii_path = run_fsl(scan_location, scan_name, group, out_dir)
 
         print("FSL scripts complete. Processed MRI found in {}".format(nii_path))
     else:
@@ -66,6 +66,9 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(35,
     if DELETE_NII_ON_COMPLETION and not SKIP_FSL:
         # Removing file to save space
         shutil.rmtree(nii_path)
+    
+    if not SKIP_FSL:
+        return (original_brain, nii_path)
 
 
 def run_fsl(scan_location, scan_name, group, out_dir):
@@ -80,11 +83,11 @@ def run_fsl(scan_location, scan_name, group, out_dir):
     Returns:
         str: path of the saved nii image output by FSL
     """
-    niifile = ""
+    original_brain = ""
     # finding nii file. Each of a subject's scans is in a different scan_location, so this works w multiple scans for a subject
     for p in scan_location.rglob("*"):
         if p.name.endswith(".nii"):
-            niifile = p
+            original_brain = p
             break
 
     # The tmp_dir directory will be used to store all the fsl_anat info
@@ -92,7 +95,7 @@ def run_fsl(scan_location, scan_name, group, out_dir):
         filedir, "../../out/preprocessed_datasets/tmp", scan_name).resolve()
 
     # Running fsl_anat (we don't need tissue segmentation nor subcortical segmentation)
-    fsl_anat(img=niifile, out=tmp_dir, noseg=True, nosubcortseg=True)
+    fsl_anat(img=original_brain, out=tmp_dir, noseg=True, nosubcortseg=True)
 
     # fsl_anat adds .anat to end of output directory
     anat_dir = Path("{}.anat".format(tmp_dir))
@@ -113,7 +116,7 @@ def run_fsl(scan_location, scan_name, group, out_dir):
     # clearing all the .anat files (unnecessary now)
     shutil.rmtree(anat_dir)
 
-    return final_brain
+    return (original_brain, final_brain)
 
 
 def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(35, 55)):
