@@ -2,6 +2,8 @@ import pandas as pd
 import json
 import shutil
 import splitfolders
+import boto3
+import subprocess
 from termcolor import colored, cprint
 from multiprocessing import Pool
 from datetime import datetime
@@ -69,9 +71,10 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
         with open(csv_dir, "w") as csv:
             csv.write('"Original Path","Output Path","Group"\n')
             
-    except:# TODO: check resume status and only process new files
+    except:
+        # As we're using the same output dir, we need to check if we've already processed some of the subjects.
         done_subjects = pd.read_csv(Path(out_dir, "processed.csv"))
-        cprint("INFO: {} subjects already processed. Skipping...".format(len(done_subjects)), "blue")
+        cprint("INFO: {} scahs already processed. Skipping...".format(len(done_subjects)), "blue")
         
         # Converting paths to Path objects
         done_subjects["Original Path"] = [Path(s) for s in done_subjects["Original Path"]]
@@ -82,7 +85,7 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
         done_subjects["Subject Name"] = [s.name[:10] for s in done_subjects["Output Path"]]  # removes "_NN_processsed.nii.gz"
 
         # This is useful for checking if we've already processed a subject
-        done_subjects["Date Dir"] = [s.parent.parent for s in done_subjects["Original Path"]]  # removes "_NN_processsed.nii.gz"
+        done_subjects["Date Dir"] = [s.parent.parent for s in done_subjects["Original Path"]]
 
         # this updates max_count to the max count of each subject that has already been processed
         for _, subject in done_subjects.iterrows():
@@ -123,7 +126,6 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
             # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on. min 6 chars
             scan_name = "{}_{:02d}".format(subject["Subject"], max_count[subject["Subject"]])
             
-
             current_subject = [scan_folder, scan_name,
                                out_dir, subject["Group"], run_name]
 
@@ -194,6 +196,15 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
 
     # Writing collection.csv file
     shutil.copyfile(collection_csv, Path(out_dir, "collection.csv"))
+    
+    if USE_S3: 
+        try: # TODO don't use subprocess, use boto3 w custom function
+            cmd = "aws s3 sync {}/nii_files s3://{}/{}".format(out_dir, AWS_S3_BUCKET_NAME, run_name)
+            subprocess.run(cmd, shell=True)
+        except:
+            cprint("ERROR: Failed to upload file to s3 bucket", "red")
+            cprint("INFO: Will attempt to sync bucket at end of run", "blue") # TODO: implement this
+
 
     cprint("Done! Result files found in {}".format(out_dir), "green")
 
