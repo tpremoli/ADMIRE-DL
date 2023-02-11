@@ -5,5 +5,4 @@ options:
     method: pretrain
     kaggle: True  
     pooling: null
-    fc_count: 3 # TODO: Tweak fc stuff to cconcur w individual architectures (settings/constants.py)
     epochs: 100
