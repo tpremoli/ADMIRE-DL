@@ -54,18 +54,18 @@ def load_training_task(file_loc):
 
         # Getting optional parameters with defaults
         pooling = yamlfile["options"].get("pooling", None)  # Default to None
-        fc_count = yamlfile["options"].get(
-            "fc_count", 1)  # Default to 1 fc layer
+        fc_count = yamlfile["options"].get("fc_count", 1)  # Default to 1 fc layer
         epochs = yamlfile["options"].get("epochs", 25)  # Default to 25 epochs
+        batch_size = yamlfile["options"].get("batch_size", 32)  # Default to 32 batch size
 
         model_loc = run_training_task(
-            architecture, task_name, dataset_dir, method, is_kaggle, pooling, fc_count, epochs)
+            architecture, task_name, dataset_dir, method, is_kaggle, pooling, fc_count, epochs, batch_size)
 
         shutil.copyfile(Path(cwd, file_loc).resolve(), Path(
             model_loc, "task_config.yml").resolve())
         
 
-def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None, fc_count=1, epochs=25):
+def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None, fc_count=1, epochs=25, batch_size=32):
     """Creates a model, trains it, and saves the model and training stats.
 
     Args:
@@ -75,6 +75,9 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
         method (str): The method to be used in training the Model. This must be "transferlearn" or "pretrain"
         is_kaggle (bool): If the dataset is from kaggle, this should be True. This is used to determine the preprocessing method.
         pooling (str, optional): A custom pooling method to be used. Must be from the pooling methods supported by Keras models. Defaults to None.
+        fc_count (int, optional): The number of fully connected layers to be added to the model. Defaults to 1.
+        epochs (int, optional): The number of epochs to train the model for. Defaults to 25.
+        batch_size (int, optional): The batch size to be used for training. Defaults to 32.
 
     Returns:
         (str): The location of the saved model and training stats.
@@ -91,7 +94,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
 
     # Generating 3 datasets
     train_images, test_images, val_images = gen_subsets(
-        dataset_dir, is_kaggle, architecture)
+        dataset_dir, is_kaggle, architecture, batch_size=batch_size)
     
     # retrieve a model created w given architecture and method
     model = create_model(architecture, is_kaggle, method,

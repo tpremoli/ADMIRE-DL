@@ -1,7 +1,7 @@
-task_name: resnet152_pretrain_kaggle
+task_name: densenet201_pretrain_kaggle
 dataset: out/preprocessed_datasets/kaggle_processed
 options:
-    architecture: ResNet152
+    architecture: DenseNet201
     method: pretrain
     kaggle: True    
     pooling: null
