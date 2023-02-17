@@ -44,6 +44,8 @@ def write_batch_to_log(complete_pairs, out_dir, successful_str):
                 csv.write('"')
                 csv.write("NA")
                 csv.write('"')
+                
+                csv.write("\n")
             else:
                 csv.write('"')
                 csv.write(str(Path(ogbrain).resolve()))
