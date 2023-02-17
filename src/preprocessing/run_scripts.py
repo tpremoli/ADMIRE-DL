@@ -43,10 +43,10 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
 
     if not Path.exists(collection_dir):
         raise ValueError(
-            colored("Collection dir {} does not exist!".format(collection_dir), "red"))
+            colored(f"Collection dir {collection_dir} does not exist!", "red"))
     elif not any(Path(collection_dir).iterdir()):
         raise ValueError(
-            colored("Collection path {} empty!".format(collection_dir), "red"))
+            colored(f"Collection path {collection_dir} empty!", "red"))
 
     # Getting individual subjects
     subjects = pd.read_csv(collection_csv)
@@ -58,7 +58,7 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     out_dir = Path(
         filedir, "../../out/preprocessed_datasets", run_name).resolve()
 
-    cprint("INFO: output dir: {}".format(out_dir), "blue")
+    cprint(f"INFO: output dir: {out_dir}", "blue")
 
     # subjects that have already been processed
     done_subjects = []
@@ -76,8 +76,7 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     except:
         # As we're using the same output dir, we need to check if we've already processed some of the subjects.
         done_subjects = pd.read_csv(Path(out_dir, "processed.csv"))
-        cprint("INFO: {} scahs already processed. Skipping...".format(
-            len(done_subjects)), "blue")
+        cprint(f"INFO: {len(done_subjects)} scahs already processed. Skipping...", "blue")
 
         # Converting paths to Path objects
         done_subjects["Original Path"] = [
@@ -159,8 +158,7 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
 
                     batch_end_time = datetime.now()
 
-                    successful_str = "SUCCESS: Batch {}/{}. It took {} to preprocess".format(
-                        current_batch, est_batches, str(batch_end_time-batch_start_time))
+                    successful_str = f"SUCCESS: Batch {current_batch}/{est_batches}. It took {str(batch_end_time-batch_start_time)} to preprocess"
 
                     cprint(successful_str, "green")
                     write_batch_to_log(complete_pairs, out_dir, successful_str)
@@ -177,19 +175,17 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
         pool.starmap(prep_raw_mri, queued_mris)
         batch_end_time = datetime.now()
 
-        successful_str = "SUCCESS: Batch {}/{}. It took {} to preprocess".format(
-            current_batch, est_batches, str(batch_end_time-batch_start_time))
+        successful_str = f"SUCCESS: Batch {current_batch}/{est_batches}. It took {str(batch_end_time-batch_start_time)} to preprocess"
 
         cprint(successful_str, "green")
         write_batch_to_log(complete_pairs, out_dir, successful_str)
 
     fsl_end_time = datetime.now()
-    cprint("SUCCESS: All FSL scripts took {} to run".format(
-        str(fsl_end_time-fsl_start_time)), "green")
+    cprint(f"SUCCESS: All FSL scripts took {str(fsl_end_time-fsl_start_time)} to run", "green")
 
     split_seed = datetime.now().timestamp()
-    cprint("INFO: Splitting slice folders with split ratio {}".format(
-        split_ratio), "blue")
+    cprint(f"INFO: Splitting slice folders with split ratio {split_ratio}", "blue")
+    
     splitfolders.ratio(Path(out_dir, "image_slices"), output=Path(out_dir, "slice_dataset"),
                        seed=split_seed, ratio=split_ratio)
 
@@ -219,14 +215,13 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
 
     if USE_S3:
         try:  # TODO don't use subprocess, use boto3 w custom function
-            cmd = "aws s3 sync {}/nii_files s3://{}/{}".format(
-                out_dir, AWS_S3_BUCKET_NAME, run_name)
+            cmd = f"aws s3 sync {out_dir}/nii_files s3://{AWS_S3_BUCKET_NAME}/{run_name}"
             subprocess.run(cmd, shell=True)
         except:
             cprint("ERROR: Failed to sync files to s3 bucket", "red")
-            cprint("INFO: Can be done manually using command {}".format(cmd), "blue")
+            cprint(f"INFO: Can be done manually using command {cmd}", "blue")
 
-    cprint("Done! Result files found in {}".format(out_dir), "green")
+    cprint(f"Done! Result files found in {out_dir}", "green")
 
 
 def prep_adni_nofsl(collection_dir, run_name, split_ratio):  # TODO: maybe join to prep_adni
@@ -252,21 +247,20 @@ def prep_adni_nofsl(collection_dir, run_name, split_ratio):  # TODO: maybe join 
 
     if not Path.exists(collection_dir):
         raise ValueError(
-            colored("Collection dir {} does not exist!".format(collection_dir), "red"))
+            colored(f"Collection dir {collection_dir} does not exist!", "red"))
     elif not any(Path(collection_dir).iterdir()):
-        raise colored(ValueError(
-            "Collection path {} empty!".format(collection_dir), "red"))
+        raise colored(ValueError(f"Collection path {collection_dir} empty!", "red"))
 
     out_dir = Path(
         filedir, "../../out/preprocessed_datasets", run_name).resolve()
 
-    print("output dir: {}".format(out_dir))
+    print(f"output dir: {out_dir}")
 
     try:
         out_dir.mkdir(parents=True, exist_ok=True)
     except:
         raise ValueError(
-            colored("Output dir {} already exists! Pick a different run name or delete the existing directory.".format(out_dir), "red"))
+            colored(f"Output dir {out_dir} already exists! Pick a different run name or delete the existing directory.", "red"))
 
     # Creating group subdirs for output image slices
     Path(out_dir, "image_slices/CN").resolve().mkdir(parents=True, exist_ok=True)
@@ -302,8 +296,7 @@ def prep_adni_nofsl(collection_dir, run_name, split_ratio):  # TODO: maybe join 
 
             batch_end_time = datetime.now()
 
-            log_file.write("batch {} took {} to preprocess\n".format(
-                current_batch, str(batch_end_time-batch_start_time)))
+            log_file.write(f"batch {current_batch} took {str(batch_end_time-batch_start_time)} to preprocess\n")
 
             # clear the queue
             queued_mris.clear()
@@ -315,16 +308,14 @@ def prep_adni_nofsl(collection_dir, run_name, split_ratio):  # TODO: maybe join 
         pool = Pool(processes=len(queued_mris))
         pool.starmap(prep_raw_mri, queued_mris)
         batch_end_time = datetime.now()
-        log_file.write("batch {} took {} to preprocess\n".format(
-            current_batch, str(batch_end_time-batch_start_time)))
+        log_file.write(f"batch {current_batch} took {str(batch_end_time-batch_start_time)} to preprocess\n")
 
     total_end_time = datetime.now()
-    log_file.write("All FSL scripts took {} to run".format(
-        str(total_end_time-total_start_time)))
+    log_file.write(f"All FSL scripts took {str(total_end_time-total_start_time)} to run")
     log_file.close()
 
     split_seed = datetime.now().timestamp()
-    print("Splitting slice folders with split ratio {}".format(split_ratio))
+    print(f"Splitting slice folders with split ratio {split_ratio}")
     splitfolders.ratio(Path(out_dir, "image_slices"), output=Path(out_dir, "slice_dataset"),
                        seed=split_seed, ratio=split_ratio)
 
@@ -349,7 +340,7 @@ def prep_adni_nofsl(collection_dir, run_name, split_ratio):  # TODO: maybe join 
         }
         json.dump(metadata, meta_file, indent=4)
 
-    cprint("Done! Result files found in {}".format(out_dir), "green")
+    cprint(f"Done! Result files found in {out_dir}", "green")
 
 
 def prep_kaggle(kaggle_dir, run_name, split_ratio):
@@ -369,26 +360,24 @@ def prep_kaggle(kaggle_dir, run_name, split_ratio):
     kaggle_dir = Path(cwd, kaggle_dir).resolve()
 
     if not Path.exists(kaggle_dir):
-        raise ValueError(
-            colored("Kaggle path {} does not exist!".format(kaggle_dir), "red"))
+        raise ValueError(colored(f"Kaggle path {kaggle_dir} does not exist!", "red"))
     elif not any(Path(kaggle_dir).iterdir()):
-        raise ValueError(
-            colored("Kaggle path {} empty!".format(kaggle_dir), "red"))
+        raise ValueError(colored(f"Kaggle path {kaggle_dir} empty!", "red"))
 
     out_dir = Path(
         filedir, "../../out/preprocessed_datasets", run_name).resolve()
 
-    print("output dir: {}".format(out_dir))
+    print(f"output dir: {out_dir}")
 
     try:
         out_dir.mkdir(parents=True, exist_ok=False)
     except:
         raise ValueError(
-            colored("Output dir {} already exists! Pick a different run name or delete the existing directory.".format(out_dir), "red"))
+            colored(f"Output dir {out_dir} already exists! Pick a different run name or delete the existing directory.", "red"))
 
     split_seed = datetime.now().timestamp()
 
-    print("Splitting folders with split ratio {}".format(split_ratio))
+    print(f"Splitting folders with split ratio {split_ratio}")
     splitfolders.ratio(kaggle_dir, output=out_dir,
                        seed=split_seed, ratio=split_ratio)
 
@@ -409,4 +398,4 @@ def prep_kaggle(kaggle_dir, run_name, split_ratio):
         }
         json.dump(metadata, meta_file, indent=4)
 
-    cprint("Done! Result files found in {}".format(out_dir), "green")
+    cprint(f"Done! Result files found in {out_dir}", "green")

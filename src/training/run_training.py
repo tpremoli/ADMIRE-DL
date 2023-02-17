@@ -31,8 +31,7 @@ def load_training_task(file_loc):
         optionkeys = options.keys()
 
         for path in Path(filedir, "../../out/trained_models").resolve().glob(yamlfile["task_name"]):
-            raise ValueError(colored("Task with name {} already exists in {}!".format(
-                yamlfile["task_name"], path)),"red")
+            raise ValueError(colored(f"Task with name {yamlfile['task_name']} already exists in {path}!","red"))
 
         if "task_name" not in keys:
             raise ValueError(colored("Task config requires a task_name attribute!","red"))
@@ -55,18 +54,18 @@ def load_training_task(file_loc):
 
         # Getting optional parameters with defaults
         pooling = yamlfile["options"].get("pooling", None)  # Default to None
-        fc_count = yamlfile["options"].get(
-            "fc_count", 1)  # Default to 1 fc layer
+        fc_count = yamlfile["options"].get("fc_count", 1)  # Default to 1 fc layer
         epochs = yamlfile["options"].get("epochs", 25)  # Default to 25 epochs
+        batch_size = yamlfile["options"].get("batch_size", 32)  # Default to 32 batch size
 
         model_loc = run_training_task(
-            architecture, task_name, dataset_dir, method, is_kaggle, pooling, fc_count, epochs)
+            architecture, task_name, dataset_dir, method, is_kaggle, pooling, fc_count, epochs, batch_size)
 
         shutil.copyfile(Path(cwd, file_loc).resolve(), Path(
             model_loc, "task_config.yml").resolve())
         
 
-def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None, fc_count=1, epochs=25):
+def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None, fc_count=1, epochs=25, batch_size=32):
     """Creates a model, trains it, and saves the model and training stats.
 
     Args:
@@ -76,6 +75,9 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
         method (str): The method to be used in training the Model. This must be "transferlearn" or "pretrain"
         is_kaggle (bool): If the dataset is from kaggle, this should be True. This is used to determine the preprocessing method.
         pooling (str, optional): A custom pooling method to be used. Must be from the pooling methods supported by Keras models. Defaults to None.
+        fc_count (int, optional): The number of fully connected layers to be added to the model. Defaults to 1.
+        epochs (int, optional): The number of epochs to train the model for. Defaults to 25.
+        batch_size (int, optional): The batch size to be used for training. Defaults to 32.
 
     Returns:
         (str): The location of the saved model and training stats.
@@ -92,7 +94,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
 
     # Generating 3 datasets
     train_images, test_images, val_images = gen_subsets(
-        dataset_dir, is_kaggle, architecture)
+        dataset_dir, is_kaggle, architecture, batch_size=batch_size)
     
     # retrieve a model created w given architecture and method
     model = create_model(architecture, is_kaggle, method,
@@ -133,10 +135,10 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
 
     # Saving important data
     with open(Path(model_loc, "stats"), "w") as f:
-        f.write("Training completed in time: {}\n".format(duration))
-        f.write("Test loss: {}\n".format(score[0]))
-        f.write("Test accuracy: {}".format(score[1]))
+        f.write(f"Training completed in time: {duration}\n")
+        f.write(f"Test loss: {score[0]}\n")
+        f.write(f"Test accuracy: {score[1]}")
 
-    plot_data(history, Path(model_loc, '{}_plt.png'.format(task_name)))
+    plot_data(history, Path(model_loc, f'{task_name}_plt.png'))
 
     return model_loc

@@ -1,0 +1,9 @@
+task_name: densenet121_pretrain_kaggle
+dataset: out/preprocessed_datasets/kaggle_processed
+options:
+    architecture: DenseNet121
+    method: pretrain
+    kaggle: True    
+    pooling: null
+    epochs: 100
+    batch_size: 32

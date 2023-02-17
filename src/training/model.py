@@ -68,9 +68,6 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         # https://arxiv.org/abs/1809.03972 NOTE: this paper uses the sensitivity and specificity metrics as well
         
         
-        # TODO: maybe add a setting to print the model summary
-        # model.summary()
-        
         return model
     
     if method == "pretrain":
@@ -90,7 +87,6 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         model.compile(loss='categorical_crossentropy',
                     optimizer=optimizers.SGD(learning_rate=0.01), # SGD is better for pretraining
                     metrics=['accuracy'])
-        model.summary()
         
         # categorical_crossentropy is used for multi-class classification:
         # https://www.sciencedirect.com/science/article/pii/S1389041718309562
