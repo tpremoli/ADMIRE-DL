@@ -15,28 +15,48 @@ def write_batch_to_log(complete_pairs, out_dir, successful_str):
         log.write(successful_str)
         log.write("\n")
         for ogbrain, newbrain in complete_pairs:
-            log.write("\t")
-            log.write(Path(ogbrain).resolve().name)
-            log.write(" processed to ")
-            log.write(Path(newbrain).resolve().name)
-            log.write(", ")
-            log.write(Path(newbrain).resolve().parent.name)
-            log.write("\n")
+            if newbrain == "FSL failed":
+                log.write("\tFAIL:")
+                log.write(Path(ogbrain).resolve().name)
+                log.write(" failed to process. Skipped!\n")
+            else:
+                log.write("\t")
+                log.write(Path(ogbrain).resolve().name)
+                log.write(" processed to ")
+                log.write(Path(newbrain).resolve().name)
+                log.write(", ")
+                log.write(Path(newbrain).resolve().parent.name)
+                log.write("\n")
     
     with open(csv_dir, "a") as csv:
         for ogbrain, newbrain in complete_pairs:
-            csv.write('"')
-            csv.write(str(Path(ogbrain).resolve()))
-            csv.write('"')
-            csv.write(",")
-            
-            csv.write('"')
-            csv.write(str(Path(newbrain).resolve()))
-            csv.write('"')
-            csv.write(",")
-            
-            csv.write('"')
-            csv.write(str(Path(newbrain).resolve().parent.name))
-            csv.write('"')
+            if newbrain == "FSL failed":
+                csv.write('"')
+                csv.write(str(Path(ogbrain).resolve()))
+                csv.write('"')
+                csv.write(",")
+                
+                csv.write('"')
+                csv.write("FAILED")
+                csv.write('"')
+                csv.write(",")
+                
+                csv.write('"')
+                csv.write("NA")
+                csv.write('"')
+            else:
+                csv.write('"')
+                csv.write(str(Path(ogbrain).resolve()))
+                csv.write('"')
+                csv.write(",")
+                
+                csv.write('"')
+                csv.write(str(Path(newbrain).resolve()))
+                csv.write('"')
+                csv.write(",")
+                
+                csv.write('"')
+                csv.write(str(Path(newbrain).resolve().parent.name))
+                csv.write('"')
 
-            csv.write("\n")
+                csv.write("\n")
