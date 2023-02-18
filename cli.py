@@ -71,17 +71,21 @@ def main():
                     raise argparse.ArgumentTypeError(
                         colored('Must specify COLLECTION_DIR when using ADNI dataset with SKIP_FSL enabled!', "red"))
                 
-                prep_adni_nofsl(collection_dir=args.collection_dir, 
-                          run_name=args.run_name, 
+                prep_adni(collection_dir=args.collection_dir,
+                          run_name=args.run_name,
                           split_ratio=tuple(args.ratio))
+                
             else:
                 # both c and d are required if we're not skipping FSL scripts
                 if not args.collection_csv or not args.collection_dir:
                     raise argparse.ArgumentTypeError(
                         colored('Must specify COLLECTION_DIR and COLLECTION_CSV when using ADNI dataset with SKIP_FSL disabled!', "red"))
 
-                prep_adni(args.collection_dir, args.collection_csv,
-                          args.run_name, tuple(args.ratio))
+                prep_adni(collection_dir=args.collection_dir,
+                          run_name=args.run_name,
+                          split_ratio=tuple(args.ratio),
+                          collection_csv=args.collection_csv)
+
     elif args.tool == "train":
         from src.training.run_training import load_training_task
 
