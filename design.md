@@ -66,7 +66,8 @@ options:
     # Dense Dropout Dense
 ```
 
-Trained models will be saved in `out/trained_models/{task_name}_model`.
+Trained kaggle models will be saved in `out/trained_models/kaggle/{task_name}`.
+Trained adni models will be saved in `out/trained_models/adni/{task_name}`.
 
 To clarify the config options:
 

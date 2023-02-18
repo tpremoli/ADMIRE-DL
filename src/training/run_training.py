@@ -30,9 +30,6 @@ def load_training_task(file_loc):
         options = yamlfile["options"]
         optionkeys = options.keys()
 
-        for path in Path(filedir, "../../out/trained_models").resolve().glob(yamlfile["task_name"]):
-            raise ValueError(colored(f"Task with name {yamlfile['task_name']} already exists in {path}!","red"))
-
         if "task_name" not in keys:
             raise ValueError(colored("Task config requires a task_name attribute!","red"))
         if "dataset" not in keys:
@@ -57,6 +54,11 @@ def load_training_task(file_loc):
         fc_count = yamlfile["options"].get("fc_count", 1)  # Default to 1 fc layer
         epochs = yamlfile["options"].get("epochs", 25)  # Default to 25 epochs
         batch_size = yamlfile["options"].get("batch_size", 32)  # Default to 32 batch size
+        
+        parent_dir = Path(filedir, "../../out/trained_models", "kaggle" if is_kaggle else "adni").resolve() 
+    
+        for path in parent_dir.glob(yamlfile["task_name"]):
+            raise ValueError(colored(f"Task with name {yamlfile['task_name']} already exists in {path}!","red"))
 
         model_loc = run_training_task(
             architecture, task_name, dataset_dir, method, is_kaggle, pooling, fc_count, epochs, batch_size)
@@ -99,7 +101,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
     # retrieve a model created w given architecture and method
     model = create_model(architecture, is_kaggle, method,
                          pooling=pooling, fc_count=fc_count)
-    model_loc = Path(trained_models_path, task_name)
+    model_loc = Path(trained_models_path, "kaggle" if is_kaggle else "adni", task_name)
     model_loc.mkdir(parents=True, exist_ok=False)
 
     start = datetime.now()
