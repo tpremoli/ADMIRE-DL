@@ -79,10 +79,6 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(35,
         create_multichannel_slices_from_brain(
             nii_path, out_dir, scan_name, group, slice_range)
     
-    if DELETE_NII_ON_COMPLETION and not SKIP_FSL:
-        # Removing file to save space
-        shutil.rmtree(nii_path)
-    
     if not SKIP_FSL:
         return (original_brain, nii_path)
 

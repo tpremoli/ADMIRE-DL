@@ -183,14 +183,16 @@ def prep_adni(collection_dir, collection_csv, run_name, split_ratio):
     fsl_end_time = datetime.now()
     cprint(f"SUCCESS: All FSL scripts took {str(fsl_end_time-fsl_start_time)} to run", "green")
 
-    split_seed = datetime.now().timestamp()
-    cprint(f"INFO: Splitting slice folders with split ratio {split_ratio}", "blue")
     
-    splitfolders.ratio(Path(out_dir, "image_slices"), output=Path(out_dir, "slice_dataset"),
-                       seed=split_seed, ratio=split_ratio)
+    if not SKIP_SLICE_CREATION:
+        split_seed = datetime.now().timestamp()
+        
+        cprint(f"INFO: Splitting slice folders with split ratio {split_ratio}", "blue")
+        splitfolders.ratio(Path(out_dir, "image_slices"), output=Path(out_dir, "slice_dataset"),
+                        seed=split_seed, ratio=split_ratio)
 
-    splitfolders.ratio(Path(out_dir, "multi_channel"), output=Path(out_dir, "multichannel_dataset"),
-                       seed=split_seed, ratio=split_ratio)
+        splitfolders.ratio(Path(out_dir, "multi_channel"), output=Path(out_dir, "multichannel_dataset"),
+                        seed=split_seed, ratio=split_ratio)
 
     cprint("SUCCESS: Done processing raw MRIs. Saving meta data", "green")
 
