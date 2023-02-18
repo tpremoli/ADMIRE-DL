@@ -1,0 +1,8 @@
+task_name: vgg16_pretrain_multichannel # NOTE: vgg has 3 fc layers by default
+dataset: out/preprocessed_datasets/adni_processed/multichannel_dataset
+options:
+    architecture: VGG16
+    method: pretrain
+    kaggle: False  
+    pooling: null
+    epochs: 100

@@ -1,0 +1,9 @@
+task_name: vgg19_transferlearn_multichannel
+dataset: out/preprocessed_datasets/adni_processed/multichannel_dataset
+options:
+    architecture: VGG19
+    method: transferlearn
+    kaggle: False    
+    pooling: null
+    fc_count: 3
+    epochs: 40 # more as it was taking longer to converge

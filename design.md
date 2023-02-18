@@ -59,9 +59,6 @@ options:
     learning_rate: 0.001 # Default: 0.001
     fc_count: 1 # Default: 1
     epochs: 25 # Default: 25
-    # loss: categorical_crossentropy ??
-    # metrics: accuracy ??
-    # activation: softmax ??
 ```
 
 Trained kaggle models will be saved in `out/trained_models/kaggle/{task_name}`.
