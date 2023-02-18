@@ -33,7 +33,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
             weights="imagenet",
             # 3D as the imgs are same across 3 channels
             input_shape=input_shape,
-            classifier_activation="softmax",
+            classifier_activation="softmax" if is_kaggle else "sigmoid",
             pooling = pooling,
         )
 
@@ -49,10 +49,10 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
             x = Dense(units=4096, activation='relu')(x) # relu avoids vanishing gradient problem
             
         # The final layer is a softmax layer
-        prediction = Dense(output_count, activation='softmax')(x)
+        prediction = Dense(output_count, activation='softmax' if is_kaggle else "sigmoid")(x)
         
         model = Model(inputs=base_model.input, outputs=prediction)
-        model.compile(loss='categorical_crossentropy',
+        model.compile(loss='categorical_crossentropy' if is_kaggle else 'binary_crossentropy',
                     optimizer=optimizers.Adam(learning_rate=0.001),
                     metrics=['accuracy'])
         
@@ -76,7 +76,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
             include_top=True,  # This is if we want the final FC layers
             weights=None,
             input_shape=input_shape,
-            classifier_activation="softmax",
+            classifier_activation="softmax" if is_kaggle else "sigmoid",
             pooling = pooling,
             classes = output_count # set the number of outputs to required count
         )
@@ -84,7 +84,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         if (fc_count > 1):
             cprint("WARNING: fc_count has no effect on pretrain method", "yellow")
         
-        model.compile(loss='categorical_crossentropy',
+        model.compile(loss='categorical_crossentropy' if is_kaggle else 'binary_crossentropy',
                     optimizer=optimizers.SGD(learning_rate=0.01), # SGD is better for pretraining
                     metrics=['accuracy'])
         
