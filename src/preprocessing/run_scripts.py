@@ -10,7 +10,7 @@ from datetime import datetime
 from ..constants import *
 from ..settings import *
 from .prep_raw import prep_raw_mri
-from .utils import write_batch_to_log
+from .utils import write_batch_to_log, create_slices_from_brain, create_multichannel_slices_from_brain
 from pathlib import Path
 
 cwd = Path().resolve()
@@ -39,7 +39,8 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
     """
     # Resetting path locs
     collection_dir = Path(cwd, collection_dir).resolve()
-    collection_csv = Path(cwd, collection_csv).resolve()
+    if not SKIP_FSL:
+        collection_csv = Path(cwd, collection_csv).resolve()
     
     if SKIP_FSL and SKIP_SLICE_CREATION:
         raise ValueError("Both SKIP_FSL and SKIP_SLICE_CREATION are True. Nothing to do.")
@@ -51,22 +52,24 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
         raise ValueError(
             colored(f"Collection path {collection_dir} empty!", "red"))
 
-    # Getting individual subjects
-    subjects = pd.read_csv(collection_csv)
-    est_batches = len(subjects) / FSL_CONCURRENT_PROCESSES
+    if not SKIP_FSL:
+        # Getting individual subjects
+        subjects = pd.read_csv(collection_csv)
+        est_batches = len(subjects) / FSL_CONCURRENT_PROCESSES
 
-    subjects = subjects.drop_duplicates(
-        keep='first', subset="Subject").to_dict(orient="records")
+        subjects = subjects.drop_duplicates(
+            keep='first', subset="Subject").to_dict(orient="records")
 
     out_dir = Path(
         filedir, "../../out/preprocessed_datasets", run_name).resolve()
 
     cprint(f"INFO: output dir: {out_dir}", "blue")
 
-    # subjects that have already been processed
-    done_subjects = []
-    # max_count is used to name the output files. It's a dict of base subject name to max count
-    max_count = dict.fromkeys([subject["Subject"] for subject in subjects], -1)
+    if not SKIP_FSL:
+        # subjects that have already been processed
+        done_subjects = []
+        # max_count is used to name the output files. It's a dict of base subject name to max count
+        max_count = dict.fromkeys([subject["Subject"] for subject in subjects], -1)
 
     try:
         out_dir.mkdir(parents=True, exist_ok=False)
@@ -80,33 +83,35 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
     except:
         # If we're skipping fsl we just get rid of the dir
         if SKIP_FSL:
-            raise ValueError("Output dir already exists. Please delete or change run name")
-        
-        # As we're using the same output dir, we need to check if we've already processed some of the subjects.
-        done_subjects = pd.read_csv(Path(out_dir, "processed.csv"))
-        cprint(f"INFO: {len(done_subjects)} scahs already processed. Skipping...", "blue")
+            # If slices exist we raise error. Else, we create the dir
+            if Path(out_dir, "image_slices").exists():
+                raise ValueError("Output dir already exists. Please delete or change run name")
+        else:
+            # As we're using the same output dir, we need to check if we've already processed some of the subjects.
+            done_subjects = pd.read_csv(Path(out_dir, "processed.csv"))
+            cprint(f"INFO: {len(done_subjects)} scahs already processed. Skipping...", "blue")
 
-        # Converting paths to Path objects
-        done_subjects["Original Path"] = [
-            Path(s) for s in done_subjects["Original Path"]]
-        done_subjects["Output Path"] = [
-            Path(s) for s in done_subjects["Output Path"]]
+            # Converting paths to Path objects
+            done_subjects["Original Path"] = [
+                Path(s) for s in done_subjects["Original Path"]]
+            done_subjects["Output Path"] = [
+                Path(s) for s in done_subjects["Output Path"]]
 
-        # Parses the count from the output path
-        done_subjects["Count"] = [int(s.name[11:13])
-                                  for s in done_subjects["Output Path"]]
-        # removes "_NN_processsed.nii.gz"
-        done_subjects["Subject Name"] = [s.name[:10]
-                                         for s in done_subjects["Output Path"]]
+            # Parses the count from the output path
+            done_subjects["Count"] = [int(s.name[11:13])
+                                    for s in done_subjects["Output Path"]]
+            # removes "_NN_processsed.nii.gz"
+            done_subjects["Subject Name"] = [s.name[:10]
+                                            for s in done_subjects["Output Path"]]
 
-        # This is useful for checking if we've already processed a subject
-        done_subjects["Date Dir"] = [
-            s.parent.parent for s in done_subjects["Original Path"]]
+            # This is useful for checking if we've already processed a subject
+            done_subjects["Date Dir"] = [
+                s.parent.parent for s in done_subjects["Original Path"]]
 
-        # this updates max_count to the max count of each subject that has already been processed
-        for _, subject in done_subjects.iterrows():
-            if subject["Count"] > max_count[subject["Subject Name"]]:
-                max_count[subject["Subject Name"]] = subject["Count"]
+            # this updates max_count to the max count of each subject that has already been processed
+            for _, subject in done_subjects.iterrows():
+                if subject["Count"] > max_count[subject["Subject Name"]]:
+                    max_count[subject["Subject Name"]] = subject["Count"]
 
     if not SKIP_FSL:
         # Creating group subdirs for output nii images
@@ -196,9 +201,19 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
     
     # this means we'll take care of slice creation ad-hoc
     elif not SKIP_SLICE_CREATION:
+        for imgpath in out_dir.rglob("*.nii.gz"):
+            nii_path = Path(imgpath)
+            scan_name = nii_path.name[:13]
+            group = nii_path.parent.name
+            slice_range = (35, 55) # TODO: make this a setting
+            # Split into individual slices
+            create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range)
+
+            # Split into multichannel slices
+            create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range)
         
         
-    # slice creation chunk
+    # slice creation chunk TODO: check that the folder split hasn't already been done
     if not SKIP_FOLDER_SPLIT:
         split_seed = datetime.now().timestamp()
         
@@ -227,8 +242,9 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
         }
         json.dump(metadata, meta_file, indent=4)
 
-    # Writing collection.csv file
-    shutil.copyfile(collection_csv, Path(out_dir, "collection.csv"))
+    if collection_csv:
+        # Writing collection.csv file
+        shutil.copyfile(collection_csv, Path(out_dir, "collection.csv"))
 
     if USE_S3:
         try:  # TODO don't use subprocess, use boto3 w custom function

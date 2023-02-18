@@ -10,6 +10,9 @@ AWS_S3_BUCKET_NAME="processed-nii-files"
 # the correct folders. TODO: Add STREAM_FROM_S3 option?
 SKIP_FSL=True
 
+# This controls the number of concurrent FSL processes that can be ran at once.
+FSL_CONCURRENT_PROCESSES=4
+
 # This setting controls if the program should generate image slices for the dataset
 # being processed.
 SKIP_SLICE_CREATION=False
@@ -17,7 +20,3 @@ SKIP_SLICE_CREATION=False
 # This setting controls if the program should split the dataset into train, test, and
 # val folders.
 SKIP_FOLDER_SPLIT=False
-
-
-# This controls the number of concurrent FSL processes that can be ran at once.
-FSL_CONCURRENT_PROCESSES=4
