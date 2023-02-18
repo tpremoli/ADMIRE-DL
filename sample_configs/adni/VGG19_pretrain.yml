@@ -1,0 +1,8 @@
+task_name: vgg19_pretrain_slices # NOTE: vgg has 3 fc layers by default
+dataset: out/preprocessed_datasets/adni_processed/slice_dataset
+options:
+    architecture: VGG19
+    method: pretrain
+    kaggle: False  
+    pooling: null
+    epochs: 100

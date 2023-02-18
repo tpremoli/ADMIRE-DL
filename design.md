@@ -62,8 +62,6 @@ options:
     # loss: categorical_crossentropy ??
     # metrics: accuracy ??
     # activation: softmax ??
-    # maybe do a fc_config w a list i.e
-    # Dense Dropout Dense
 ```
 
 Trained kaggle models will be saved in `out/trained_models/kaggle/{task_name}`.
