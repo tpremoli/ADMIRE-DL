@@ -1,13 +1,12 @@
 import shutil
 import numpy as np
-import nibabel as nib
 import fsl.wrappers.fsl_anat as fsl_anat
 import fsl.wrappers.fslmaths as fsl_maths
 import boto3
+from utils import create_slices_from_brain, create_multichannel_slices_from_brain
 from termcolor import colored, cprint
 from ..settings import *
 from pathlib import Path
-from PIL import Image
 
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
@@ -136,89 +135,4 @@ def run_fsl(scan_location, scan_name, group, out_dir):
     return (original_brain, final_brain)
 
 
-def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(35, 55)):
-    """Creates the individual image slices from an input nii image and slice range
 
-    Args:
-        nii_path (str): path of the nii image to extract the slices from
-        out_dir (str): output directory. slices will be placed in {out_dir}/image_slices/{group}
-        scan_name (str): The name of the scan (format NNN_S_NNNN_NN)
-        group (str): Class of the image. Can be CN, AD, or MCI
-        slice_range (tuple, optional): The slices to be extracted. Defaults to (35,55).
-    """
-    brain_data = get_data_from_nii(nii_path)
-
-    for i in range(slice_range[0], slice_range[1]):
-        # Vital to make sure that the np.float64 is correctly scaled to np.uint8
-        curr_slice = normalize_array_range(brain_data[:, :, i])
-
-        image_data = Image.fromarray(curr_slice)
-
-        # Saved as image_slices/{group}/{subject}_slice{number}
-        image_dir = Path(out_dir, f"image_slices/{group}/{scan_name}_slice{(i-slice_range[0])}.png").resolve()
-        
-        image_data.save(image_dir)
-
-
-def create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(35, 55)):
-    """Creates the multichannel image slices from an input nii image and slice range
-
-    Args:
-        nii_path (str): path of the nii image to extract the slices from
-        out_dir (str): output directory. slices will be placed in {out_dir}/multi_channel/{group}
-        scan_name (str): The name of the scan (format NNN_S_NNNN_NN)
-        group (str): Class of the image. Can be CN, AD, or MCI
-        slice_range (tuple, optional): The slices to be extracted. Defaults to (35,55).
-    """
-    brain_data = get_data_from_nii(nii_path)
-
-    for i in range(slice_range[0], slice_range[1]):
-        # Vital to make sure that the np.float64 is correctly scaled to np.uint8
-        # We do 3 slices (r=i-1,g=i,b=i+1)
-        r_slice = normalize_array_range(brain_data[:, :, i-1])
-        g_slice = normalize_array_range(brain_data[:, :, i])
-        b_slice = normalize_array_range(brain_data[:, :, i+1])
-
-        # We stack these into one nparray that will have shape (91,109,3)
-        slice_3d = np.stack((r_slice, g_slice, b_slice), axis=2)
-
-        image_data = Image.fromarray(slice_3d)
-
-        # Saved as image_slices/{group}/{subject}_slice{number}
-        image_dir = Path(out_dir, f"multi_channel/{group}/{scan_name}_slice{(i-slice_range[0])}.png").resolve()
-        image_data.save(image_dir)
-
-
-def normalize_array_range(img):
-    """Normalizes range of np array values, moving them to the range 0-255. Important for RGB image gen
-
-    Args:
-        img (nparray): The 2D array to normalize
-
-    Returns:
-        nparray: the normalized 2D array. 
-    """
-    TARGET_TYPE_MIN = 0
-    TARGET_TYPE_MAX = 255
-    TARGET_TYPE = np.uint8
-
-    imin = np.min(img)
-    imax = np.max(img)
-
-    a = (TARGET_TYPE_MAX - TARGET_TYPE_MIN) / (imax - imin)
-    b = TARGET_TYPE_MAX - a * imax
-    new_img = (a * img + b).astype(TARGET_TYPE)
-    return new_img
-
-
-def get_data_from_nii(nii_path):
-    """Extracts nparray from given nii file
-
-    Args:
-        nii_path (str): The path of the nii file to get the data from
-
-    Returns:
-        nparray: The nii file's nparray
-    """
-    imgfile = nib.load(nii_path)
-    return np.array(imgfile.dataobj)
