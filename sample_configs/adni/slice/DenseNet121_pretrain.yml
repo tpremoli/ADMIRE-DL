@@ -1,0 +1,9 @@
+task_name: densenet121_pretrain_slices
+dataset: out/preprocessed_datasets/adni_processed/slice_dataset
+options:
+    architecture: DenseNet121
+    method: pretrain
+    kaggle: False    
+    pooling: null
+    epochs: 100
+    batch_size: 32
