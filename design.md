@@ -74,7 +74,7 @@ To clarify the config options:
 - **pooling**: The pooling method to use. Default is `None` (`null`), however `avg` and `max` can be used to experiment with performance.
 - **learning_rate**: Learning rate to be used in the training task. Default is 0.001.
 
-### `test`: Testing created models
+### `eval`: Evaluating created models
 
 *TBD*
 
