@@ -6,4 +6,4 @@ options:
     kaggle: False    
     pooling: null
     fc_count: 1
-    epochs: 25
+    epochs: 40 # these have taken longer to converge
