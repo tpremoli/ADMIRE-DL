@@ -42,8 +42,8 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
     if not SKIP_FSL:
         collection_csv = Path(cwd, collection_csv).resolve()
     
-    if SKIP_FSL and SKIP_SLICE_CREATION:
-        raise ValueError("Both SKIP_FSL and SKIP_SLICE_CREATION are True. Nothing to do.")
+    if SKIP_FSL and SKIP_SLICE_CREATION and SKIP_FOLDER_SPLIT:
+        raise ValueError("SKIP_FSL, SKIP_SLICE_CREATION, and SKIP_FOLDER_SPLIT are True. Nothing to do.")
 
     if not Path.exists(collection_dir):
         raise ValueError(
@@ -84,8 +84,10 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
         # If we're skipping fsl we just get rid of the dir
         if SKIP_FSL:
             # If slices exist we raise error. Else, we create the dir
-            if Path(out_dir, "image_slices").exists():
-                raise ValueError("Output dir already exists. Please delete or change run name")
+            if not SKIP_SLICE_CREATION:
+                if Path(out_dir, "image_slices").exists():
+                    raise ValueError("Output dir already exists. Please delete or change run name")
+            # TODO handle skip_folder_split
         else:
             # As we're using the same output dir, we need to check if we've already processed some of the subjects.
             done_subjects = pd.read_csv(Path(out_dir, "processed.csv"))
@@ -215,14 +217,16 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
         
     # slice creation chunk TODO: check that the folder split hasn't already been done
     if not SKIP_FOLDER_SPLIT:
+        slice_split_loc = Path(collection_dir, "image_slices").resolve() if SKIP_SLICE_CREATION and SKIP_FSL else Path(out_dir, "image_slices")
+        multichannel_split_loc = Path(collection_dir, "multi_channel").resolve() if SKIP_SLICE_CREATION and SKIP_FSL else Path(out_dir, "multi_channel")
         split_seed = datetime.now().timestamp()
         
         cprint(f"INFO: Splitting slice folders with split ratio {split_ratio}", "blue")
-        splitfolders.ratio(Path(out_dir, "image_slices"), output=Path(out_dir, "slice_dataset"),
-                        seed=split_seed, ratio=split_ratio)
+        splitfolders.ratio(slice_split_loc, output=Path(out_dir, "slice_dataset"),
+                        seed=split_seed, ratio=split_ratio, group_prefix=20)
 
-        splitfolders.ratio(Path(out_dir, "multi_channel"), output=Path(out_dir, "multichannel_dataset"),
-                        seed=split_seed, ratio=split_ratio)
+        splitfolders.ratio(multichannel_split_loc, output=Path(out_dir, "multichannel_dataset"),
+                        seed=split_seed, ratio=split_ratio, group_prefix=20)
 
     cprint("SUCCESS: Done processing raw MRIs. Saving meta data", "green")
 
