@@ -39,15 +39,9 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(35,
         try:
             original_brain, nii_path = run_fsl(scan_location, scan_name, group, out_dir)
         except:
-            # checking which brain failed to run
-            original_brain = scan_loc
-            for p in scan_loc.rglob("*"):
-                if p.name.endswith(".nii"):
-                    original_brain = p
-                    break
             # if fsl fails, we return dummy values
             # Will be logged in batches.log. just skip this scan
-            return (original_brain, "FSL failed")
+            return (scan_location, "FSL failed")
         
         print(f"FSL scripts complete. Processed MRI found in {nii_path}")
     else:
@@ -94,13 +88,6 @@ def run_fsl(scan_location, scan_name, group, out_dir):
     Returns:
         str: path of the saved nii image output by FSL
     """
-    original_brain = ""
-    # finding nii file. Each of a subject's scans is in a different scan_location, so this works w multiple scans for a subject
-    for p in scan_location.rglob("*"):
-        if p.name.endswith(".nii"):
-            original_brain = p
-            break
-
     # The tmp_dir directory will be used to store all the fsl_anat info
     tmp_dir = Path(
         filedir, "../../out/preprocessed_datasets/tmp", scan_name).resolve()
@@ -110,11 +97,11 @@ def run_fsl(scan_location, scan_name, group, out_dir):
 
     try:
         # Running fsl_anat (we don't need tissue segmentation nor subcortical segmentation)
-        fsl_anat(img=original_brain, out=tmp_dir, noseg=True, nosubcortseg=True)
+        fsl_anat(img=scan_location, out=tmp_dir, noseg=True, nosubcortseg=True)
     except:
         # If fsl fails, we delete the tmp_dir and return dummy values
         shutil.rmtree(anat_dir)
-        raise ValueError(f"ERROR: FSL failed to run on scan {scan_name} in group {group}. \n Original brain: {original_brain} \n tmp_dir: {tmp_dir}")
+        raise ValueError(f"ERROR: FSL failed to run on scan {scan_name} in group {group}. \n Original brain: {scan_location} \n tmp_dir: {tmp_dir}")
 
     # This is the outputted nonlinear transformed brain
     mni_nonlin = Path(anat_dir, "T1_to_MNI_nonlin.nii.gz")
@@ -132,7 +119,7 @@ def run_fsl(scan_location, scan_name, group, out_dir):
     # clearing all the .anat files (unnecessary now)
     shutil.rmtree(anat_dir)
 
-    return (original_brain, final_brain)
+    return (scan_location, final_brain)
 
 
 

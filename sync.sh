@@ -2,4 +2,4 @@
 # This is different from the nii bucket.
 # TODO: make this part of the cli tool
 
-aws s3 sync out s3://"diss-backup"
+aws s3 sync out s3://diss-backup

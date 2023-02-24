@@ -54,22 +54,23 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
 
     if not SKIP_FSL:
         # Getting individual subjects
+        # For each subject we only really need one scan, and we're only using AD and CN, not MCI
         subjects = pd.read_csv(collection_csv)
+        subjects.drop_duplicates(keep='first',subset=['Subject'], inplace=True)
+        subjects.drop(subjects[subjects['Group'] == 'MCI'].index, inplace=True)
+        
         est_batches = len(subjects) / FSL_CONCURRENT_PROCESSES
-
-        subjects = subjects.drop_duplicates(
-            keep='first', subset="Subject").to_dict(orient="records")
 
     out_dir = Path(
         filedir, "../../out/preprocessed_datasets", run_name).resolve()
 
     cprint(f"INFO: output dir: {out_dir}", "blue")
 
-    if not SKIP_FSL:
-        # subjects that have already been processed
-        done_subjects = []
-        # max_count is used to name the output files. It's a dict of base subject name to max count
-        max_count = dict.fromkeys([subject["Subject"] for subject in subjects], -1)
+    # subjects that have already been processed
+    done_subjects = dict()
+    done_subjects["Original Path"] = []
+    done_subjects["Output Path"] = []
+    done_subjects["Subject Name"] = []
 
     try:
         out_dir.mkdir(parents=True, exist_ok=False)
@@ -80,7 +81,9 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
             csv_dir = Path(out_dir, "processed.csv").resolve()
             with open(csv_dir, "w") as csv:
                 csv.write('"Original Path","Output Path","Group"\n')
+                
     except:
+        
         # If we're skipping fsl we just get rid of the dir
         if SKIP_FSL:
             # If slices exist we raise error. Else, we create the dir
@@ -88,10 +91,11 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
                 if Path(out_dir, "image_slices").exists():
                     raise ValueError("Output dir already exists. Please delete or change run name")
             # TODO handle skip_folder_split
+            
         else:
             # As we're using the same output dir, we need to check if we've already processed some of the subjects.
             done_subjects = pd.read_csv(Path(out_dir, "processed.csv"))
-            cprint(f"INFO: {len(done_subjects)} scahs already processed. Skipping...", "blue")
+            cprint(f"INFO: {len(done_subjects)} scans already processed. Skipping...", "blue")
 
             # Converting paths to Path objects
             done_subjects["Original Path"] = [
@@ -99,21 +103,9 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
             done_subjects["Output Path"] = [
                 Path(s) for s in done_subjects["Output Path"]]
 
-            # Parses the count from the output path
-            done_subjects["Count"] = [int(s.name[11:13])
-                                    for s in done_subjects["Output Path"]]
             # removes "_NN_processsed.nii.gz"
             done_subjects["Subject Name"] = [s.name[:10]
                                             for s in done_subjects["Output Path"]]
-
-            # This is useful for checking if we've already processed a subject
-            done_subjects["Date Dir"] = [
-                s.parent.parent for s in done_subjects["Original Path"]]
-
-            # this updates max_count to the max count of each subject that has already been processed
-            for _, subject in done_subjects.iterrows():
-                if subject["Count"] > max_count[subject["Subject Name"]]:
-                    max_count[subject["Subject Name"]] = subject["Count"]
 
     if not SKIP_FSL:
         # Creating group subdirs for output nii images
@@ -138,52 +130,42 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
         current_batch = 0
 
         # first loop: goes through each subject
-        for subject in subjects:
+        for _, subject in subjects.iterrows():
+            # This skips the subject if we've already processed it
+            if subject["Subject"] in done_subjects["Subject Name"].values:
+                continue
+            
             base_folder = Path(collection_dir, subject["Subject"])
+            
+            # we just get the first scan. Sorted so we always get the same one per subject
+            for p in sorted(base_folder.rglob("*")):
+                if p.name.endswith(".nii"):
+                    scan_folder = p
+                    break
 
-            # second loop: goes through each scan type i.e, MP-RAGE, MP-RAGE_repeat, etc
-            for scan_type in Path.glob(base_folder, "*"):
-                subj_folder = Path(base_folder, scan_type)
-                # We only want to process MP-RAGE and MP-RAGE_REPEAT
-                if subj_folder.name.upper() not in ["MP-RAGE", "MP-RAGE_REPEAT"]:
-                    continue
+            current_subject = [scan_folder, subject["Subject"],
+                            out_dir, subject["Group"], run_name]
 
-                # third loop: for each subject and scan type, we go through all the scans. This is useful if we have multiple scans per subject
-                for scan_folder in Path.glob(subj_folder, "*"):
-                    # This skips the scan_folder if we've already processed it
-                    if scan_folder in done_subjects["Date Dir"].values:
-                        continue
+            queued_mris.append(current_subject)
 
-                    # Added new subject so we increase the max count
-                    max_count[subject["Subject"]] += 1
+            # If we've collected the # of concurrent mris we can then run the prep multiprocessed
+            if len(queued_mris) == FSL_CONCURRENT_PROCESSES:
+                batch_start_time = datetime.now()
 
-                    # This makes the name styled 002_S_0295_{no} where no is the number of sampel we're on. min 6 chars
-                    scan_name = "{}_{:02d}".format(
-                        subject["Subject"], max_count[subject["Subject"]])
+                # prep all the queued MRIs at once
+                pool = Pool(processes=FSL_CONCURRENT_PROCESSES)
+                complete_pairs = pool.starmap(prep_raw_mri, queued_mris)
 
-                    current_subject = [scan_folder, scan_name,
-                                    out_dir, subject["Group"], run_name]
+                batch_end_time = datetime.now()
 
-                    queued_mris.append(current_subject)
+                successful_str = f"SUCCESS: Batch {current_batch}/{est_batches}. It took {str(batch_end_time-batch_start_time)} to preprocess"
 
-                    # If we've collected the # of concurrent mris we can then run the prep multiprocessed
-                    if len(queued_mris) == FSL_CONCURRENT_PROCESSES:
-                        batch_start_time = datetime.now()
+                cprint(successful_str, "green")
+                write_batch_to_log(complete_pairs, out_dir, successful_str)
 
-                        # prep all the queued MRIs at once
-                        pool = Pool(processes=FSL_CONCURRENT_PROCESSES)
-                        complete_pairs = pool.starmap(prep_raw_mri, queued_mris)
-
-                        batch_end_time = datetime.now()
-
-                        successful_str = f"SUCCESS: Batch {current_batch}/{est_batches}. It took {str(batch_end_time-batch_start_time)} to preprocess"
-
-                        cprint(successful_str, "green")
-                        write_batch_to_log(complete_pairs, out_dir, successful_str)
-
-                        # clear the queue
-                        queued_mris.clear()
-                        current_batch += 1
+                # clear the queue
+                queued_mris.clear()
+                current_batch += 1
 
         # finishing up the last batch
         if len(queued_mris) != 0:
@@ -222,6 +204,8 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
         split_seed = datetime.now().timestamp()
         
         cprint(f"INFO: Splitting slice folders with split ratio {split_ratio}", "blue")
+        # NOTE: group_prefix doesn't actually change results thankfully, but might be a more "realistic" way to train
+        # Not to mention this opens possibility of testing with nii files without having overlaps with train dataset
         splitfolders.ratio(slice_split_loc, output=Path(out_dir, "slice_dataset"),
                         seed=split_seed, ratio=split_ratio, group_prefix=20)
 
