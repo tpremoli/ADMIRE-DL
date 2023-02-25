@@ -71,6 +71,8 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
     done_subjects["Original Path"] = []
     done_subjects["Output Path"] = []
     done_subjects["Subject Name"] = []
+    
+    done_subjects = pd.DataFrame.from_dict(done_subjects)
 
     try:
         out_dir.mkdir(parents=True, exist_ok=False)

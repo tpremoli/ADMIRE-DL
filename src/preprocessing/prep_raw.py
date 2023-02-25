@@ -93,7 +93,7 @@ def run_fsl(scan_location, scan_name, group, out_dir):
         filedir, "../../out/preprocessed_datasets/tmp", scan_name).resolve()
 
     # fsl_anat adds .anat to end of output directory
-    anat_dir = Path(f"{tmp_dir}/anat")
+    anat_dir = Path(f"{tmp_dir}.anat")
 
     try:
         # Running fsl_anat (we don't need tissue segmentation nor subcortical segmentation)
