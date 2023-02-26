@@ -73,7 +73,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         elif optimizer_name == "SGD":
             optimizer = optimizers.SGD(learning_rate=learning_rate if learning_rate else 0.0003, momentum=0.9)
         else:
-            raise ValueError("Unsuported optimizer: " + optimizer_name + ". Supported optimizers are: Adam, SGD")
+            raise ValueError("Unsupported optimizer: " + optimizer_name + ". Supported optimizers are: Adam, SGD")
         
         model.compile(loss='categorical_crossentropy' if is_kaggle else 'binary_crossentropy',
                     optimizer=optimizer,

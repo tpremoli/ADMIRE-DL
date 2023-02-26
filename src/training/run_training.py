@@ -62,17 +62,18 @@ def load_training_task(file_loc):
         batch_size = yamlfile["options"].get(
             "batch_size", 32)  # Default to 32 batch size
 
-        # Extra parameters
-        overrides = {
-            # Defaults to Adam optimizer,
-            "optimizer_name": yamlfile["options"].get("optimizer_name", "Adam"),
-            # Defaults to no l2 regularization,
-            "l2reg": yamlfile["options"].get("l2reg", None),
-            # Defaults to no dropout,
-            "dropout": yamlfile["options"].get("dropout", None),
-            # Defaults to default learning rates
-            "learning_rate": yamlfile["options"].get("learning_rate", None)
-        }
+        if "overrides" in optionkeys:
+            # Extra parameters
+            overrides = {
+                # Defaults to Adam optimizer,
+                "optimizer_name": yamlfile["options"]["overrides"].get("optimizer_name", "Adam"),
+                # Defaults to no l2 regularization,
+                "l2reg": yamlfile["options"]["overrides"].get("l2reg", None),
+                # Defaults to no dropout,
+                "dropout": yamlfile["options"]["overrides"].get("dropout", None),
+                # Defaults to default learning rates
+                "learning_rate": yamlfile["options"]["overrides"].get("learning_rate", None)
+            }
 
         parent_dir = Path(filedir, "../../out/trained_models",
                           "kaggle" if is_kaggle else "adni").resolve()
