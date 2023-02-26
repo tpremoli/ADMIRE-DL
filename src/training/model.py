@@ -46,14 +46,15 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
             # dropout is used to prevent overfitting
             x = Dropout(dropout)(base_model.output)
             x = Flatten()(x)
+            cprint(f"INFO: Dropout layer is enabled. P={dropout}", "blue")
         else:
             # convert output of base model to a 1D vector
+            cprint(f"INFO: Dropout is disabled.", "blue")
             x = Flatten()(base_model.output)
         
         # We create fc_count fully connected layers, relu for all but the last
         for _ in range(fc_count - 1):
             x = Dense(units=4096, activation='relu')(x) # relu avoids vanishing gradient problem
-            
         
         # The final layer is a softmax layer
         prediction = Dense(output_count, activation='softmax' if is_kaggle else "sigmoid")(x)
@@ -62,6 +63,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         
         # adding regularization
         if l2reg:
+            cprint(f"INFO: L2 regularization is enabled. Lambda={l2reg}", "blue")
             regularizer = regularizers.L2(l2reg)
             for layer in model.layers:
                 for attr in ['kernel_regularizer']:
@@ -69,8 +71,10 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
                         setattr(layer, attr, regularizer)
                     
         if optimizer_name == "Adam":
+            cprint(f"INFO: Using Adam optimizer with learning rate {learning_rate if learning_rate else 0.001}", "blue")
             optimizer = optimizers.Adam(learning_rate=learning_rate if learning_rate else 0.001)
         elif optimizer_name == "SGD":
+            cprint(f"INFO: Using SGD optimizer with learning rate {learning_rate if learning_rate else 0.0003} and momentum 0.9", "blue")
             optimizer = optimizers.SGD(learning_rate=learning_rate if learning_rate else 0.0003, momentum=0.9)
         else:
             raise ValueError("Unsupported optimizer: " + optimizer_name + ". Supported optimizers are: Adam, SGD")
