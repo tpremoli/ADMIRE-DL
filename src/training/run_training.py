@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 from termcolor import cprint, colored
 from tensorflow.config import list_logical_devices
-from tensorflow.keras.callbacks import ReduceLROnPlateau, CSVLogger,EarlyStopping
+from tensorflow.keras.callbacks import ReduceLROnPlateau, CSVLogger, EarlyStopping
 from datetime import datetime
 from pathlib import Path
 from ..constants import *
@@ -31,16 +31,21 @@ def load_training_task(file_loc):
         optionkeys = options.keys()
 
         if "task_name" not in keys:
-            raise ValueError(colored("Task config requires a task_name attribute!","red"))
+            raise ValueError(
+                colored("Task config requires a task_name attribute!", "red"))
         if "dataset" not in keys:
-            raise ValueError(colored("Task config requires a dataset attribute!","red"))
+            raise ValueError(
+                colored("Task config requires a dataset attribute!", "red"))
 
         if "architecture" not in optionkeys:
-            raise ValueError(colored("Task config requires an architecture attribute!","red"))
+            raise ValueError(
+                colored("Task config requires an architecture attribute!", "red"))
         if "method" not in optionkeys:
-            raise ValueError(colored("Task config requires a method attribute!","red"))
+            raise ValueError(
+                colored("Task config requires a method attribute!", "red"))
         if "kaggle" not in optionkeys:
-            raise ValueError(colored("Task config requires a kaggle attribute!","red"))
+            raise ValueError(
+                colored("Task config requires a kaggle attribute!", "red"))
 
         # getting required parameters
         architecture = yamlfile["options"]["architecture"]
@@ -51,23 +56,39 @@ def load_training_task(file_loc):
 
         # Getting optional parameters with defaults
         pooling = yamlfile["options"].get("pooling", None)  # Default to None
-        fc_count = yamlfile["options"].get("fc_count", 1)  # Default to 1 fc layer
+        fc_count = yamlfile["options"].get(
+            "fc_count", 1)  # Default to 1 fc layer
         epochs = yamlfile["options"].get("epochs", 25)  # Default to 25 epochs
-        batch_size = yamlfile["options"].get("batch_size", 32)  # Default to 32 batch size
-        
-        parent_dir = Path(filedir, "../../out/trained_models", "kaggle" if is_kaggle else "adni").resolve() 
-    
+        batch_size = yamlfile["options"].get(
+            "batch_size", 32)  # Default to 32 batch size
+
+        # Extra parameters
+        overrides = {
+            # Defaults to Adam optimizer,
+            "optimizer_name": yamlfile["options"].get("optimizer_name", "Adam"),
+            # Defaults to no l2 regularization,
+            "l2reg": yamlfile["options"].get("l2reg", None),
+            # Defaults to no dropout,
+            "dropout": yamlfile["options"].get("dropout", None),
+            # Defaults to default learning rates
+            "learning_rate": yamlfile["options"].get("learning_rate", None)
+        }
+
+        parent_dir = Path(filedir, "../../out/trained_models",
+                          "kaggle" if is_kaggle else "adni").resolve()
+
         for path in parent_dir.glob(yamlfile["task_name"]):
-            raise ValueError(colored(f"Task with name {yamlfile['task_name']} already exists in {path}!","red"))
+            raise ValueError(colored(
+                f"Task with name {yamlfile['task_name']} already exists in {path}!", "red"))
 
         model_loc = run_training_task(
-            architecture, task_name, dataset_dir, method, is_kaggle, pooling, fc_count, epochs, batch_size)
+            architecture, task_name, dataset_dir, method, is_kaggle, pooling, fc_count, epochs, batch_size, overrides)
 
         shutil.copyfile(Path(cwd, file_loc).resolve(), Path(
             model_loc, "task_config.yml").resolve())
-        
 
-def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None, fc_count=1, epochs=25, batch_size=32):
+
+def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None, fc_count=1, epochs=25, batch_size=32, overrides={}):
     """Creates a model, trains it, and saves the model and training stats.
 
     Args:
@@ -80,6 +101,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
         fc_count (int, optional): The number of fully connected layers to be added to the model. Defaults to 1.
         epochs (int, optional): The number of epochs to train the model for. Defaults to 25.
         batch_size (int, optional): The batch size to be used for training. Defaults to 32.
+        overrides (dict, optional): A dictionary of extra parameters to be passed to the model. Defaults to {}. The keys must be "optimizer_name", "l2reg", "dropout", and "learning_rate".
 
     Returns:
         (str): The location of the saved model and training stats.
@@ -97,11 +119,23 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
     # Generating 3 datasets
     train_images, test_images, val_images = gen_subsets(
         dataset_dir, is_kaggle, architecture, batch_size=batch_size)
-    
+
     # retrieve a model created w given architecture and method
-    model = create_model(architecture, is_kaggle, method,
-                         pooling=pooling, fc_count=fc_count)
-    model_loc = Path(trained_models_path, "kaggle" if is_kaggle else "adni", task_name)
+    model = create_model(
+        architecture,
+        is_kaggle,
+        method,
+        pooling=pooling,
+        fc_count=fc_count,
+        optimizer_name=overrides["optimizer_name"],
+        l2reg=overrides["l2reg"],
+        dropout=overrides["dropout"],
+        learning_rate=overrides["learning_rate"]
+    )
+    
+    model_loc = Path(trained_models_path,
+                     "kaggle" if is_kaggle else "adni", task_name)
+    
     model_loc.mkdir(parents=True, exist_ok=False)
 
     start = datetime.now()
@@ -113,15 +147,17 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
                                    min_lr=0.5e-6)
 
     csvlogger = CSVLogger(
-        Path(model_loc, "trainhistory.csv"), separator=",", append=False) 
-    
-    earlystopper = EarlyStopping(monitor='val_loss', mode="min", verbose=1, patience=15) # 15 gives a chance for reduceLR to kick in
+        Path(model_loc, "trainhistory.csv"), separator=",", append=False)
+
+    # 15 gives a chance for reduceLR to kick in
+    earlystopper = EarlyStopping(
+        monitor='val_loss', mode="min", verbose=1, patience=30)
 
     callbacks = [lr_reducer, csvlogger, earlystopper]
 
     history = model.fit(train_images,
                         validation_data=val_images,
-                        epochs=epochs, 
+                        epochs=epochs,
                         verbose=1, callbacks=callbacks)
 
     duration = datetime.now() - start

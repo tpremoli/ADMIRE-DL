@@ -228,7 +228,7 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
             "split": list(split_ratio),
             "scan_count": scan_count,
             "slice_count": slice_count,
-            "dataset_split_seed": split_seed,
+            "dataset_split_seed": split_seed if split_seed else None, # won't always be set
         }
         json.dump(metadata, meta_file, indent=4)
 

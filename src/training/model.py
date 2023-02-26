@@ -1,6 +1,7 @@
 import tensorflow.keras.applications as apps
 from termcolor import cprint
-from keras.layers import Dense, Flatten
+from keras import regularizers
+from keras.layers import Dense, Flatten, Dropout
 from keras.models import Model
 from keras import optimizers
 from pathlib import Path
@@ -9,7 +10,7 @@ from ..constants import *
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
-def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, fc_count=1):
+def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, fc_count=1, optimizer_name="Adam", l2reg=None, dropout=None, learning_rate=None):
     """Creates a model based on the architecture and method specified.
 
     Args:
@@ -23,7 +24,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         Model: returns a keras model with the specified parameters
     """
     input_shape = (KAGGLE_IMAGE_DIMENSIONS if is_kaggle else ADNI_IMAGE_DIMENSIONS)  + [3]
-    output_count = 4 if is_kaggle else 2
+    output_count = 4 if is_kaggle else 1
     
     if method == "transferlearn":
 
@@ -40,20 +41,42 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         # Freeze the base model
         for layer in base_model.layers:
             layer.trainable = False
-
-        # convert output of base model to a 1D vector
-        x = Flatten()(base_model.output)
+        
+        if dropout:
+            # dropout is used to prevent overfitting
+            x = Dropout(dropout)(base_model.output)
+            x = Flatten()(x)
+        else:
+            # convert output of base model to a 1D vector
+            x = Flatten()(base_model.output)
         
         # We create fc_count fully connected layers, relu for all but the last
         for _ in range(fc_count - 1):
             x = Dense(units=4096, activation='relu')(x) # relu avoids vanishing gradient problem
             
+        
         # The final layer is a softmax layer
         prediction = Dense(output_count, activation='softmax' if is_kaggle else "sigmoid")(x)
-        
+    
         model = Model(inputs=base_model.input, outputs=prediction)
+        
+        # adding regularization
+        if l2reg:
+            regularizer = regularizers.L2(l2reg)
+            for layer in model.layers:
+                for attr in ['kernel_regularizer']:
+                    if hasattr(layer, attr):
+                        setattr(layer, attr, regularizer)
+                    
+        if optimizer_name == "Adam":
+            optimizer = optimizers.Adam(learning_rate=learning_rate if learning_rate else 0.001)
+        elif optimizer_name == "SGD":
+            optimizer = optimizers.SGD(learning_rate=learning_rate if learning_rate else 0.0003, momentum=0.9)
+        else:
+            raise ValueError("Unsuported optimizer: " + optimizer_name + ". Supported optimizers are: Adam, SGD")
+        
         model.compile(loss='categorical_crossentropy' if is_kaggle else 'binary_crossentropy',
-                    optimizer=optimizers.Adam(learning_rate=0.001),
+                    optimizer=optimizer,
                     metrics=['accuracy'])
         
         # categorical_crossentropy is used for multi-class classification:
