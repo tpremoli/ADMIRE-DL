@@ -69,13 +69,17 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
                 for attr in ['kernel_regularizer']:
                     if hasattr(layer, attr):
                         setattr(layer, attr, regularizer)
-                    
-        if optimizer_name == "Adam":
+
+        optimizer_name = optimizer_name.upper()
+        if optimizer_name == "ADAM":
             cprint(f"INFO: Using Adam optimizer with learning rate {learning_rate if learning_rate else 0.001}", "blue")
             optimizer = optimizers.Adam(learning_rate=learning_rate if learning_rate else 0.001)
         elif optimizer_name == "SGD":
             cprint(f"INFO: Using SGD optimizer with learning rate {learning_rate if learning_rate else 0.0003} and momentum 0.9", "blue")
             optimizer = optimizers.SGD(learning_rate=learning_rate if learning_rate else 0.0003, momentum=0.9)
+        elif optimizer_name == "RMSPROP":
+            cprint(f"INFO: Using RMSprop optimizer with learning rate {learning_rate if learning_rate else 0.001}", "blue")
+            optimizer = optimizers.RMSprop(learning_rate=learning_rate if learning_rate else 0.001)
         else:
             raise ValueError("Unsupported optimizer: " + optimizer_name + ". Supported optimizers are: Adam, SGD")
         
