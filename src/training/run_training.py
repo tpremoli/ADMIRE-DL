@@ -2,6 +2,7 @@ import yaml
 import shutil
 import numpy as np
 import pickle
+from collections import Counter
 from termcolor import cprint, colored
 from tensorflow.config import list_logical_devices
 from tensorflow.keras.callbacks import ReduceLROnPlateau, CSVLogger, EarlyStopping
@@ -74,6 +75,8 @@ def load_training_task(file_loc):
                 # Defaults to default learning rates
                 "learning_rate": yamlfile["options"]["overrides"].get("learning_rate", None)
             }
+        else:
+            overrides = {}
 
         parent_dir = Path(filedir, "../../out/trained_models",
                           "kaggle" if is_kaggle else "adni").resolve()
@@ -128,10 +131,10 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
         method,
         pooling=pooling,
         fc_count=fc_count,
-        optimizer_name=overrides["optimizer_name"],
-        l2reg=overrides["l2reg"],
-        dropout=overrides["dropout"],
-        learning_rate=overrides["learning_rate"]
+        optimizer_name=overrides["optimizer_name"] if "optimizer_name" in overrides else "Adam",
+        l2reg=overrides["l2reg"] if "l2reg" in overrides else None,
+        dropout=overrides["dropout"] if "dropout" in overrides else None,
+        learning_rate=overrides["learning_rate"] if "learning_rate" in overrides else None
     )
     
     model_loc = Path(trained_models_path,
@@ -155,11 +158,21 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
         monitor='val_loss', mode="min", verbose=1, patience=30)
 
     callbacks = [lr_reducer, csvlogger, earlystopper]
+    
+    itemCt = Counter(train_images.classes)
+    maxCt = float(max(itemCt.values()))
+    cw = {clsID : maxCt/numImg for clsID, numImg in itemCt.items()}
+    cprint(f"INFO: Class weights: {cw}", "blue")
 
-    history = model.fit(train_images,
+    history = model.fit(
+        train_images,
                         validation_data=val_images,
                         epochs=epochs,
-                        verbose=1, callbacks=callbacks)
+                        verbose=1, callbacks=callbacks,
+                        class_weight=cw
+                        )
+    
+    
 
     duration = datetime.now() - start
     print("Training completed in time: ", duration)
