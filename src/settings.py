@@ -19,8 +19,8 @@ USE_NONLINEAR_REGISTRATION=False
 
 # This setting controls if the program should generate image slices for the dataset
 # being processed.
-SKIP_SLICE_CREATION=True
+SKIP_SLICE_CREATION=False
 
 # This setting controls if the program should split the dataset into train, test, and
 # val folders.
-SKIP_FOLDER_SPLIT=True
+SKIP_FOLDER_SPLIT=False

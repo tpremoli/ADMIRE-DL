@@ -41,7 +41,7 @@ def run_fsl(scan_location, scan_name, group, out_dir):
     cprint("INFO: fsl_anat complete. Running flirt to register to MNI space", "blue")
     # We're runnning flirt with custom parameters to improve resolution from 2mm to 1mm
     flirt(src=Path(anat_dir, "T1_biascorr"),
-            ref="$FSLDIR/data/standard/MNI152_T1_1mm",
+            ref=f"{FSLDIR}/data/standard/MNI152_T1_1mm",
             interp="spline",
             dof=12,
             v=True,

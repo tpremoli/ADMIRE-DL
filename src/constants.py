@@ -1,3 +1,5 @@
+import os
+
 # ADNI group constants
 COGNITIVELY_NORMAL="CN"
 ALZHEIMERS_DISEASE="AD"
@@ -14,6 +16,8 @@ MODERATE_DEMENTED="ModerateDemented"
 
 KAGGLE_IMAGE_DIMENSIONS=[180,180]
 
+# FSL constants
+FSLDIR = os.getenv('FSLDIR')
 
 # Supported architectures
 VGG_16 = "VGG16"
