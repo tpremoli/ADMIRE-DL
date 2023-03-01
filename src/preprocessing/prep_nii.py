@@ -11,7 +11,7 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 
-def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(35, 55)):
+def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(80, 110)):
     """Prepares a singular raw mri image. This means that FSL is ran, indiviudal 
     slices are extracted, and multichannel slices are extracted. 2 datasets are 
     created, one for multichannel images, and one for simple slices.

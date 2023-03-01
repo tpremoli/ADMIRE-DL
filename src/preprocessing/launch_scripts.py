@@ -189,12 +189,12 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
             nii_path = Path(imgpath)
             scan_name = nii_path.name[:13]
             group = nii_path.parent.name
-            slice_range = (35, 55) # TODO: make this a setting
+            # TODO: make slice range a setting
             # Split into individual slices
-            create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range)
+            create_slices_from_brain(nii_path, out_dir, scan_name, group)
 
             # Split into multichannel slices
-            create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range)
+            create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group)
         
         
     # slice creation chunk TODO: check that the folder split hasn't already been done

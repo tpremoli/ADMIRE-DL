@@ -66,7 +66,7 @@ def write_batch_to_log(complete_pairs, out_dir, successful_str):
 
                 csv.write("\n")
                 
-def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(35, 55)):
+def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(80, 110)):
     """Creates the individual image slices from an input nii image and slice range
 
     Args:
@@ -74,7 +74,7 @@ def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(3
         out_dir (str): output directory. slices will be placed in {out_dir}/image_slices/{group}
         scan_name (str): The name of the scan (format NNN_S_NNNN_NN)
         group (str): Class of the image. Can be CN, AD, or MCI
-        slice_range (tuple, optional): The slices to be extracted. Defaults to (35,55).
+        slice_range (tuple, optional): The slices to be extracted. Defaults to (80, 110).
     """
     brain_data = get_data_from_nii(nii_path)
 
@@ -89,8 +89,7 @@ def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(3
         
         image_data.save(image_dir)
 
-
-def create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(35, 55)):
+def create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(80, 110)):
     """Creates the multichannel image slices from an input nii image and slice range
 
     Args:
@@ -98,26 +97,25 @@ def create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group, s
         out_dir (str): output directory. slices will be placed in {out_dir}/multi_channel/{group}
         scan_name (str): The name of the scan (format NNN_S_NNNN_NN)
         group (str): Class of the image. Can be CN, AD, or MCI
-        slice_range (tuple, optional): The slices to be extracted. Defaults to (35,55).
+        slice_range (tuple, optional): The slices to be extracted. Defaults to (80, 110).
     """
     brain_data = get_data_from_nii(nii_path)
 
     for i in range(slice_range[0], slice_range[1]):
         # Vital to make sure that the np.float64 is correctly scaled to np.uint8
         # We do 3 slices (r=i-1,g=i,b=i+1)
-        r_slice = normalize_array_range(brain_data[:, :, i-1])
-        g_slice = normalize_array_range(brain_data[:, :, i])
-        b_slice = normalize_array_range(brain_data[:, :, i+1])
+        r_slice = brain_data[:, :, i-1]
+        g_slice = brain_data[:, :, i]
+        b_slice = brain_data[:, :, i+1]
 
         # We stack these into one nparray that will have shape (91,109,3)
-        slice_3d = np.stack((r_slice, g_slice, b_slice), axis=2)
-
+        slice_3d = normalize_array_range(np.stack((r_slice, g_slice, b_slice), axis=2))
+        
         image_data = Image.fromarray(slice_3d)
 
         # Saved as image_slices/{group}/{subject}_slice{number}
         image_dir = Path(out_dir, f"multi_channel/{group}/{scan_name}_slice{(i-slice_range[0])}.png").resolve()
         image_data.save(image_dir)
-
 
 def normalize_array_range(img):
     """Normalizes range of np array values, moving them to the range 0-255. Important for RGB image gen
