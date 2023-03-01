@@ -1,11 +1,10 @@
 import shutil
 import numpy as np
-import fsl.wrappers.fsl_anat as fsl_anat
-import fsl.wrappers.fslmaths as fsl_maths
 import boto3
 from .utils import create_slices_from_brain, create_multichannel_slices_from_brain
-from termcolor import colored, cprint
+from .fsl_scripts import run_fsl
 from ..settings import *
+from termcolor import colored, cprint
 from pathlib import Path
 
 cwd = Path().resolve()

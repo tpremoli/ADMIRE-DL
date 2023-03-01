@@ -1,11 +1,13 @@
 import shutil
+from termcolor import cprint
 from ..constants import *
 from ..settings import *
 from pathlib import Path
-from fsl.wrappers import fsl_anat, fslmaths
+from fsl.wrappers import fsl_anat, fslmaths, fnirt, flirt, bet
 
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
+
 
 def run_fsl(scan_location, scan_name, group, out_dir):
     """Runs fsl_anat and performs brain extraction for the given scan.
@@ -27,25 +29,42 @@ def run_fsl(scan_location, scan_name, group, out_dir):
     anat_dir = Path(f"{tmp_dir}.anat")
 
     try:
-        # Running fsl_anat (we don't need tissue segmentation nor subcortical segmentation)
-        fsl_anat(img=scan_location, out=tmp_dir, noseg=True, nosubcortseg=True)
+        # Running fsl_anat. We don't need segmentation nor registration - registration will be done later
+        fsl_anat(img=scan_location, out=tmp_dir, noseg=True,
+                 nosubcortseg=True, nononlinreg=True, noreg=True, nocleanup=True)
     except:
         # If fsl fails, we delete the tmp_dir and return dummy values
         shutil.rmtree(anat_dir)
-        raise ValueError(f"ERROR: FSL failed to run on scan {scan_name} in group {group}. \n Original brain: {scan_location} \n tmp_dir: {tmp_dir}")
+        raise ValueError(
+            f"ERROR: FSL failed to run on scan {scan_name} in group {group}. \n Original brain: {scan_location} \n tmp_dir: {tmp_dir}")
 
-    # This is the outputted nonlinear transformed brain
-    mni_nonlin = Path(anat_dir, "T1_to_MNI_nonlin.nii.gz")
+    if USE_NONLINEAR_REGISTRATION:
+        # TODO: Implement nonlinear registration
+        raise NotImplementedError(
+            "Nonlinear registration not yet implemented!"
+        )
+    else:
+        cprint("fsl_anat complete. Running flirt to register to MNI space", "green")
+        # We're runnning flirt with custom parameters to improve resolution from 2mm to 1mm
+        flirt(src=Path(anat_dir, "T1_biascorr"),
+              ref="$FSLDIR/data/standard/MNI152_T1_1mm",
+              interp="spline",
+              dof=12,
+              v=True,
+              omat=Path(anat_dir, "T1_to_MNI_lin.mat"),
+              out=Path(anat_dir, "T1_to_MNI_lin")
+              )
 
-    # This is the outputted brain mask
-    brain_mask = Path(anat_dir, "MNI152_T1_2mm_brain_mask_dil1.nii.gz")
+        bet(Path(anat_dir, "T1_to_MNI_lin.nii.gz"), 
+            Path(anat_dir, "T1_to_MNI_lin_brain"), f=0.3, g=0, t=True)
+        
+        cprint("fsl_anat complete. Running flirt to register to MNI space", "green")
 
     # File is saved into group subfolder in nii_files output loc
     final_brain = Path(
         out_dir, f"nii_files/{group}/{scan_name}_processed.nii.gz")
 
-    # We multiply the MNI registered brain by the brain mask to have a final preprocessed brain
-    fslmaths(mni_nonlin).mul(brain_mask).run(final_brain)
+    shutil.move(Path(anat_dir, "T1_to_MNI_lin_brain.nii.gz"), final_brain)
 
     # clearing all the .anat files (unnecessary now)
     shutil.rmtree(anat_dir)
