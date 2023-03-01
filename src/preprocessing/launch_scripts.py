@@ -35,6 +35,8 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
         ValueError: Checks if collection dir has images
         ValueError: Checks if output dir has been used (avoids overwriting)
     """
+    prep_start_time = datetime.now()
+    
     # Resetting path locs
     collection_dir = Path(cwd, collection_dir).resolve()
     if not SKIP_FSL:
@@ -207,16 +209,18 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
         # NOTE: group_prefix doesn't actually change results thankfully, but might be a more "realistic" way to train
         # Not to mention this opens possibility of testing with nii files without having overlaps with train dataset
         splitfolders.ratio(slice_split_loc, output=Path(out_dir, "slice_dataset"),
-                        seed=split_seed, ratio=split_ratio, group_prefix=20)
+                        seed=split_seed, ratio=split_ratio, group_prefix=30)
 
         splitfolders.ratio(multichannel_split_loc, output=Path(out_dir, "multichannel_dataset"),
-                        seed=split_seed, ratio=split_ratio, group_prefix=20)
+                        seed=split_seed, ratio=split_ratio, group_prefix=30)
 
     cprint("SUCCESS: Done processing raw MRIs. Saving meta data", "green")
 
     scan_count = len(list(Path(out_dir, "nii_files").glob('**/*')))
     slice_count = len(list(Path(out_dir, "image_slices").glob('**/*')))
 
+    prep_end_time = datetime.now()
+    
     # Writing meta file
     with open(Path(out_dir, "meta.json"), "w") as meta_file:
         metadata = {
@@ -227,6 +231,7 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
             "scan_count": scan_count,
             "slice_count": slice_count,
             "dataset_split_seed": split_seed if split_seed else None, # won't always be set
+            "prep_time": str(prep_end_time-prep_start_time),
         }
         json.dump(metadata, meta_file, indent=4)
 

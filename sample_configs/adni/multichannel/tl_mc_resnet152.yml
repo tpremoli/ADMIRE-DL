@@ -1,5 +1,5 @@
 task_name: tl_mc_resnet152
-dataset: out/preprocessed_datasets/unique/multichannel_slices_loweredrange
+dataset: out/preprocessed_datasets/adni_highres/multichannel_dataset
 options:
     architecture: ResNet152
     method: transferlearn

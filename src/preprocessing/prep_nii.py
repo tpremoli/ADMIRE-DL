@@ -49,11 +49,12 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(80,
     if USE_S3 and not SKIP_FSL:
         # Upload processed MRI to s3 bucket
         s3_loc = Path(f"{run_name}/{group}/{scan_name}_processed.nii.gz")
-        cprint(print(f"INFO: uploading processed MRI to s3 bucket {AWS_S3_BUCKET_NAME} in {s3_loc}"), "blue")
+        cprint(f"INFO: uploading processed MRI to s3 bucket {AWS_S3_BUCKET_NAME} in {s3_loc}", "blue")
         s3_bucket  = boto3.resource('s3').Bucket('processed-nii-files')
 
         try:
             s3_bucket.upload_file(str(nii_path), str(s3_loc))
+            cprint("INFO: Successfully uploaded file to s3 bucket", "blue") 
         except:
             cprint("ERROR: Failed to upload file to s3 bucket", "red")
             cprint("INFO: Will attempt to sync bucket at end of run", "blue") 
