@@ -34,8 +34,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
             weights="imagenet",
             # 3D as the imgs are same across 3 channels
             input_shape=input_shape,
-            classifier_activation="softmax" if is_kaggle else "sigmoid",
-            pooling = pooling,
+            pooling=pooling,
         )
 
         # Freeze the base model

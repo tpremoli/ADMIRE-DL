@@ -136,10 +136,10 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
         dropout=overrides["dropout"] if "dropout" in overrides else None,
         learning_rate=overrides["learning_rate"] if "learning_rate" in overrides else None
     )
-    
+
     model_loc = Path(trained_models_path,
                      "kaggle" if is_kaggle else "adni", task_name)
-    
+
     model_loc.mkdir(parents=True, exist_ok=False)
 
     start = datetime.now()
@@ -158,21 +158,19 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
         monitor='val_loss', mode="min", verbose=1, patience=30)
 
     callbacks = [lr_reducer, csvlogger, earlystopper]
-    
+
     itemCt = Counter(train_images.classes)
     maxCt = float(max(itemCt.values()))
-    cw = {clsID : maxCt/numImg for clsID, numImg in itemCt.items()}
-    cprint(f"INFO: Class weights: {cw}", "blue")
+    cw = {clsID: maxCt/numImg for clsID, numImg in itemCt.items()}
+    cprint(f"INFO: Sample discrepancy weights: {cw}", "blue")
 
     history = model.fit(
         train_images,
-                        validation_data=val_images,
-                        epochs=epochs,
-                        verbose=1, callbacks=callbacks,
-                        class_weight=cw
-                        )
-    
-    
+        validation_data=val_images,
+        epochs=epochs,
+        verbose=1, callbacks=callbacks,
+        class_weight=cw
+    )
 
     duration = datetime.now() - start
     print("Training completed in time: ", duration)
