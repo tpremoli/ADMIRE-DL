@@ -1,5 +1,7 @@
-unprocessed_datasets/ADNI
-unprocessed_datasets/kaggle
+supplemental_files/unprocessed_datasets/ADNI
+supplemental_files/unprocessed_datasets/kaggle
+supplemental_files/unprocessed_datasets/ADNI1_Screening_1.5T.zip
+supplemental_files/unprocessed_datasets/ADNI1_Screening_1.5T_2_24_2023.csv
 
 out/preprocessed_datasets/*
 out/trained_models/*
