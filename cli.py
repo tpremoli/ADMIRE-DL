@@ -32,7 +32,7 @@ def main():
     args = parser.parse_args()
 
     if args.tool == "prep":
-        from src.preprocessing.run_scripts import prep_adni, prep_kaggle
+        from src.preprocessing.launch_scripts import prep_adni, prep_kaggle
 
         # One of the options must be used
         if not args.kaggle and not args.collection_dir and not args.collection_csv:

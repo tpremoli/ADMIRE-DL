@@ -2,20 +2,18 @@ import pandas as pd
 import json
 import shutil
 import splitfolders
-import boto3
 import subprocess
 from termcolor import colored, cprint
 from multiprocessing import Pool
 from datetime import datetime
 from ..constants import *
 from ..settings import *
-from .prep_raw import prep_raw_mri
+from .prep_nii import prep_raw_mri
 from .utils import write_batch_to_log, create_slices_from_brain, create_multichannel_slices_from_brain
 from pathlib import Path
 
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
-
 
 def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
     """Runs prep scripts for an ADNI image directory.
