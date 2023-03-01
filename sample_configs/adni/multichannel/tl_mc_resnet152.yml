@@ -1,5 +1,5 @@
-task_name: resnet152_tl_mc_nopooling_smalldropout_sgd_64bs_updatedaug
-dataset: out/preprocessed_datasets/unique/multichannel_slices
+task_name: tl_mc_resnet152
+dataset: out/preprocessed_datasets/unique/multichannel_slices_loweredrange
 options:
     architecture: ResNet152
     method: transferlearn
@@ -9,7 +9,7 @@ options:
     epochs: 100 # these can take long to converge
     batch_size: 64
     overrides:
-        optimizer_name: SGD
+        optimizer_name: Adam
         l2reg: null
-        dropout: 0.3
+        dropout: null
         learning_rate: null
