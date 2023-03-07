@@ -4,14 +4,14 @@
 USE_S3=True
 AWS_S3_BUCKET_NAME="processed-nii-files"
 
+# This controls the number of concurrent FSL processes that can be ran at once.
+FSL_CONCURRENT_PROCESSES=6
+
 # This setting controls if FSL scripts should be ran when processing the dataset.
 # If not, this assumes the FSL scripts have been ran, and the prep script has been
 # ran for a folder containing processed nii.gz files, labeled and separated into
 # the correct folders.
-SKIP_FSL=False
-
-# This controls the number of concurrent FSL processes that can be ran at once.
-FSL_CONCURRENT_PROCESSES=6
+SKIP_FSL=True
 
 # Controls if we're using nonlinear registration. This is a very expensive process,
 # and is not recommended unless you have a lot of time and resources.

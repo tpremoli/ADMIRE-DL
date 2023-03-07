@@ -187,9 +187,9 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
     
     # this means we'll take care of slice creation ad-hoc
     elif not SKIP_SLICE_CREATION:
-        for imgpath in out_dir.rglob("*.nii.gz"):
+        for imgpath in collection_dir.rglob("*.nii.gz"):
             nii_path = Path(imgpath)
-            scan_name = nii_path.name[:13]
+            scan_name = nii_path.name[:10]
             group = nii_path.parent.name
             # TODO: make slice range a setting
             # Split into individual slices
@@ -209,10 +209,10 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
         # NOTE: group_prefix doesn't actually change results thankfully, but might be a more "realistic" way to train
         # Not to mention this opens possibility of testing with nii files without having overlaps with train dataset
         splitfolders.ratio(slice_split_loc, output=Path(out_dir, "slice_dataset"),
-                        seed=split_seed, ratio=split_ratio, group_prefix=30)
+                        seed=split_seed, ratio=split_ratio, group_prefix=10)
 
         splitfolders.ratio(multichannel_split_loc, output=Path(out_dir, "multichannel_dataset"),
-                        seed=split_seed, ratio=split_ratio, group_prefix=30)
+                        seed=split_seed, ratio=split_ratio, group_prefix=10)
 
     cprint("SUCCESS: Done processing raw MRIs. Saving meta data", "green")
 

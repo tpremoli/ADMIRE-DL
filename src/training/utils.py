@@ -25,10 +25,10 @@ def gen_subsets(dataset_dir, is_kaggle, architecture, batch_size=32):
         KERAS_APP_PKG[architecture]].preprocess_input
 
     train_datagen = ImageDataGenerator(preprocessing_function=preprocessing_func,
-                                         zoom_range=0.05, 
-                                         width_shift_range=0.05, 
-                                         height_shift_range=0.05,
-                                         vertical_flip=True)
+                                        zoom_range=0.05,
+                                        width_shift_range=0.05,
+                                        height_shift_range=0.05,
+                                        vertical_flip=True)
     test_datagen = ImageDataGenerator(preprocessing_function=preprocessing_func)
     validation_datagen = ImageDataGenerator(preprocessing_function=preprocessing_func)
 
