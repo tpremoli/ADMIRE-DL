@@ -155,7 +155,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
 
     # 15 gives a chance for reduceLR to kick in
     earlystopper = EarlyStopping(
-        monitor='val_loss', mode="min", verbose=1, patience=30)
+        monitor='val_loss', mode="min", verbose=1, patience=15)
 
     callbacks = [lr_reducer, csvlogger, earlystopper]
 

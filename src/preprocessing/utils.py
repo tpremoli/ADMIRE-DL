@@ -78,14 +78,14 @@ def create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(8
     """
     brain_data = get_data_from_nii(nii_path)
 
-    for i in range(slice_range[0], slice_range[1]):
+    for i in range(slice_range[0], slice_range[1], 3):
         # Vital to make sure that the np.float64 is correctly scaled to np.uint8
         curr_slice = normalize_array_range(brain_data[:, :, i])
 
         image_data = Image.fromarray(curr_slice)
 
         # Saved as image_slices/{group}/{subject}_slice{number}
-        image_dir = Path(out_dir, f"image_slices/{group}/{scan_name}_slice{(i-slice_range[0])}.png").resolve()
+        image_dir = Path(out_dir, f"image_slices/{group}/{scan_name}_slice{(i-slice_range[0])//3}.png").resolve()
         
         image_data.save(image_dir)
 
@@ -101,7 +101,7 @@ def create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group, s
     """
     brain_data = get_data_from_nii(nii_path)
 
-    for i in range(slice_range[0], slice_range[1]):
+    for i in range(slice_range[0], slice_range[1], 3):
         # Vital to make sure that the np.float64 is correctly scaled to np.uint8
         # We do 3 slices (r=i-1,g=i,b=i+1)
         r_slice = brain_data[:, :, i-1]
@@ -112,9 +112,9 @@ def create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group, s
         slice_3d = normalize_array_range(np.stack((r_slice, g_slice, b_slice), axis=2))
         
         image_data = Image.fromarray(slice_3d)
-
+        
         # Saved as image_slices/{group}/{subject}_slice{number}
-        image_dir = Path(out_dir, f"multi_channel/{group}/{scan_name}_slice{(i-slice_range[0])}.png").resolve()
+        image_dir = Path(out_dir, f"multi_channel/{group}/{scan_name}_slice{(i-slice_range[0])//3}.png").resolve()
         image_data.save(image_dir)
 
 def normalize_array_range(img):
@@ -126,17 +126,15 @@ def normalize_array_range(img):
     Returns:
         nparray: the normalized 2D array. 
     """
-    TARGET_TYPE_MIN = 0
     TARGET_TYPE_MAX = 255
     TARGET_TYPE = np.uint8
 
     imin = np.min(img)
     imax = np.max(img)
 
-    a = (TARGET_TYPE_MAX - TARGET_TYPE_MIN) / (imax - imin)
-    b = TARGET_TYPE_MAX - a * imax
-    new_img = (a * img + b).astype(TARGET_TYPE)
-    return new_img
+    coeff = (img - imin) / (imax - imin) 
+    newimg = (coeff * TARGET_TYPE_MAX ).astype(TARGET_TYPE)
+    return newimg
 
 
 def get_data_from_nii(nii_path):
