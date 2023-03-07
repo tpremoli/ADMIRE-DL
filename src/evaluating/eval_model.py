@@ -35,9 +35,15 @@ def main():
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         X = np.expand_dims(img, axis=0).astype(np.float32)
         X = model_preprocessing_func(X)
-        X = np.reshape(X, (1, 218, 182, 3))
 
         # Remove last layer's softmax
         preds = model.predict(X, verbose=0)
         
-        print(f"predicted {f.name} as {preds[0][0]}, expected {f.parent.name}")
+        if preds[0][0] > 0.5:
+            label = "CN"
+        else:
+            label = "AD"
+        
+        conf = preds[0][0] if label == "CN" else 1 - preds[0][0]
+        
+        print(f"predicted {f.name} as {label}, expected {f.parent.name}. Confidence: {conf}")

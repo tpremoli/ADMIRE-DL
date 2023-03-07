@@ -1,9 +1,0 @@
-task_name: vgg16_transferlearn_multichannel # NOTE: vgg has 3 fc layers by default
-dataset: out/preprocessed_datasets/adni_processed/multichannel_dataset
-options:
-    architecture: VGG16
-    method: transferlearn
-    kaggle: False  
-    pooling: null
-    fc_count: 3 # TODO: Tweak fc stuff to cconcur w individual architectures (settings/constants.py)
-    epochs: 40 #took longer to converge
