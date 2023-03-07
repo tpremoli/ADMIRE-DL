@@ -12,6 +12,9 @@ def load_config(path):
     """
     finalpath = Path(cwd, path).resolve()
     
+    if finalpath.name != "task_config.yml":
+        finalpath = Path(finalpath, "task_config.yml").resolve()
+
     with open(finalpath, 'r') as stream:
         try:
             return yaml.safe_load(stream)
