@@ -3,6 +3,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 import yaml
 import numpy as np
+import matplotlib.pyplot as plt
 
 from ..constants import *
 from ..settings import *
@@ -26,6 +27,18 @@ def load_config(path):
             return yaml.safe_load(stream)
         except yaml.YAMLError as exc:
             print(exc)
+            
+def draw_confusion_matrix(matrix):
+    """Draws a confusion matrix
+
+    Args:
+        matrix (np.array): The confusion matrix
+    """
+    cm_display = ConfusionMatrixDisplay(confusion_matrix = matrix, display_labels = ["AD", "CN"])
+
+    cm_display.plot()
+    plt.savefig("test.png") 
+            
 def calc_metrics(model, dataset, preprocessing_func, is_kaggle):
     """Calculates accuracy, F1, precision and recall, for a keras model and a dataset.
 
@@ -55,3 +68,8 @@ def calc_metrics(model, dataset, preprocessing_func, is_kaggle):
     print("test accuracy:",model.evaluate(test_flow)[1])
     print("sklearn eval:")
     print(classification_report(y_true, y_pred))
+    print("confusion matrix:")
+    matrix = confusion_matrix(y_true, y_pred, normalize='pred')
+    print(matrix)
+    draw_confusion_matrix(matrix)
+        
