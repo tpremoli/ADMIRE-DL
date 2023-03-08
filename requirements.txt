@@ -8,3 +8,4 @@ matplotlib==3.5.2
 split-folders==0.5.1
 boto3==1.26.59
 opencv-python==4.7.0.72
+scikit-learn=1.2.1
