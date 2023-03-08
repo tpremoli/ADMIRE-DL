@@ -4,6 +4,7 @@ from sklearn.metrics import classification_report, confusion_matrix, ConfusionMa
 import yaml
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 
 from ..constants import *
 from ..settings import *
@@ -52,15 +53,15 @@ def get_final_y(y_true, y_pred):
     """
     final_true = []
     for i in range(0, len(y_true), 10):
-        final_true.append(np.rint(np.mean(y_pred[i:i+10])))
+        final_true.append(np.rint(np.mean(y_true[i:i+10])))
     
     final_pred = []
     for i in range(0, len(y_pred), 10):
         final_pred.append(np.rint(np.mean(y_pred[i:i+10])))
-    
+        
     return final_true, final_pred
             
-def calc_metrics(model, dataset, preprocessing_func, is_kaggle):
+def calc_metrics(model, valdata, testdata, preprocessing_func, is_kaggle):
     """Calculates accuracy, F1, precision and recall, for a keras model and a dataset.
 
     Args:
@@ -73,17 +74,39 @@ def calc_metrics(model, dataset, preprocessing_func, is_kaggle):
     
     datagen = ImageDataGenerator(preprocessing_function=preprocessing_func)
     test_flow = datagen.flow_from_directory(
-        dataset,
+        testdata,
         target_size=IMAGE_DIMENSIONS,
         class_mode='categorical' if is_kaggle else 'binary',
         shuffle = False,
     )
     
     y_true = test_flow.classes
-    
     y_pred = model.predict(test_flow)
-
     y_pred = [np.rint(pred[0]) for pred in y_pred]
+    test_true, test_pred = get_final_y(y_true, y_pred)
+    
+    print("test data true and pred:")
+    print(test_true)
+    print(test_pred)
+    
+    val_flow = datagen.flow_from_directory(
+        valdata,
+        target_size=IMAGE_DIMENSIONS,
+        class_mode='categorical' if is_kaggle else 'binary',
+        shuffle = False,
+    )
+    
+    y_true = val_flow.classes
+    y_pred = model.predict(val_flow)
+    y_pred = [np.rint(pred[0]) for pred in y_pred]
+    val_true, val_pred = get_final_y(y_true, y_pred)
+    
+    print("val data true and pred:")
+    print(val_true)
+    print(val_pred)
+    
+    y_true = np.concatenate((test_true, val_true))
+    y_pred = np.concatenate((test_pred, val_pred))
     
     print("keras eval:")
     print("test accuracy:",model.evaluate(test_flow)[1])
