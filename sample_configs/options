@@ -6,7 +6,6 @@ options:
     kaggle: {bool}
     pooling: null | avg | max
     learning_rate: {float}
-    fc_count: {int}
     epochs: {int}
     batch_size: {int}
     overrides:

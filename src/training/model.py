@@ -10,7 +10,7 @@ from ..constants import *
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
-def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, fc_count=1, optimizer_name="Adam", l2reg=None, dropout=None, learning_rate=None):
+def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, optimizer_name="Adam", l2reg=None, dropout=None, learning_rate=None):
     """Creates a model based on the architecture and method specified.
 
     Args:
@@ -18,7 +18,10 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         is_kaggle (bool): If the kaggle dataset is being used.
         method (str, optional): The method to use in the model. Can be "pretrain" or "transferlearn". Defaults to "transferlearn".
         pooling (str, optional): The type of pooling to use in the model. Defaults to None.
-        fc_count (int, optional): The number of fully-connected layers to use. Defaults to 1.
+        optimizer_name (str, optional): The name of the optimizer to use in the model. Defaults to "Adam".
+        l2reg (float, optional): The l2 regularization to use in the model. Defaults to None.
+        dropout (float, optional): The dropout to use in the model. Defaults to None.
+        learning_rate (float, optional): The learning rate to use in the model. Defaults to None.
 
     Returns:
         Model: returns a keras model with the specified parameters
@@ -27,7 +30,6 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
     output_count = 4 if is_kaggle else 1
     
     if method == "transferlearn":
-
         # Create the base model
         base_model = apps.__dict__[architecture](
             include_top=False,  # This is if we want the final FC layers
@@ -51,9 +53,10 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
             cprint(f"INFO: Dropout is disabled.", "blue")
             x = Flatten()(base_model.output)
         
-        # We create fc_count fully connected layers, relu for all but the last
-        for _ in range(fc_count - 1):
-            x = Dense(units=4096, activation='relu')(x) # relu avoids vanishing gradient problem
+        # VGG models have 3 FC layers
+        if architecture == "VGG16" or architecture == "VGG19":
+            x = Dense(units=4096, activation='relu')(x)
+            x = Dense(units=4096, activation='relu')(x)
         
         # The final layer is a softmax layer
         prediction = Dense(output_count, activation='softmax' if is_kaggle else "sigmoid")(x)
@@ -69,6 +72,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
                     if hasattr(layer, attr):
                         setattr(layer, attr, regularizer)
 
+        # Setting optimizer. Adam is the default optimizer, however SGD can be stronger
         optimizer_name = optimizer_name.upper()
         if optimizer_name == "ADAM":
             cprint(f"INFO: Using Adam optimizer with learning rate {learning_rate if learning_rate else 0.001}", "blue")
@@ -110,9 +114,6 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
             pooling = pooling,
             classes = output_count # set the number of outputs to required count
         )
-        
-        if (fc_count > 1):
-            cprint("WARNING: fc_count has no effect on pretrain method", "yellow")
         
         model.compile(loss='categorical_crossentropy' if is_kaggle else 'binary_crossentropy',
                     optimizer=optimizers.SGD(learning_rate=0.01), # SGD is better for pretraining

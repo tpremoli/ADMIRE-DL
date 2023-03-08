@@ -57,8 +57,6 @@ def load_training_task(file_loc):
 
         # Getting optional parameters with defaults
         pooling = yamlfile["options"].get("pooling", None)  # Default to None
-        fc_count = yamlfile["options"].get(
-            "fc_count", 1)  # Default to 1 fc layer
         epochs = yamlfile["options"].get("epochs", 25)  # Default to 25 epochs
         batch_size = yamlfile["options"].get(
             "batch_size", 32)  # Default to 32 batch size
@@ -86,13 +84,13 @@ def load_training_task(file_loc):
                 f"Task with name {yamlfile['task_name']} already exists in {path}!", "red"))
 
         model_loc = run_training_task(
-            architecture, task_name, dataset_dir, method, is_kaggle, pooling, fc_count, epochs, batch_size, overrides)
+            architecture, task_name, dataset_dir, method, is_kaggle, pooling, epochs, batch_size, overrides)
 
         shutil.copyfile(Path(cwd, file_loc).resolve(), Path(
             model_loc, "task_config.yml").resolve())
 
 
-def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None, fc_count=1, epochs=25, batch_size=32, overrides={}):
+def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None, epochs=25, batch_size=32, overrides={}):
     """Creates a model, trains it, and saves the model and training stats.
 
     Args:
@@ -102,7 +100,6 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
         method (str): The method to be used in training the Model. This must be "transferlearn" or "pretrain"
         is_kaggle (bool): If the dataset is from kaggle, this should be True. This is used to determine the preprocessing method.
         pooling (str, optional): A custom pooling method to be used. Must be from the pooling methods supported by Keras models. Defaults to None.
-        fc_count (int, optional): The number of fully connected layers to be added to the model. Defaults to 1.
         epochs (int, optional): The number of epochs to train the model for. Defaults to 25.
         batch_size (int, optional): The batch size to be used for training. Defaults to 32.
         overrides (dict, optional): A dictionary of extra parameters to be passed to the model. Defaults to {}. The keys must be "optimizer_name", "l2reg", "dropout", and "learning_rate".
@@ -126,11 +123,10 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
 
     # retrieve a model created w given architecture and method
     model = create_model(
-        architecture,
+        architecture, # case sensitive!
         is_kaggle,
-        method,
-        pooling=pooling,
-        fc_count=fc_count,
+        method.lower(), # method is case insensitive
+        pooling=pooling.lower(), # pooling is case insensitive
         optimizer_name=overrides["optimizer_name"] if "optimizer_name" in overrides else "Adam",
         l2reg=overrides["l2reg"] if "l2reg" in overrides else None,
         dropout=overrides["dropout"] if "dropout" in overrides else None,

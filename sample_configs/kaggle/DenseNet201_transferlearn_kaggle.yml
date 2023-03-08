@@ -5,5 +5,4 @@ options:
     method: transferlearn
     kaggle: True    
     pooling: null
-    fc_count: 1
     epochs: 25

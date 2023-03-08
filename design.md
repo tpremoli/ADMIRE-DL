@@ -49,15 +49,14 @@ where the options are
 The config files are defined using `.yml` files. The following is an example.
 
 ```yaml
-task_name: densenet121_transferlearn_slices
+task_name: densenet121_transferlearn_slices #TODO: add convention
 dataset: out/adni_processed
 options:
     architecture: DenseNet121
     method: transferlearn
     kaggle: True
-    pooling: avg # Default: None
+    pooling: max # Default: None
     learning_rate: 0.001 # Default: 0.001
-    fc_count: 1 # Default: 1
     epochs: 25 # Default: 25
 ```
 
