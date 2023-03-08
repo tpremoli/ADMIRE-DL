@@ -67,11 +67,11 @@ def write_batch_to_log(complete_pairs, out_dir, successful_str):
                 csv.write("\n")
                 
 def create_image_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range=(80, 110)): # TODO: add option for saggital, coronal, and axial slices
-    """Creates the multichannel image slices from an input nii image and slice range
+    """Creates the axial image slices from an input nii image and slice range
 
     Args:
         nii_path (str): path of the nii image to extract the slices from
-        out_dir (str): output directory. slices will be placed in {out_dir}/multi_channel/{group}
+        out_dir (str): output directory. slices will be placed in {out_dir}/axial_slices/{group}
         scan_name (str): The name of the scan (format NNN_S_NNNN_NN)
         group (str): Class of the image. Can be CN, AD, or MCI
         slice_range (tuple, optional): The slices to be extracted. Defaults to (80, 110).
@@ -91,7 +91,7 @@ def create_image_slices_from_brain(nii_path, out_dir, scan_name, group, slice_ra
         
         image_data = Image.fromarray(slice_3d)
         
-        # Saved as axial_slices/{group}/{subject}_slice{number} TODO: note name change from multichannel_slices to axial_slices
+        # Saved as axial_slices/{group}/{subject}_slice{number}
         image_dir = Path(out_dir, f"axial_slices/{group}/{scan_name}_slice{(i-slice_range[0])//3}.png").resolve()
         image_data.save(image_dir)
 

@@ -11,10 +11,10 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 
-def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(80, 110)):
-    """Prepares a singular raw mri image. This means that FSL is ran, indiviudal 
-    slices are extracted, and multichannel slices are extracted. 2 datasets are 
-    created, one for multichannel images, and one for simple slices.
+def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(80, 110)): 
+    """Prepares a singular raw mri image. This means that FSL is ran, 
+    and axial slices extracted. A dataset is created for the slices.
+    TODO: add option for saggital, coronal, and axial slices
 
     Args:
         scan_loc (str): The scan location
@@ -65,7 +65,7 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(80,
     # axial = data[:, :, 50] <- 50th slice along axial
 
     if not SKIP_SLICE_CREATION:
-        # Split into multichannel slices
+        # Split into slices
         create_image_slices_from_brain(
             nii_path, out_dir, scan_name, group, slice_range)
     
