@@ -38,6 +38,27 @@ def draw_confusion_matrix(matrix):
 
     cm_display.plot()
     plt.savefig("test.png") 
+    
+def get_final_y(y_true, y_pred):
+    """Reduces a list of 10 predictions to a single prediction
+
+    Args:
+        y_true (list): The list of true labels
+        y_pred (list): The list of predicted labels
+
+    Returns:
+        list: The reduced list of true labels
+        list: The reduced list of predicted labels
+    """
+    final_true = []
+    for i in range(0, len(y_true), 10):
+        final_true.append(np.rint(np.mean(y_pred[i:i+10])))
+    
+    final_pred = []
+    for i in range(0, len(y_pred), 10):
+        final_pred.append(np.rint(np.mean(y_pred[i:i+10])))
+    
+    return final_true, final_pred
             
 def calc_metrics(model, dataset, preprocessing_func, is_kaggle):
     """Calculates accuracy, F1, precision and recall, for a keras model and a dataset.
