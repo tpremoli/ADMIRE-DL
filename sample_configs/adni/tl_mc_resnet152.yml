@@ -1,5 +1,5 @@
 task_name: tl_mc_resnet152_maxpooling_SGD
-dataset: out/preprocessed_datasets/step_split/multichannel_dataset
+dataset: out/preprocessed_datasets/step_split/axial_dataset
 options:
     architecture: ResNet152
     method: transferlearn

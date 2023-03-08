@@ -100,16 +100,5 @@ def main():
 
 
 if __name__ == "__main__":
+    # from src.evaluating.eval_model import main
     main()
-    # from tensorflow.config import list_logical_devices
-
-
-    
-    # from src.preprocessing.prep_raw import create_multichannel_slices_from_brain, create_slices_from_brain
-    # create_multichannel_slices_from_brain("/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/adni_processed/002_S_0295_000001_processed.nii.gz",
-    #                          "/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/adnitest2","my_scan2","CN")
-    # create_slices_from_brain("/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/adni_processed/002_S_0295_000001_processed.nii.gz",
-    #                          "/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/adnitest2","my_scan2","CN")
-
-    # from src.training.experiments import run
-    # run()

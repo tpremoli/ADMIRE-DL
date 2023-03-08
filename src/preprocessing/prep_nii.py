@@ -1,7 +1,7 @@
 import shutil
 import numpy as np
 import boto3
-from .utils import create_slices_from_brain, create_multichannel_slices_from_brain
+from .utils import create_image_slices_from_brain
 from .fsl_scripts import run_fsl
 from ..settings import *
 from termcolor import colored, cprint
@@ -65,11 +65,8 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(80,
     # axial = data[:, :, 50] <- 50th slice along axial
 
     if not SKIP_SLICE_CREATION:
-        # Split into individual slices
-        create_slices_from_brain(nii_path, out_dir, scan_name, group, slice_range)
-
         # Split into multichannel slices
-        create_multichannel_slices_from_brain(
+        create_image_slices_from_brain(
             nii_path, out_dir, scan_name, group, slice_range)
     
     if not SKIP_FSL:

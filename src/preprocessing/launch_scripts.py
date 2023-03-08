@@ -9,20 +9,18 @@ from datetime import datetime
 from ..constants import *
 from ..settings import *
 from .prep_nii import prep_raw_mri
-from .utils import write_batch_to_log, create_slices_from_brain, create_multichannel_slices_from_brain
+from .utils import write_batch_to_log, create_image_slices_from_brain
 from pathlib import Path
 
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
-def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
+def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None): # TODO: add option for saggital, coronal, and axial slices
     """Runs prep scripts for an ADNI image directory.
         Will create 5 subdirs
             -  nii_files: Containing the FSL-processed nii images, separated by class
-            -  image_slices: Containing the individual image slices, separated by class
-            -  multi_channel: Containing the multi-channel image slices, separated by class
-            -  slice_dataset: Containing the individual image slices, separated by class and into train/test/val
-            -  multichannel_dataset: Containing the multi-channel image slices, separated by class and into train/test/val
+            -  axial_slices: Containing the individual image slices, separated by class 
+            -  axial_dataset: Containing the multi-channel image slices, separated by class and into train/test/val
 
     Args:
         collection_dir (str): The image collection directory
@@ -90,7 +88,7 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
         if SKIP_FSL:
             # If slices exist we raise error. Else, we create the dir
             if not SKIP_SLICE_CREATION:
-                if Path(out_dir, "image_slices").exists():
+                if Path(out_dir, "axial_slices").exists():
                     raise ValueError("Output dir already exists. Please delete or change run name")
             # TODO handle skip_folder_split
             
@@ -115,13 +113,9 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
         Path(out_dir, "nii_files/AD").resolve().mkdir(parents=True, exist_ok=True)
 
     if not SKIP_SLICE_CREATION:
-        # Creating group subdirs for output image slices
-        Path(out_dir, "image_slices/CN").resolve().mkdir(parents=True, exist_ok=True)
-        Path(out_dir, "image_slices/AD").resolve().mkdir(parents=True, exist_ok=True)
-
-        # Creating group subdirs for output multi-channel image slices
-        Path(out_dir, "multi_channel/CN").resolve().mkdir(parents=True, exist_ok=True)
-        Path(out_dir, "multi_channel/AD").resolve().mkdir(parents=True, exist_ok=True)
+        # Creating group subdirs for output image slices TODO: add option for saggital, coronal, and axial slices
+        Path(out_dir, "axial_slices/CN").resolve().mkdir(parents=True, exist_ok=True)
+        Path(out_dir, "axial_slices/AD").resolve().mkdir(parents=True, exist_ok=True)
 
     # FSL prep chunk
     if not SKIP_FSL:
@@ -191,33 +185,27 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None):
             nii_path = Path(imgpath)
             scan_name = nii_path.name[:10]
             group = nii_path.parent.name
-            # TODO: make slice range a setting
-            # Split into individual slices
-            create_slices_from_brain(nii_path, out_dir, scan_name, group)
+            # TODO: maybe make slice range a setting?
 
             # Split into multichannel slices
-            create_multichannel_slices_from_brain(nii_path, out_dir, scan_name, group)
+            create_image_slices_from_brain(nii_path, out_dir, scan_name, group)
         
         
     # slice creation chunk TODO: check that the folder split hasn't already been done
     if not SKIP_FOLDER_SPLIT:
-        slice_split_loc = Path(collection_dir, "image_slices").resolve() if SKIP_SLICE_CREATION and SKIP_FSL else Path(out_dir, "image_slices")
-        multichannel_split_loc = Path(collection_dir, "multi_channel").resolve() if SKIP_SLICE_CREATION and SKIP_FSL else Path(out_dir, "multi_channel")
+        dataset_loc = Path(collection_dir, "axial_slices").resolve() if SKIP_SLICE_CREATION and SKIP_FSL else Path(out_dir, "axial_slices")
         split_seed = datetime.now().timestamp()
         
         cprint(f"INFO: Splitting slice folders with split ratio {split_ratio}", "blue")
         # NOTE: group_prefix doesn't actually change results thankfully, but might be a more "realistic" way to train
         # Not to mention this opens possibility of testing with nii files without having overlaps with train dataset
-        splitfolders.ratio(slice_split_loc, output=Path(out_dir, "slice_dataset"),
-                        seed=split_seed, ratio=split_ratio, group_prefix=10)
-
-        splitfolders.ratio(multichannel_split_loc, output=Path(out_dir, "multichannel_dataset"),
+        splitfolders.ratio(dataset_loc, output=Path(out_dir, "axial_dataset"),
                         seed=split_seed, ratio=split_ratio, group_prefix=10)
 
     cprint("SUCCESS: Done processing raw MRIs. Saving meta data", "green")
 
     scan_count = len(list(Path(out_dir, "nii_files").glob('**/*')))
-    slice_count = len(list(Path(out_dir, "image_slices").glob('**/*')))
+    slice_count = len(list(Path(out_dir, "axial_slices").glob('**/*'))) #TODO: check sagittal and coronals
 
     prep_end_time = datetime.now()
     

@@ -1,5 +1,5 @@
 task_name: tl_mc_vgg16_maxpooling_SGD
-dataset: out/preprocessed_datasets/step_split/multichannel_dataset
+dataset: out/preprocessed_datasets/step_split/axial_dataset
 options:
     architecture: VGG16
     method: transferlearn
