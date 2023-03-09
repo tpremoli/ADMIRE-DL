@@ -103,6 +103,7 @@ def calc_metrics(model, valdata, testdata, preprocessing_func, is_kaggle, modeln
     y_pred = np.concatenate((test_pred, val_pred))
     
     out_dir = Path(cwd, "out/evals").resolve()
+    out_dir.mkdir(parents=True, exist_ok=True)
     with open (Path(out_dir,f"{modelname}.txt").resolve(), "w") as f:
         f.write("keras eval:")
         f.write("\ntest accuracy:")
