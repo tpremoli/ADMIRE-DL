@@ -29,16 +29,18 @@ def load_config(path):
         except yaml.YAMLError as exc:
             print(exc)
             
-def draw_confusion_matrix(matrix, modelpath):
+def draw_confusion_matrix(matrix, modelpath,out_dir):
     """Draws a confusion matrix
 
     Args:
         matrix (np.array): The confusion matrix
+        modelpath (str): The path to the model
+        out_dir (str): The path to the output directory
     """
     cm_display = ConfusionMatrixDisplay(confusion_matrix = matrix, display_labels = ["AD", "CN"])
 
     cm_display.plot()
-    plt.savefig(f"{modelpath}.png") 
+    plt.savefig(Path(out_dir,f"{modelpath}.png")) 
     
 def get_final_y(y_true, y_pred):
     """Reduces a list of 10 predictions to a single prediction
@@ -100,12 +102,13 @@ def calc_metrics(model, valdata, testdata, preprocessing_func, is_kaggle, modeln
     y_true = np.concatenate((test_true, val_true))
     y_pred = np.concatenate((test_pred, val_pred))
     
-    with open (f"{modelname}.txt", "w") as f:
+    out_dir = Path(cwd, "out/evals").resolve()
+    with open (Path(out_dir,f"{modelname}.txt").resolve(), "w") as f:
         f.write("keras eval:")
         f.write("\ntest accuracy:")
         f.write(str(model.evaluate(test_flow)[1]))
         f.write("\nsklearn eval:\n")
         f.write(classification_report(y_true, y_pred, target_names=["AD", "CN"]))
         matrix = confusion_matrix(y_true, y_pred, normalize='pred')
-        draw_confusion_matrix(matrix, modelname)
+        draw_confusion_matrix(matrix, modelname, out_dir)
         
