@@ -1,7 +1,7 @@
-task_name: tl_mc_densenet121_maxpooling_SGD
+task_name: tl_ax_resnet50_maxpooling_SGD
 dataset: out/preprocessed_datasets/step_split/axial_dataset
 options:
-    architecture: DenseNet121
+    architecture: ResNet50
     method: transferlearn
     kaggle: False    
     pooling: max # This has given better results (image size)

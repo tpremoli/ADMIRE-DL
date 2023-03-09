@@ -85,10 +85,6 @@ def calc_metrics(model, valdata, testdata, preprocessing_func, is_kaggle, modeln
     y_pred = [np.rint(pred[0]) for pred in y_pred]
     test_true, test_pred = get_final_y(y_true, y_pred)
     
-    print("test data true and pred:")
-    print(test_true)
-    print(test_pred)
-    
     val_flow = datagen.flow_from_directory(
         valdata,
         target_size=IMAGE_DIMENSIONS,
@@ -101,19 +97,15 @@ def calc_metrics(model, valdata, testdata, preprocessing_func, is_kaggle, modeln
     y_pred = [np.rint(pred[0]) for pred in y_pred]
     val_true, val_pred = get_final_y(y_true, y_pred)
     
-    print("val data true and pred:")
-    print(val_true)
-    print(val_pred)
-    
     y_true = np.concatenate((test_true, val_true))
     y_pred = np.concatenate((test_pred, val_pred))
     
-    print("keras eval:")
-    print("test accuracy:",model.evaluate(test_flow)[1])
-    print("sklearn eval:")
-    print(classification_report(y_true, y_pred))
-    print("confusion matrix:")
-    matrix = confusion_matrix(y_true, y_pred, normalize='pred')
-    print(matrix)
-    draw_confusion_matrix(matrix, modelname)
+    with open (f"{modelname}.txt", "w") as f:
+        f.write("keras eval:")
+        f.write("\ntest accuracy:")
+        f.write(str(model.evaluate(test_flow)[1]))
+        f.write("\nsklearn eval:\n")
+        f.write(classification_report(y_true, y_pred, target_names=["AD", "CN"]))
+        matrix = confusion_matrix(y_true, y_pred, normalize='pred')
+        draw_confusion_matrix(matrix, modelname)
         
