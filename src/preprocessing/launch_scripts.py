@@ -197,10 +197,8 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None): # TOD
         split_seed = datetime.now().timestamp()
         
         cprint(f"INFO: Splitting slice folders with split ratio {split_ratio}", "blue")
-        # NOTE: group_prefix doesn't actually change results thankfully, but might be a more "realistic" way to train
-        # Not to mention this opens possibility of testing with nii files without having overlaps with train dataset
         splitfolders.ratio(dataset_loc, output=Path(out_dir, "axial_dataset"),
-                        seed=split_seed, ratio=split_ratio, group_prefix=10)
+                        seed=split_seed, ratio=split_ratio, group_prefix=15)
 
     cprint("SUCCESS: Done processing raw MRIs. Saving meta data", "green")
 
@@ -227,7 +225,7 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None): # TOD
         # Writing collection.csv file
         shutil.copyfile(collection_csv, Path(out_dir, "collection.csv"))
 
-    if USE_S3:
+    if USE_S3 and not SKIP_FSL:
         try:  # TODO don't use subprocess, use boto3 w custom function
             cmd = f"aws s3 sync {out_dir}/nii_files s3://{AWS_S3_BUCKET_NAME}/{run_name}"
             subprocess.run(cmd, shell=True)

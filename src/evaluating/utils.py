@@ -29,7 +29,7 @@ def load_config(path):
         except yaml.YAMLError as exc:
             print(exc)
             
-def draw_confusion_matrix(matrix):
+def draw_confusion_matrix(matrix, modelpath):
     """Draws a confusion matrix
 
     Args:
@@ -38,7 +38,7 @@ def draw_confusion_matrix(matrix):
     cm_display = ConfusionMatrixDisplay(confusion_matrix = matrix, display_labels = ["AD", "CN"])
 
     cm_display.plot()
-    plt.savefig("test.png") 
+    plt.savefig(f"{modelpath}.png") 
     
 def get_final_y(y_true, y_pred):
     """Reduces a list of 10 predictions to a single prediction
@@ -61,7 +61,7 @@ def get_final_y(y_true, y_pred):
         
     return final_true, final_pred
             
-def calc_metrics(model, valdata, testdata, preprocessing_func, is_kaggle):
+def calc_metrics(model, valdata, testdata, preprocessing_func, is_kaggle, modelname):
     """Calculates accuracy, F1, precision and recall, for a keras model and a dataset.
 
     Args:
@@ -115,5 +115,5 @@ def calc_metrics(model, valdata, testdata, preprocessing_func, is_kaggle):
     print("confusion matrix:")
     matrix = confusion_matrix(y_true, y_pred, normalize='pred')
     print(matrix)
-    draw_confusion_matrix(matrix)
+    draw_confusion_matrix(matrix, modelname)
         

@@ -126,7 +126,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
         architecture, # case sensitive!
         is_kaggle,
         method.lower(), # method is case insensitive
-        pooling=pooling.lower(), # pooling is case insensitive
+        pooling=pooling.lower() if pooling else None, # pooling is case insensitive
         optimizer_name=overrides["optimizer_name"] if "optimizer_name" in overrides else "Adam",
         l2reg=overrides["l2reg"] if "l2reg" in overrides else None,
         dropout=overrides["dropout"] if "dropout" in overrides else None,
