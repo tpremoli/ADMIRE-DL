@@ -1,0 +1,9 @@
+task_name: pt_ax_resnet152_maxpooling
+dataset: out/preprocessed_datasets/step_split/axial_dataset
+options:
+    architecture: ResNet152
+    method: pretrain
+    kaggle: False    
+    pooling: max # This has given better results (image size)
+    epochs: 200
+    batch_size: 16 # this is a very large model
