@@ -85,22 +85,7 @@ def calc_metrics(model, valdata, testdata, preprocessing_func, is_kaggle, modeln
     y_true = test_flow.classes
     y_pred = model.predict(test_flow)
     y_pred = [np.rint(pred[0]) for pred in y_pred]
-    test_true, test_pred = get_final_y(y_true, y_pred)
-    
-    val_flow = datagen.flow_from_directory(
-        valdata,
-        target_size=IMAGE_DIMENSIONS,
-        class_mode='categorical' if is_kaggle else 'binary',
-        shuffle = False,
-    )
-    
-    y_true = val_flow.classes
-    y_pred = model.predict(val_flow)
-    y_pred = [np.rint(pred[0]) for pred in y_pred]
-    val_true, val_pred = get_final_y(y_true, y_pred)
-    
-    y_true = np.concatenate((test_true, val_true))
-    y_pred = np.concatenate((test_pred, val_pred))
+    y_true, y_pred = get_final_y(y_true, y_pred)
     
     out_dir = Path(cwd, "out/evals").resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
