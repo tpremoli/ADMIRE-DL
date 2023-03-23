@@ -124,7 +124,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
                         setattr(layer, attr, regularizer)
         
         model.compile(loss='categorical_crossentropy' if is_kaggle else 'binary_crossentropy',
-                    optimizer=optimizers.SGD(learning_rate=0.0003, momentum=0.9, clipvalue=0.5), # SGD is better for pretraining
+                    optimizer=optimizers.SGD(learning_rate=0.0003, momentum=0.9), # SGD is better for pretraining
                     metrics=['accuracy'])
         
         # categorical_crossentropy is used for multi-class classification:
