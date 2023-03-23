@@ -7,6 +7,7 @@ supplemental_files/unprocessed_datasets/ADNI1_Screening_1.5T_2_24_2023.csv
 out/preprocessed_datasets/*
 out/trained_models/*
 out/evals/*
+out/*
 
 src/preprocessing/__pycache__
 src/training/__pycache__

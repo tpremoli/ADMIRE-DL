@@ -68,7 +68,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
             cprint(f"INFO: L2 regularization is enabled. Lambda={l2reg}", "blue")
             regularizer = regularizers.L2(l2reg)
             for layer in model.layers:
-                for attr in ['kernel_regularizer']:
+                for attr in ['activity_regularizer']:
                     if hasattr(layer, attr):
                         setattr(layer, attr, regularizer)
 
@@ -115,8 +115,16 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
             classes = output_count # set the number of outputs to required count
         )
         
+        if l2reg:
+            cprint(f"INFO: L2 regularization is enabled. Lambda={l2reg}", "blue")
+            regularizer = regularizers.L2(l2reg)
+            for layer in model.layers:
+                for attr in ['activity_regularizer']:
+                    if hasattr(layer, attr):
+                        setattr(layer, attr, regularizer)
+        
         model.compile(loss='categorical_crossentropy' if is_kaggle else 'binary_crossentropy',
-                    optimizer=optimizers.SGD(learning_rate=0.01), # SGD is better for pretraining
+                    optimizer=optimizers.SGD(learning_rate=0.0003, momentum=0.9, clipvalue=0.5), # SGD is better for pretraining
                     metrics=['accuracy'])
         
         # categorical_crossentropy is used for multi-class classification:
@@ -135,4 +143,3 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         # model.summary()
         
         return model
-
