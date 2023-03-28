@@ -1,5 +1,5 @@
 task_name: tl_ax_vgg16_maxpooling_Adam
-dataset: out/preprocessed_datasets/step_split/axial_dataset
+dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
     architecture: VGG16
     method: transferlearn

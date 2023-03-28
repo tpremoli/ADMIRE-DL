@@ -1,5 +1,5 @@
 task_name: tl_ax_resnet50_maxpooling_Adam
-dataset: out/preprocessed_datasets/step_split/axial_dataset
+dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
     architecture: ResNet50
     method: transferlearn

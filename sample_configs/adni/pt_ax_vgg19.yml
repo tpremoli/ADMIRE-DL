@@ -1,5 +1,5 @@
 task_name: pt_ax_vgg19_maxpooling
-dataset: out/preprocessed_datasets/step_split/axial_dataset
+dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
     architecture: VGG19
     method: pretrain
