@@ -1,12 +1,11 @@
-task_name: l2reg_tl_ax_vgg19_maxpooling_SGD
+task_name: tl_ax_vgg16_maxpooling_SGD
 dataset: out/preprocessed_datasets/step_split/axial_dataset
 options:
-    architecture: VGG19
+    architecture: VGG16
     method: transferlearn
     kaggle: False    
     pooling: max # This has given better results (image size)
-    epochs: 150
+    epochs: 100
     batch_size: 32
     overrides:
         optimizer_name: SGD # This has given better results
-        l2reg: 0.0005

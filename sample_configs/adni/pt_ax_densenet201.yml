@@ -6,4 +6,4 @@ options:
     kaggle: False    
     pooling: max # This has given better results (image size)
     epochs: 100
-    batch_size: 16 # this is a very large model
+    batch_size: 32 # this is a very large model
