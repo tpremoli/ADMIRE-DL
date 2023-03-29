@@ -78,24 +78,31 @@ def load_training_task(file_loc):
 
         parent_dir = Path(filedir, "../../out/trained_models",
                           "kaggle" if is_kaggle else "adni").resolve()
+        parent_dir.mkdir(parents=True, exist_ok=True)
 
         for path in parent_dir.glob(yamlfile["task_name"]):
             raise ValueError(colored(
                 f"Task with name {yamlfile['task_name']} already exists in {path}!", "red"))
 
-        model_loc = run_training_task(
-            architecture, task_name, dataset_dir, method, is_kaggle, pooling, epochs, batch_size, overrides)
-
+        model_loc = Path(parent_dir, yamlfile["task_name"]).resolve()
+        model_loc.mkdir(parents=True, exist_ok=False)
+        
         shutil.copyfile(Path(cwd, file_loc).resolve(), Path(
             model_loc, "task_config.yml").resolve())
+        
+        run_training_task(
+            architecture, task_name, model_loc, dataset_dir, method, is_kaggle, pooling, epochs, batch_size, overrides)
+
+        
 
 
-def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, pooling=None, epochs=25, batch_size=32, overrides={}):
+def run_training_task(architecture, task_name, model_loc, dataset_dir, method, is_kaggle, pooling=None, epochs=25, batch_size=32, overrides={}):
     """Creates a model, trains it, and saves the model and training stats.
 
     Args:
         architecture (str): The architecture of the model to be trained. This must be a string corresponding to an application in Keras.applications.
         task_name (str): The name of the task. This is used to name the folder where the model and training stats are saved.
+        model_loc (str): The location where the model and training stats are to be saved.
         dataset_dir (str): The Location of the dataset to be used for training.
         method (str): The method to be used in training the Model. This must be "transferlearn" or "pretrain"
         is_kaggle (bool): If the dataset is from kaggle, this should be True. This is used to determine the preprocessing method.
@@ -107,10 +114,6 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
     Returns:
         (str): The location of the saved model and training stats.
     """
-    trained_models_path = Path(
-        filedir, "../../out/trained_models").resolve()
-    trained_models_path.mkdir(parents=True, exist_ok=True)
-
     # Check if GPU is available, and print a warning message if not
     if len(list_logical_devices('GPU')) == 0:
         cprint('WARNING: GPU is not available! Training will be slow.', "yellow")
@@ -133,11 +136,6 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
         learning_rate=overrides["learning_rate"] if "learning_rate" in overrides else None
     )
 
-    model_loc = Path(trained_models_path,
-                     "kaggle" if is_kaggle else "adni", task_name)
-
-    model_loc.mkdir(parents=True, exist_ok=False)
-
     start = datetime.now()
 
     lr_reducer = ReduceLROnPlateau(factor=0.1,
@@ -147,7 +145,7 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
                                    min_lr=0.5e-6)
 
     csvlogger = CSVLogger(
-        Path(model_loc, "trainhistory.csv"), separator=",", append=False)
+        Path(Path(model_loc), "trainhistory.csv"), separator=",", append=False)
 
     # 15 gives a chance for reduceLR to kick in
     earlystopper = EarlyStopping(
@@ -186,5 +184,3 @@ def run_training_task(architecture, task_name, dataset_dir, method, is_kaggle, p
         f.write(f"Test accuracy: {score[1]}")
 
     plot_data(history, Path(model_loc, f'{task_name}_plt.png'))
-
-    return model_loc
