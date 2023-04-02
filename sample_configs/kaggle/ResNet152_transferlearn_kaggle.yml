@@ -1,8 +1,0 @@
-task_name: resnet152_transferlearn_kaggle
-dataset: out/preprocessed_datasets/kaggle_processed
-options:
-    architecture: ResNet152
-    method: transferlearn
-    kaggle: True    
-    pooling: null
-    epochs: 25

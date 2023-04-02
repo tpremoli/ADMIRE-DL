@@ -1,8 +1,0 @@
-task_name: vgg16_pretrain_kaggle # NOTE: vgg has 3 fc layers by default
-dataset: out/preprocessed_datasets/kaggle_processed
-options:
-    architecture: VGG16
-    method: pretrain
-    kaggle: True  
-    pooling: null
-    epochs: 100

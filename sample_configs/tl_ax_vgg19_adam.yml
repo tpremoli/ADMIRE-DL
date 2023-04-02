@@ -1,9 +1,11 @@
-task_name: pt_ax_vgg19_maxpooling
+task_name: tl_ax_vgg19_maxpooling_Adam
 dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
     architecture: VGG19
-    method: pretrain
-    kaggle: False    
+    method: transferlearn
+
     pooling: max # This has given better results (image size)
     epochs: 100
-    batch_size: 32 # this is a very large model
+    batch_size: 32
+    overrides:
+        optimizer_name: Adam # This has given better results

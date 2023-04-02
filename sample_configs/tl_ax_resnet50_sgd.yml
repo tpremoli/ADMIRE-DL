@@ -1,11 +1,11 @@
-task_name: tl_ax_densenet121_maxpooling_Adam
+task_name: tl_ax_resnet50_maxpooling_SGD
 dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
-    architecture: DenseNet121
+    architecture: ResNet50
     method: transferlearn
-    kaggle: False    
+
     pooling: max # This has given better results (image size)
     epochs: 100
     batch_size: 32
     overrides:
-        optimizer_name: Adam # This has given better results
+        optimizer_name: SGD # This has given better results

@@ -1,4 +1,4 @@
-This folder contains unprocessed samples from the ADNI & Kaggle datasets for testing purposes.
+This folder contains unprocessed samples from the ADNI dataset for testing purposes.
 
 ADNI:
     TODO: provide specific collection used in this report
@@ -10,9 +10,3 @@ ADNI:
     You must download the image collection with the desired subjects, and the csv file containing metadata (i.e research group etc)
 
     A sample is provided in test_sample.csv
-
-Kaggle:
-    You should download kaggle images from:
-        https://www.kaggle.com/datasets/uraninjo/augmented-alzheimer-mri-dataset
-
-    Then when running the CLI, you pass the parent dir with all subfolders intact

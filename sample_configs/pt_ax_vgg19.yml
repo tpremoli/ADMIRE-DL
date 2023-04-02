@@ -1,9 +1,9 @@
-task_name: pt_ax_resnet50_maxpooling
+task_name: pt_ax_vgg19_maxpooling
 dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
-    architecture: ResNet50
+    architecture: VGG19
     method: pretrain
-    kaggle: False    
+
     pooling: max # This has given better results (image size)
     epochs: 100
-    batch_size: 32 # can take longer to run
+    batch_size: 32 # this is a very large model

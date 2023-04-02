@@ -1,8 +1,0 @@
-task_name: vgg16_transferlearn_kaggle # NOTE: vgg has 3 fc layers by default
-dataset: out/preprocessed_datasets/kaggle_processed
-options:
-    architecture: VGG16
-    method: transferlearn
-    kaggle: True  
-    pooling: null
-    epochs: 25

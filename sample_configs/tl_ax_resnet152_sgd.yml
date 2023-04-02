@@ -1,9 +1,9 @@
-task_name: tl_ax_densenet201_maxpooling_SGD
+task_name: tl_ax_resnet152_maxpooling_SGD
 dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
-    architecture: DenseNet201
+    architecture: ResNet152
     method: transferlearn
-    kaggle: False    
+
     pooling: max # This has given better results (image size)
     epochs: 100
     batch_size: 32

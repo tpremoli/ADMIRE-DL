@@ -3,7 +3,6 @@ dataset: {str}
 options:
     architecture: VGG16 | VGG19 | ResNet50 | ResNet152 | DenseNet121 | DenseNet201
     method: pretrain | transferlearn
-    kaggle: {bool}
     pooling: null | avg | max
     learning_rate: {float}
     epochs: {int}

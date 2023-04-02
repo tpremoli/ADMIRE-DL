@@ -1,9 +1,9 @@
-task_name: tl_ax_vgg16_maxpooling_Adam
+task_name: tl_ax_densenet121_maxpooling_Adam
 dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
-    architecture: VGG16
+    architecture: DenseNet121
     method: transferlearn
-    kaggle: False    
+
     pooling: max # This has given better results (image size)
     epochs: 100
     batch_size: 32

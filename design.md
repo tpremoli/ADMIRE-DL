@@ -22,10 +22,6 @@ where the options are
 - **run_name** `-r`: The name of the run. Files will be saved in `out/preprocessed_datasets/{run_name}`
 - **ratio** `--ratio`: The train/test/validation ratio. Files will be saved in `{run_name}/train`,`{run_name}/test`,`{run_name}/val` respectively.
 
-If you are using the kaggle data set, you can create the object files using the option
-
-- **kaggle** `-k`: The directory of the kaggle mri images. These should be in their original folder structure (i.e nondemented, mildlydemented etc.)
-
 If you're using an ADNI dataset, you must input
 
 - **collection_dir** `-d`: The directory of the collection. If the collection was downloaded from ADNI, this should be the "ADNI" folder
@@ -48,20 +44,19 @@ where the options are
 
 The config files are defined using `.yml` files. The following is an example.
 
+# TODO: UPDATE THIS
 ```yaml
-task_name: densenet121_transferlearn_slices #TODO: add convention
+task_name: densenet121_transferlearn_slices # TODO: add convention
 dataset: out/adni_processed
 options:
     architecture: DenseNet121
     method: transferlearn
-    kaggle: True
     pooling: max # Default: None
     learning_rate: 0.001 # Default: 0.001
     epochs: 25 # Default: 25
 ```
 
-Trained kaggle models will be saved in `out/trained_models/kaggle/{task_name}`.
-Trained adni models will be saved in `out/trained_models/adni/{task_name}`.
+Trained models will be saved in `out/trained_models/{task_name}`.
 
 To clarify the config options:
 
@@ -69,7 +64,6 @@ To clarify the config options:
 - **dataset**: The prepped dataset to use
 - **architecture**: The architecture to be used for this task. Should follow naming convention from the [Keras docs](https://keras.io/api/applications). The supported architectures are written below.
 - **method**: The training method to use. This can be `pretrain` or `transferlearn`.
-- **kaggle**: If the Kaggle dataset is being used for this job
 - **pooling**: The pooling method to use. Default is `None` (`null`), however `avg` and `max` can be used to experiment with performance.
 - **learning_rate**: Learning rate to be used in the training task. Default is 0.001.
 
