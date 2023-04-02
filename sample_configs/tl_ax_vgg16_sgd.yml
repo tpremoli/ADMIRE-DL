@@ -1,9 +1,9 @@
-task_name: tl_ax_vgg16_maxpooling_SGD
+task_name: tl_ax_vgg16_avgpooling_SGD
 dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
     architecture: VGG16
     method: transferlearn
-    pooling: max 
+    pooling: avg 
     epochs: 100
     batch_size: 32
     overrides:

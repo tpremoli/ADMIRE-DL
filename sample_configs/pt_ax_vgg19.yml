@@ -1,8 +1,8 @@
-task_name: pt_ax_vgg19_maxpooling
+task_name: pt_ax_vgg19_avgpooling
 dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
     architecture: VGG19
     method: pretrain
-    pooling: max 
+    pooling: avg 
     epochs: 100
     batch_size: 32 

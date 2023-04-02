@@ -51,7 +51,7 @@ dataset: out/adni_processed
 options:
     architecture: DenseNet121
     method: transferlearn
-    pooling: max # Default: None
+    pooling: avg # Default: None
     learning_rate: 0.001 # Default: 0.001
     epochs: 25 # Default: 25
 ```

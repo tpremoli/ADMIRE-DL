@@ -1,9 +1,9 @@
-task_name: tl_ax_resnet152_maxpooling_Adam
+task_name: tl_ax_resnet152_avgpooling_Adam
 dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
     architecture: ResNet152
     method: transferlearn
-    pooling: max 
+    pooling: avg 
     epochs: 100
     batch_size: 32
     overrides:
