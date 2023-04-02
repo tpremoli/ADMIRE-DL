@@ -3,7 +3,6 @@ dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
     architecture: VGG19
     method: pretrain
-
     pooling: max 
     epochs: 100
     batch_size: 32 

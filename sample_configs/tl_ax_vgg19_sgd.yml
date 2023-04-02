@@ -3,7 +3,6 @@ dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
     architecture: VGG19
     method: transferlearn
-
     pooling: max 
     epochs: 100
     batch_size: 32
