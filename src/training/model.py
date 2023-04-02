@@ -11,12 +11,11 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 
-def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, optimizer_name=None, l2reg=None, dropout=None, learning_rate=None):
+def create_model(architecture, method="transferlearn", pooling=None, optimizer_name=None, l2reg=None, dropout=None, learning_rate=None):
     """Creates a model based on the architecture and method specified.
 
     Args:
         architecture (str): The architecture to use in the model. Has to be a valid architecture in the keras.applications module.
-        is_kaggle (bool): If the kaggle dataset is being used.
         method (str, optional): The method to use in the model. Can be "pretrain" or "transferlearn". Defaults to "transferlearn".
         pooling (str, optional): The type of pooling to use in the model. Defaults to None.
         optimizer_name (str, optional): The name of the optimizer to use in the model. Defaults to None.
@@ -27,9 +26,8 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
     Returns:
         Model: returns a keras model with the specified parameters
     """
-    input_shape = (
-        KAGGLE_IMAGE_DIMENSIONS if is_kaggle else ADNI_IMAGE_DIMENSIONS) + [3]
-    output_count = 4 if is_kaggle else 1
+    input_shape = (ADNI_IMAGE_DIMENSIONS) + [3]
+    output_count = 1
     
     # The defaults depend on the method. If transfer learning is used, Adam is the default optimizer. If pretraining is used, SGD is the default optimizer.
     if optimizer_name == None:
@@ -87,7 +85,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
 
         # The final layer is a softmax layer
         prediction = Dense(
-            output_count, activation='softmax' if is_kaggle else "sigmoid")(x)
+            output_count, activation="sigmoid")(x)
 
         model = Model(inputs=base_model.input, outputs=prediction)
 
@@ -101,7 +99,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
                     if hasattr(layer, attr):
                         setattr(layer, attr, regularizer)
 
-        model.compile(loss='categorical_crossentropy' if is_kaggle else 'binary_crossentropy',
+        model.compile(loss='binary_crossentropy',
                       optimizer=optimizer,
                       metrics=['accuracy'])
 
@@ -144,7 +142,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
 
         # The final layer is a softmax layer
         prediction = Dense(
-            output_count, activation='softmax' if is_kaggle else "sigmoid")(x)
+            output_count, activation="sigmoid")(x)
 
         model = Model(inputs=base_model.input, outputs=prediction)
 
@@ -158,7 +156,7 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
                     if hasattr(layer, attr):
                         setattr(layer, attr, regularizer)
 
-        model.compile(loss='categorical_crossentropy' if is_kaggle else 'binary_crossentropy',
+        model.compile(loss='binary_crossentropy',
                       # SGD is better for pretraining
                       optimizer=optimizer,
                       metrics=['accuracy'])

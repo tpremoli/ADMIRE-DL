@@ -44,16 +44,12 @@ def load_training_task(file_loc):
         if "method" not in optionkeys:
             raise ValueError(
                 colored("Task config requires a method attribute!", "red"))
-        if "kaggle" not in optionkeys:
-            raise ValueError(
-                colored("Task config requires a kaggle attribute!", "red"))
 
         # getting required parameters
         architecture = yamlfile["options"]["architecture"]
         task_name = yamlfile["task_name"]
         dataset_dir = Path(cwd, yamlfile["dataset"]).resolve()
         method = yamlfile["options"]["method"]
-        is_kaggle = yamlfile["options"]["kaggle"]
 
         # Getting optional parameters with defaults
         pooling = yamlfile["options"].get("pooling", None)  # Default to None
@@ -76,8 +72,7 @@ def load_training_task(file_loc):
         else:
             overrides = {}
 
-        parent_dir = Path(filedir, "../../out/trained_models",
-                          "kaggle" if is_kaggle else "adni").resolve()
+        parent_dir = Path(filedir, "../../out/trained_models").resolve()
         parent_dir.mkdir(parents=True, exist_ok=True)
 
         for path in parent_dir.glob(yamlfile["task_name"]):
@@ -91,12 +86,12 @@ def load_training_task(file_loc):
             model_loc, "task_config.yml").resolve())
         
         run_training_task(
-            architecture, task_name, model_loc, dataset_dir, method, is_kaggle, pooling, epochs, batch_size, overrides)
+            architecture, task_name, model_loc, dataset_dir, method, pooling, epochs, batch_size, overrides)
 
         
 
 
-def run_training_task(architecture, task_name, model_loc, dataset_dir, method, is_kaggle, pooling=None, epochs=25, batch_size=32, overrides={}):
+def run_training_task(architecture, task_name, model_loc, dataset_dir, method, pooling=None, epochs=25, batch_size=32, overrides={}):
     """Creates a model, trains it, and saves the model and training stats.
 
     Args:
@@ -105,7 +100,6 @@ def run_training_task(architecture, task_name, model_loc, dataset_dir, method, i
         model_loc (str): The location where the model and training stats are to be saved.
         dataset_dir (str): The Location of the dataset to be used for training.
         method (str): The method to be used in training the Model. This must be "transferlearn" or "pretrain"
-        is_kaggle (bool): If the dataset is from kaggle, this should be True. This is used to determine the preprocessing method.
         pooling (str, optional): A custom pooling method to be used. Must be from the pooling methods supported by Keras models. Defaults to None.
         epochs (int, optional): The number of epochs to train the model for. Defaults to 25.
         batch_size (int, optional): The batch size to be used for training. Defaults to 32.
@@ -122,12 +116,11 @@ def run_training_task(architecture, task_name, model_loc, dataset_dir, method, i
 
     # Generating 3 datasets
     train_images, test_images, val_images = gen_subsets(
-        dataset_dir, is_kaggle, architecture, batch_size=batch_size)
+        dataset_dir, architecture, batch_size=batch_size)
 
     # retrieve a model created w given architecture and method
     model = create_model(
         architecture, # case sensitive!
-        is_kaggle,
         method.lower(), # method is case insensitive
         pooling=pooling.lower() if pooling else None, # pooling is case insensitive
         optimizer_name=overrides["optimizer_name"] if "optimizer_name" in overrides else None,

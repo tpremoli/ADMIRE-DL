@@ -5,12 +5,11 @@ import tensorflow.keras.applications as apps
 import matplotlib.pyplot as plt
 
 
-def gen_subsets(dataset_dir, is_kaggle, architecture, batch_size=32):
+def gen_subsets(dataset_dir, architecture, batch_size=32):
     """Generates 3 ImageDataGenerators for the train, test, and validation subsets of the dataset.
 
     Args:
         dataset_dir (str): The directory containing the preprocessed dataset
-        is_kaggle (bool): If the kaggle dataset is being used.
         batch_size (int, optional): The batch size to use for the ImageDataGenerators. Defaults to 32.
 
     Returns:
@@ -32,27 +31,27 @@ def gen_subsets(dataset_dir, is_kaggle, architecture, batch_size=32):
     test_datagen = ImageDataGenerator(preprocessing_function=preprocessing_func)
     validation_datagen = ImageDataGenerator(preprocessing_function=preprocessing_func)
 
-    IMAGE_DIMENSIONS = KAGGLE_IMAGE_DIMENSIONS if is_kaggle else ADNI_IMAGE_DIMENSIONS
+    IMAGE_DIMENSIONS = ADNI_IMAGE_DIMENSIONS
 
     train_images = train_datagen.flow_from_directory(
         Path(dataset_dir, "train"),
         target_size=IMAGE_DIMENSIONS,
         batch_size=batch_size, 
-        class_mode='categorical' if is_kaggle else 'binary',
+        class_mode='binary',
     )
 
     test_images = test_datagen.flow_from_directory(
         Path(dataset_dir, "test"),  # same directory as training data
         target_size=IMAGE_DIMENSIONS,
         batch_size=batch_size,  # What batch size??
-        class_mode='categorical' if is_kaggle else 'binary',
+        class_mode='binary',
     )
 
     val_images = validation_datagen.flow_from_directory(
         Path(dataset_dir, "val"),  # same directory as training data
         target_size=IMAGE_DIMENSIONS,
         batch_size=batch_size,  # What batch size??
-        class_mode='categorical' if is_kaggle else 'binary',
+        class_mode='binary',
     )
 
     return train_images, test_images, val_images,

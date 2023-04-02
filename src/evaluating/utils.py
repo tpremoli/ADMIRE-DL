@@ -12,6 +12,7 @@ from ..settings import *
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
+# TODO finish doccing the evaluation functions
 def load_config(path):
     """Loads a configuration file from the given path into a dict
 
