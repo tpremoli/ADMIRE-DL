@@ -21,8 +21,6 @@ def main():
         '-d', '--collection_dir', type=str, help='The directory of the collection. If the collection was downloaded from ADNI, this should be the "ADNI" folder')
     parser_prep.add_argument(
         '-c', '--collection_csv', type=str, help='The directory of the collection\'s csv (Metadata) file. This allows the program to identify which research group the collection belongs to')
-    parser_prep.add_argument(
-        '-k', '--kaggle', type=str, help='The directory of the kaggle mri images. These should be in their original folder structure (i.e nondemented, mildlydemented etc.)')
 
     # train parser
     parser_prep = subparsers.add_parser("train")
@@ -32,12 +30,12 @@ def main():
     args = parser.parse_args()
 
     if args.tool == "prep":
-        from src.preprocessing.launch_scripts import prep_adni, prep_kaggle
+        from src.preprocessing.launch_scripts import prep_adni
 
         # One of the options must be used
-        if not args.kaggle and not args.collection_dir and not args.collection_csv:
+        if not args.collection_dir and not args.collection_csv:
             raise argparse.ArgumentTypeError(
-                colored('Must specify COLLECTION_DIR and COLLECTION_CSV or KAGGLE to prep datasets!', "red"))
+                colored('Must specify COLLECTION_DIR and COLLECTION_CSV to prep datasets!', "red"))
 
         # Ratio option errors
         if len(args.ratio) != 3:
@@ -53,38 +51,29 @@ def main():
         print("\tSKIP_FSL",str(SKIP_FSL))
         print("\tSKIP_SLICE_CREATION",str(SKIP_SLICE_CREATION))
 
-        if args.kaggle:
-            # -k args are mutually exclusive with -d and -c
-            if args.collection_dir or args.collection_csv:
+        print(f"Option chosen: prep dataset {args.collection_dir}")
+
+        if SKIP_FSL:
+            print("SKIP_FSL option chosen! Will generate slices from passed collection_dir and split into train/test/val")
+            # d is required if we're skipping FSL
+            if not args.collection_dir:
                 raise argparse.ArgumentTypeError(
-                    colored('KAGGLE arg and COLLECTION_DIR/COLLECTION_CSV args are mutually exclusive! The dataset to be prepped is either kaggle or ADNI', "red"))
-
-            print(f"Option chosen: prep kaggle dataset {args.kaggle}")
-            prep_kaggle(args.kaggle, args.run_name, tuple(args.ratio))
+                    colored('Must specify COLLECTION_DIR when using ADNI dataset with SKIP_FSL enabled!', "red"))
+            
+            prep_adni(collection_dir=args.collection_dir,
+                        run_name=args.run_name,
+                        split_ratio=tuple(args.ratio))
+            
         else:
-            print(f"Option chosen: prep ADNI dataset {args.collection_dir}")
+            # both c and d are required if we're not skipping FSL scripts
+            if not args.collection_csv or not args.collection_dir:
+                raise argparse.ArgumentTypeError(
+                    colored('Must specify COLLECTION_DIR and COLLECTION_CSV when using ADNI dataset with SKIP_FSL disabled!', "red"))
 
-            if SKIP_FSL:
-                print("SKIP_FSL option chosen! Will generate slices from passed collection_dir and split into train/test/val")
-                # d is required if we're skipping FSL
-                if not args.collection_dir:
-                    raise argparse.ArgumentTypeError(
-                        colored('Must specify COLLECTION_DIR when using ADNI dataset with SKIP_FSL enabled!', "red"))
-                
-                prep_adni(collection_dir=args.collection_dir,
-                          run_name=args.run_name,
-                          split_ratio=tuple(args.ratio))
-                
-            else:
-                # both c and d are required if we're not skipping FSL scripts
-                if not args.collection_csv or not args.collection_dir:
-                    raise argparse.ArgumentTypeError(
-                        colored('Must specify COLLECTION_DIR and COLLECTION_CSV when using ADNI dataset with SKIP_FSL disabled!', "red"))
-
-                prep_adni(collection_dir=args.collection_dir,
-                          run_name=args.run_name,
-                          split_ratio=tuple(args.ratio),
-                          collection_csv=args.collection_csv)
+            prep_adni(collection_dir=args.collection_dir,
+                        run_name=args.run_name,
+                        split_ratio=tuple(args.ratio),
+                        collection_csv=args.collection_csv)
 
     elif args.tool == "train":
         from src.training.run_training import load_training_task
