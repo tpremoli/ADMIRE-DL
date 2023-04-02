@@ -1,0 +1,13 @@
+task_name: {str}
+dataset: {str}
+options:
+    architecture: VGG16 | VGG19 | ResNet50 | ResNet152 | DenseNet121 | DenseNet201
+    method: pretrain | transferlearn
+    batch_size: {int} # Defaults to 32
+    pooling: null | avg | max # Defaults to null
+    epochs: {int} # Defaults to 50
+    overrides:
+        optimizer_name: null | Adam | SGD | RMSProp # Defaults to Adam if tl, SGD if pt
+        l2reg: null | {float} # Defaults to null
+        dropout: null | {float} # Defaults to null
+        learning_rate: null | {float} # Defaults to 0.001 if optimizer == Adam | RMSProp, else 0.001

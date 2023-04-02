@@ -51,17 +51,16 @@ def load_training_task(file_loc):
         dataset_dir = Path(cwd, yamlfile["dataset"]).resolve()
         method = yamlfile["options"]["method"]
 
-        # Getting optional parameters with defaults
+        # Getting optional parameters with defaults TODO: move these to overrides
         pooling = yamlfile["options"].get("pooling", None)  # Default to None
-        epochs = yamlfile["options"].get("epochs", 25)  # Default to 25 epochs
-        batch_size = yamlfile["options"].get(
-            "batch_size", 32)  # Default to 32 batch size
+        epochs = yamlfile["options"].get("epochs", 50)  # Default to 50 epochs
+        batch_size = yamlfile["options"].get("batch_size", 32)  # Default to 32 batch size
 
         if "overrides" in optionkeys:
             # Extra parameters
             overrides = {
                 # Defaults to Adam optimizer,
-                "optimizer_name": yamlfile["options"]["overrides"].get("optimizer_name", "Adam"),
+                "optimizer_name": yamlfile["options"]["overrides"].get("optimizer_name", None),
                 # Defaults to no l2 regularization,
                 "l2reg": yamlfile["options"]["overrides"].get("l2reg", None),
                 # Defaults to no dropout,
