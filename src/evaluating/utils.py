@@ -63,7 +63,7 @@ def get_final_y(y_true, y_pred):
         
     return final_true, final_pred
             
-def calc_metrics(model, valdata, testdata, preprocessing_func, is_kaggle, modelname):
+def calc_metrics(model, valdata, testdata, preprocessing_func, modelname):
     """Calculates accuracy, F1, precision and recall, for a keras model and a dataset.
 
     Args:
@@ -71,14 +71,14 @@ def calc_metrics(model, valdata, testdata, preprocessing_func, is_kaggle, modeln
         dataset (_type_): _description_
         preprocessing_func (_type_): _description_
     """
-    IMAGE_DIMENSIONS = KAGGLE_IMAGE_DIMENSIONS if is_kaggle else ADNI_IMAGE_DIMENSIONS
+    IMAGE_DIMENSIONS = ADNI_IMAGE_DIMENSIONS
 
     
     datagen = ImageDataGenerator(preprocessing_function=preprocessing_func)
     test_flow = datagen.flow_from_directory(
         testdata,
         target_size=IMAGE_DIMENSIONS,
-        class_mode='categorical' if is_kaggle else 'binary',
+        class_mode='binary',
         shuffle = False,
     )
     
