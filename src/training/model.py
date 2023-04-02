@@ -68,10 +68,11 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
         # Freeze the base model
         for layer in base_model.layers:
             layer.trainable = False
-
+            
         if dropout:
             # dropout is used to prevent overfitting
             x = Dropout(dropout)(base_model.output)
+            # having Flatten after a global pooling layer is redundant, but doesn't hurt
             x = Flatten()(x)
             cprint(f"INFO: Dropout layer is enabled. P={dropout}", "blue")
         else:
@@ -119,15 +120,35 @@ def create_model(architecture, is_kaggle, method="transferlearn", pooling=None, 
 
     if method == "pretrain":
         # Create the base model
-        model = apps.__dict__[architecture](
-            include_top=True,  # This is if we want the final FC layers
+        base_model = apps.__dict__[architecture](
+            include_top=False,  # This is if we want the final FC layers
             weights=None,
             input_shape=input_shape,
-            classifier_activation="softmax" if is_kaggle else "sigmoid",
             pooling=pooling,
-            classes=output_count  # set the number of outputs to required count
         )
-        
+
+        if dropout:
+            # dropout is used to prevent overfitting
+            x = Dropout(dropout)(base_model.output)
+            x = Flatten()(x)
+            cprint(f"INFO: Dropout layer is enabled. P={dropout}", "blue")
+        else:
+            # convert output of base model to a 1D vector
+            cprint(f"INFO: Dropout is disabled.", "blue")
+            x = Flatten()(base_model.output)
+
+        # VGG models have 3 FC layers
+        if architecture == "VGG16" or architecture == "VGG19":
+            x = Dense(units=4096, activation='relu')(x)
+            x = Dense(units=4096, activation='relu')(x)
+
+        # The final layer is a softmax layer
+        prediction = Dense(
+            output_count, activation='softmax' if is_kaggle else "sigmoid")(x)
+
+        model = Model(inputs=base_model.input, outputs=prediction)
+
+        # adding regularization
         if l2reg:
             cprint(
                 f"INFO: L2 regularization is enabled. Lambda={l2reg}", "blue")

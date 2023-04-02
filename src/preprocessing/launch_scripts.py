@@ -185,11 +185,9 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None): # TOD
             nii_path = Path(imgpath)
             scan_name = nii_path.name[:10]
             group = nii_path.parent.name
-            # TODO: maybe make slice range a setting?
 
             # Split into slices
             create_image_slices_from_brain(nii_path, out_dir, scan_name, group)
-        
         
     # slice creation chunk TODO: check that the folder split hasn't already been done
     if not SKIP_FOLDER_SPLIT:
