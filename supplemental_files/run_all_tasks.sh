@@ -8,14 +8,14 @@ echo "Starting all tasks"
 
 # PT tasks
 echo "Starting PT tasks"
-# echo "Starting pt_ax_densenet121"
-# python cli.py train -c sample_configs/adni/pt_ax_densenet121.yml
-# echo "Starting pt_ax_densenet201"
-# python cli.py train -c sample_configs/adni/pt_ax_densenet201.yml
-# echo "Starting pt_ax_resnet50"
-# python cli.py train -c sample_configs/adni/pt_ax_resnet50.yml
-# echo "Starting pt_ax_resnet152"
-# python cli.py train -c sample_configs/adni/pt_ax_resnet152.yml
+echo "Starting pt_ax_densenet121"
+python cli.py train -c sample_configs/adni/pt_ax_densenet121.yml
+echo "Starting pt_ax_densenet201"
+python cli.py train -c sample_configs/adni/pt_ax_densenet201.yml
+echo "Starting pt_ax_resnet50"
+python cli.py train -c sample_configs/adni/pt_ax_resnet50.yml
+echo "Starting pt_ax_resnet152"
+python cli.py train -c sample_configs/adni/pt_ax_resnet152.yml
 echo "Starting pt_ax_vgg16"
 python cli.py train -c sample_configs/adni/pt_ax_vgg16.yml
 echo "Starting pt_ax_vgg19"
