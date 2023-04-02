@@ -13,7 +13,7 @@ cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
 
 def main():
-    for modelpath in Path(cwd, "out/trained_models/adni").resolve().glob("*"):
+    for modelpath in Path(cwd, "out/trained_models").resolve().glob("*"):
         model = load_model(modelpath)
         config = load_config(modelpath)
         

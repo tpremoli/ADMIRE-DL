@@ -3,7 +3,6 @@ dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
     architecture: ResNet152
     method: pretrain
-
-    pooling: max # This has given better results (image size)
+    pooling: max 
     epochs: 100
-    batch_size: 32 # this is a very large model
+    batch_size: 32 

@@ -4,7 +4,7 @@ options:
     architecture: ResNet50
     method: transferlearn
 
-    pooling: max # This has given better results (image size)
+    pooling: max 
     epochs: 100
     batch_size: 32
     overrides:

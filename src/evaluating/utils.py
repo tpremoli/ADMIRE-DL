@@ -73,7 +73,6 @@ def calc_metrics(model, valdata, testdata, preprocessing_func, modelname):
         preprocessing_func (_type_): _description_
     """
     IMAGE_DIMENSIONS = ADNI_IMAGE_DIMENSIONS
-
     
     datagen = ImageDataGenerator(preprocessing_function=preprocessing_func)
     test_flow = datagen.flow_from_directory(

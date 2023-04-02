@@ -85,7 +85,7 @@ def save_and_display_gradcam(img, heatmap, cam_path="cam.jpg", alpha=0.6):
     # display(Image(cam_path))
 
 # Make model
-model = load_model('out/trained_models/adni/vgg16_pretrain_slices')
+model = load_model('out/trained_models/vgg16_pretrain_slices')
 architecture = "VGG16"
 dataset_dir = "/home/tpremoli/MRI_AD_Diagnosis/out/preprocessed_datasets/adni_processed/slice_dataset"
 

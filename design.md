@@ -44,9 +44,9 @@ where the options are
 
 The config files are defined using `.yml` files. The following is an example.
 
-# TODO: UPDATE THIS
-```yaml
-task_name: densenet121_transferlearn_slices # TODO: add convention
+# TODO: UPDATE THIS # TODO: add convention  
+```yaml 
+task_name: densenet121_transferlearn_slices 
 dataset: out/adni_processed
 options:
     architecture: DenseNet121
