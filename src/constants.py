@@ -7,15 +7,6 @@ MILD_COGNITIVE_IMPAIRMENT="MCI"
 
 ADNI_IMAGE_DIMENSIONS=[182,218]
 
-
-# Kaggle group constants
-NON_DEMENTED="NonDemented"
-VERY_MILD_DEMENTED="VeryMildDemented"
-MILD_DEMENTED="MildDemented"
-MODERATE_DEMENTED="ModerateDemented"
-
-KAGGLE_IMAGE_DIMENSIONS=[180,180]
-
 # FSL constants
 FSLDIR = os.getenv('FSLDIR')
 

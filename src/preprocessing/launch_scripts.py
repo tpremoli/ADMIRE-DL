@@ -208,7 +208,6 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None): # TOD
     # Writing meta file
     with open(Path(out_dir, "meta.json"), "w") as meta_file:
         metadata = {
-            "kaggle": False,
             "run_name": run_name,
             "original_dir": str(collection_dir),
             "split": list(split_ratio),
@@ -230,62 +229,5 @@ def prep_adni(collection_dir, run_name, split_ratio, collection_csv=None): # TOD
         except:
             cprint("ERROR: Failed to sync files to s3 bucket", "red")
             cprint(f"INFO: Can be done manually using command {cmd}", "blue")
-
-    cprint(f"Done! Result files found in {out_dir}", "green")
-
-def prep_kaggle(kaggle_dir, run_name, split_ratio):
-    """Runs prep scripts for a kaggle image directory.
-        Will create train/test/val split folders
-
-    Args:
-        kaggle_dir (str): directory of where to find the kaggle images
-        run_name (str): Name of the prep run. Outputs will be stored in out/preprocessed_datasets/{run_name}
-        split_ratio (tuple): The train/test/val split ratio.
-
-    Raises:
-        ValueError: Checks if kaggle dir exists
-        ValueError: Checks if kaggle dir has images
-        ValueError: Checks if output dir has been used (avoids overwriting)
-    """
-    kaggle_dir = Path(cwd, kaggle_dir).resolve()
-
-    if not Path.exists(kaggle_dir):
-        raise ValueError(colored(f"Kaggle path {kaggle_dir} does not exist!", "red"))
-    elif not any(Path(kaggle_dir).iterdir()):
-        raise ValueError(colored(f"Kaggle path {kaggle_dir} empty!", "red"))
-
-    out_dir = Path(
-        filedir, "../../out/preprocessed_datasets", run_name).resolve()
-
-    print(f"output dir: {out_dir}")
-
-    try:
-        out_dir.mkdir(parents=True, exist_ok=False)
-    except:
-        raise ValueError(
-            colored(f"Output dir {out_dir} already exists! Pick a different run name or delete the existing directory.", "red"))
-
-    split_seed = datetime.now().timestamp()
-
-    print(f"Splitting folders with split ratio {split_ratio}")
-    splitfolders.ratio(kaggle_dir, output=out_dir,
-                       seed=split_seed, ratio=split_ratio)
-
-    train_count = len(list(Path(out_dir, "train").glob('**/*')))
-    test_count = len(list(Path(out_dir, "test").glob('**/*')))
-    val_count = len(list(Path(out_dir, "val").glob('**/*')))
-
-    with open(Path(out_dir, "meta.json"), "w") as meta_file:
-        metadata = {
-            "kaggle": True,
-            "run_name": run_name,
-            "original_dir": str(kaggle_dir),
-            "split": list(split_ratio),
-            "train_count": train_count,
-            "test_count": test_count,
-            "val_count": val_count,
-            "dataset_split_seed": split_seed,
-        }
-        json.dump(metadata, meta_file, indent=4)
 
     cprint(f"Done! Result files found in {out_dir}", "green")
