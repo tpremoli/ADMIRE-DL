@@ -23,9 +23,12 @@ def main():
         '-c', '--collection_csv', type=str, help='The directory of the collection\'s csv (Metadata) file. This allows the program to identify which research group the collection belongs to')
 
     # train parser
-    parser_prep = subparsers.add_parser("train")
-    parser_prep.add_argument(
+    train_parser = subparsers.add_parser("train")
+    train_parser.add_argument(
         '-c', '--config', required=True, type=str, help='The training task configuration file. This defines everything necessary in the task.')
+
+    # eval parser
+    eval_parser = subparsers.add_parser("eval")
 
     args = parser.parse_args()
 
@@ -83,9 +86,14 @@ def main():
                 colored("Missing config file! Training tasks require -c config.yml option", "red"))
 
         load_training_task(args.config)
+    elif args.tool == "eval":
+        from src.evaluating.eval_model import eval_all_models
+        
+        eval_all_models()
     else:
         raise argparse.ArgumentTypeError(
             colored('Must specify CLI mode! Options: (prep, train, test, predict)', "red"))
+        
 
 
 if __name__ == "__main__":

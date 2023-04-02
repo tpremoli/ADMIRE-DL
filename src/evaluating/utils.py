@@ -89,12 +89,25 @@ def calc_metrics(model, valdata, testdata, preprocessing_func, modelname):
     
     out_dir = Path(cwd, "out/evals").resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
-    with open (Path(out_dir,f"{modelname}.txt").resolve(), "w") as f:
-        f.write("keras eval:")
-        f.write("\ntest accuracy:")
-        f.write(str(model.evaluate(test_flow)[1]))
-        f.write("\nsklearn eval:\n")
-        f.write(classification_report(y_true, y_pred, target_names=["AD", "CN"]))
-        matrix = confusion_matrix(y_true, y_pred, normalize='pred')
-        draw_confusion_matrix(matrix, modelname, out_dir)
+    
+    this_report = classification_report(y_true, y_pred, target_names=["AD", "CN"], digits=4, output_dict=True)
+    
+    written_dict = {"keras eval": {"test accuracy": model.evaluate(test_flow)[1], "sklearn eval": this_report}}
+    
+    with open(Path(out_dir,f"eval_{modelname}.yml").resolve(), "w") as f:
+        yaml.dump(written_dict, f)
+    
+    matrix = confusion_matrix(y_true, y_pred, normalize='pred')
+    draw_confusion_matrix(matrix, modelname, out_dir)
         
+def extract_metrics_from_yaml(file_path):
+    with open(file_path, 'r') as f:
+        data = yaml.safe_load(f)
+        sklearn_eval = data['keras eval']['sklearn eval']
+        accuracy = sklearn_eval['accuracy']
+        avg_metrics = sklearn_eval['macro avg']
+        weighted_metrics = sklearn_eval['weighted avg']
+        cn_metrics = sklearn_eval['CN']
+        ad_metrics = sklearn_eval['AD']
+    return accuracy, avg_metrics, weighted_metrics, cn_metrics, ad_metrics
+
