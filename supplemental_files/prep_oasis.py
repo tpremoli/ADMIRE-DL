@@ -47,22 +47,16 @@ def run_fsl(scan_location, scan_name, group, out_dir):
     Returns:
         str: path of the saved nii image output by FSL
     """
+    
     # The tmp_dir directory will be used to store all the fsl_anat info
     tmp_dir = Path(
-        filedir, "../../out/preprocessed_datasets/tmp", scan_name).resolve()
+        filedir, "../out/preprocessed_datasets/tmp", scan_name).resolve()
 
     # fsl_anat adds .anat to end of output directory
     anat_dir = Path(f"{tmp_dir}.anat")
 
-    try:
-        # Running fsl_anat. We don't need segmentation nor registration - registration will be done later
-        fsl_anat(img=scan_location, out=tmp_dir, noseg=True,
-                 nosubcortseg=True, nononlinreg=True, noreg=True, nocleanup=True)
-    except:
-        # If fsl fails, we delete the tmp_dir and return dummy values
-        shutil.rmtree(anat_dir)
-        raise ValueError(
-            f"ERROR: FSL failed to run on scan {scan_name} in group {group}. \n Original brain: {scan_location} \n tmp_dir: {tmp_dir}")
+    fsl_anat(img=scan_location, out=tmp_dir, noseg=True,
+                nosubcortseg=True, nononlinreg=True, noreg=True, nocleanup=True)
 
     cprint("INFO: fsl_anat complete. Running flirt to register to MNI space", "blue")
     # We're runnning flirt with custom parameters to improve resolution from 2mm to 1mm
@@ -174,12 +168,7 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(80,
 
     print(f"Launching FSL scripts for scan {scan_name} in group {group}")
     
-    try:
-        original_brain, nii_path = run_fsl(scan_location, scan_name, group, out_dir)
-    except:
-        # if fsl fails, we return dummy values
-        # Will be logged in batches.log. just skip this scan
-        return (scan_location, "FSL failed")
+    original_brain, nii_path = run_fsl(scan_location, scan_name, group, out_dir)
     
     print(f"FSL scripts complete. Processed MRI found in {nii_path}")
 
@@ -260,6 +249,19 @@ if __name__ == "__main__":
     queued_mris = []
     current_batch = 0
 
+    for _, subject in subjects.iterrows():
+        base_folder = Path(collection_dir, subject["ID"] + "_MR1").resolve()
+        specific_scan_folder = Path(base_folder, "PROCESSED", "MPRAGE","SUBJ_111").resolve()
+        #converting to nii in same folder
+        for p in sorted(specific_scan_folder.rglob("*")):
+            if p.name.endswith(".img"):
+                scan_folder = p
+                break
+            
+        #converting to nii in same folder
+        #TODO: convert all hdr/img files to nii files
+
+        
     # first loop: goes through each subject
     for _, subject in subjects.iterrows():
         base_folder = Path(collection_dir, subject["ID"] + "_MR1").resolve()
