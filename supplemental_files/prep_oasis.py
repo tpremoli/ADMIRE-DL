@@ -262,12 +262,13 @@ if __name__ == "__main__":
 
     # first loop: goes through each subject
     for _, subject in subjects.iterrows():
-        base_folder = Path(collection_dir, subject["ID"])
+        base_folder = Path(collection_dir, subject["ID"] + "_MR1").resolve()
+        specific_scan_folder = Path(base_folder, "PROCESSED", "MPRAGE","SUBJ_111").resolve()
         
         # This is incorrect. Get a specific scan not the first one
         # we just get the first scan. Sorted so we always get the same one per subject
-        for p in sorted(base_folder.rglob("*")):
-            if p.name.endswith(".nii"):
+        for p in sorted(specific_scan_folder.rglob("*")):
+            if p.name.endswith(".hdr"):
                 scan_folder = p
                 break
 
@@ -314,7 +315,7 @@ if __name__ == "__main__":
         nii_path = Path(imgpath)
         
         # This will be slightly different for OASIS
-        scan_name = nii_path.name[:10]
+        scan_name = nii_path.name[:9]
         group = nii_path.parent.name
 
         # Split into slices
