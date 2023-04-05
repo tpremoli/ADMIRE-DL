@@ -33,6 +33,7 @@ USE_S3 = True
 AWS_S3_BUCKET_NAME="processed-nii-files"
 FSL_CONCURRENT_PROCESSES=6
 FSLDIR = os.getenv('FSLDIR')
+split_ratio = [0.8, 0.1, 0.1]
 
 def run_fsl(scan_location, scan_name, group, out_dir):
     """Runs fsl_anat and performs brain extraction for the given scan.
@@ -225,8 +226,14 @@ if __name__ == "__main__":
     # Getting individual subjects
     # For each subject we only really need one scan, and we're only using AD and CN, not MCI
     subjects = pd.read_csv(collection_csv)
-    subjects.drop_duplicates(keep='first',subset=['Subject'], inplace=True)
-    subjects.drop(subjects[subjects['Group'] == 'MCI'].index, inplace=True)
+    
+    # splitting subject name into subject and scan (3rd _ is the scan name)
+    subjects['ID'] = subjects['ID'].str.split('_', expand=True)[0] + "_" + subjects['ID'].str.split('_', expand=True)[1]    
+    subjects.drop_duplicates(keep='first',subset=['ID'], inplace=True)
+    subjects.drop(subjects[subjects['CDR'] == None].index, inplace=True)
+    
+    # All subjects with CDR of 0 are CN
+    subjects['Group'] = subjects['CDR'].apply(lambda x: "CN" if x == 0 else "AD")
         
     est_batches = len(subjects) / FSL_CONCURRENT_PROCESSES
 
@@ -236,13 +243,6 @@ if __name__ == "__main__":
     cprint(f"INFO: output dir: {out_dir}", "blue")
 
     # subjects that have already been processed
-    done_subjects = dict()
-    done_subjects["Original Path"] = []
-    done_subjects["Output Path"] = []
-    done_subjects["Subject Name"] = []
-    
-    done_subjects = pd.DataFrame.from_dict(done_subjects)
-
     out_dir.mkdir(parents=True, exist_ok=False)
 
     # Creating group subdirs for output nii images
@@ -262,19 +262,16 @@ if __name__ == "__main__":
 
     # first loop: goes through each subject
     for _, subject in subjects.iterrows():
-        # This skips the subject if we've already processed it
-        if subject["Subject"] in done_subjects["Subject Name"].values:
-            continue
+        base_folder = Path(collection_dir, subject["ID"])
         
-        base_folder = Path(collection_dir, subject["Subject"])
-        
+        # This is incorrect. Get a specific scan not the first one
         # we just get the first scan. Sorted so we always get the same one per subject
         for p in sorted(base_folder.rglob("*")):
             if p.name.endswith(".nii"):
                 scan_folder = p
                 break
 
-        current_subject = [scan_folder, subject["Subject"],
+        current_subject = [scan_folder, subject["ID"],
                         out_dir, subject["Group"], run_name]
 
         queued_mris.append(current_subject)
@@ -292,7 +289,6 @@ if __name__ == "__main__":
             successful_str = f"SUCCESS: Batch {current_batch}/{est_batches}. It took {str(batch_end_time-batch_start_time)} to preprocess"
 
             cprint(successful_str, "green")
-            write_batch_to_log(complete_pairs, out_dir, successful_str)
 
             # clear the queue
             queued_mris.clear()
@@ -314,23 +310,23 @@ if __name__ == "__main__":
     cprint(f"SUCCESS: All FSL scripts took {str(fsl_end_time-fsl_start_time)} to run", "green")
     
     # this means we'll take care of slice creation ad-hoc
-    elif not SKIP_SLICE_CREATION:
-        for imgpath in collection_dir.rglob("*.nii.gz"):
-            nii_path = Path(imgpath)
-            scan_name = nii_path.name[:10]
-            group = nii_path.parent.name
+    for imgpath in collection_dir.rglob("*.nii.gz"):
+        nii_path = Path(imgpath)
+        
+        # This will be slightly different for OASIS
+        scan_name = nii_path.name[:10]
+        group = nii_path.parent.name
 
-            # Split into slices
-            create_image_slices_from_brain(nii_path, out_dir, scan_name, group)
+        # Split into slices
+        create_image_slices_from_brain(nii_path, out_dir, scan_name, group)
         
     # slice creation chunk TODO: check that the folder split hasn't already been done
-    if not SKIP_FOLDER_SPLIT:
-        dataset_loc = Path(collection_dir, "axial_slices").resolve() if SKIP_SLICE_CREATION and SKIP_FSL else Path(out_dir, "axial_slices")
-        split_seed = datetime.now().timestamp()
-        
-        cprint(f"INFO: Splitting slice folders with split ratio {split_ratio}", "blue")
-        splitfolders.ratio(dataset_loc, output=Path(out_dir, "axial_dataset"),
-                        seed=split_seed, ratio=split_ratio, group_prefix=15)
+    dataset_loc = Path(out_dir, "axial_slices")
+    split_seed = datetime.now().timestamp()
+    
+    cprint(f"INFO: Splitting slice folders with split ratio {split_ratio}", "blue")
+    splitfolders.ratio(dataset_loc, output=Path(out_dir, "axial_dataset"),
+                    seed=split_seed, ratio=split_ratio, group_prefix=15)
 
     cprint("SUCCESS: Done processing raw MRIs. Saving meta data", "green")
 
@@ -354,7 +350,7 @@ if __name__ == "__main__":
 
     if collection_csv:
         # Writing collection.csv file
-        shutil.copyfile(collection_csv, Path(out_dir, "collection.csv"))
+        shutil.copyfile(collection_csv, Path(out_dir, "OASIS.csv"))
 
     if USE_S3:
         try:  # TODO don't use subprocess, use boto3 w custom function
