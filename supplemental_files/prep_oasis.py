@@ -193,8 +193,6 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(80,
 
 
 if __name__ == "__main__":
-    # TODO: add args for these
-    
     collection_dir = "supplemental_files/unprocessed_datasets/OASIS"
     collection_csv = "supplemental_files/unprocessed_datasets/OASIS/OASIS.csv"
     run_name = "oasis_processed"
@@ -227,7 +225,7 @@ if __name__ == "__main__":
     est_batches = len(subjects) / FSL_CONCURRENT_PROCESSES
 
     out_dir = Path(
-        filedir, "../../out/preprocessed_datasets", run_name).resolve()
+        filedir, "../out/preprocessed_datasets", run_name).resolve()
 
     cprint(f"INFO: output dir: {out_dir}", "blue")
 
@@ -249,31 +247,29 @@ if __name__ == "__main__":
     queued_mris = []
     current_batch = 0
 
+    cprint("INFO: Converting all scans to nii format", "blue")
     for _, subject in subjects.iterrows():
         base_folder = Path(collection_dir, subject["ID"] + "_MR1").resolve()
         specific_scan_folder = Path(base_folder, "PROCESSED", "MPRAGE","SUBJ_111").resolve()
+        out_nii_path = Path(specific_scan_folder, "subj.nii").resolve()
+        if out_nii_path.exists():
+            continue
+        
         #converting to nii in same folder
-        for p in sorted(specific_scan_folder.rglob("*")):
-            if p.name.endswith(".img"):
-                scan_folder = p
-                break
+        for p in sorted(specific_scan_folder.rglob("*.img")):
+            scan_folder = p
+            break
             
-        #converting to nii in same folder
-        #TODO: convert all hdr/img files to nii files
-
+        img = nib.load(str(scan_folder))
+        
+        nib.save(img, str(out_nii_path))            
+    cprint("SUCCESS: All scans converted to nii format!", "green")
         
     # first loop: goes through each subject
     for _, subject in subjects.iterrows():
         base_folder = Path(collection_dir, subject["ID"] + "_MR1").resolve()
-        specific_scan_folder = Path(base_folder, "PROCESSED", "MPRAGE","SUBJ_111").resolve()
+        scan_folder = Path(base_folder, "PROCESSED", "MPRAGE","SUBJ_111","subj.nii").resolve()
         
-        # This is incorrect. Get a specific scan not the first one
-        # we just get the first scan. Sorted so we always get the same one per subject
-        for p in sorted(specific_scan_folder.rglob("*")):
-            if p.name.endswith(".hdr"):
-                scan_folder = p
-                break
-
         current_subject = [scan_folder, subject["ID"],
                         out_dir, subject["Group"], run_name]
 
