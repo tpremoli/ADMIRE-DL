@@ -253,16 +253,16 @@ if __name__ == "__main__":
         specific_scan_folder = Path(base_folder, "PROCESSED", "MPRAGE","SUBJ_111").resolve()
         out_nii_path = Path(specific_scan_folder, "subj.nii").resolve()
         if out_nii_path.exists():
-            continue
+            subprocess.call(["rm", str(out_nii_path)])
         
         #converting to nii in same folder
         for p in sorted(specific_scan_folder.rglob("*.img")):
             scan_folder = p
             break
-            
-        img = nib.load(str(scan_folder))
         
-        nib.save(img, str(out_nii_path))            
+        subprocess.call(["fslchfiletype", "NIFTI", str(scan_folder), str(out_nii_path)])
+        
+        
     cprint("SUCCESS: All scans converted to nii format!", "green")
         
     # first loop: goes through each subject
