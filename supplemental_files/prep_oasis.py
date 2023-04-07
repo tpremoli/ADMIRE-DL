@@ -229,7 +229,7 @@ if __name__ == "__main__":
     cprint(f"INFO: output dir: {out_dir}", "blue")
 
     # subjects that have already been processed
-    out_dir.mkdir(parents=True, exist_ok=False)
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     # Creating group subdirs for output nii images
     Path(out_dir, "nii_files/CN").resolve().mkdir(parents=True, exist_ok=True)
@@ -245,28 +245,10 @@ if __name__ == "__main__":
     # queued_mris is the current queue of mris to prep concurrently
     queued_mris = []
     current_batch = 0
-
-    # cprint("INFO: Converting all scans to nii format", "blue")
-    # for _, subject in subjects.iterrows():
-    #     base_folder = Path(collection_dir, subject["ID"] + "_MR1").resolve()
-    #     specific_scan_folder = Path(base_folder, "PROCESSED", "MPRAGE","SUBJ_111").resolve()
-    #     out_nii_path = Path(specific_scan_folder, "subj.nii").resolve()
-    #     if out_nii_path.exists():
-    #         subprocess.call(["rm", str(out_nii_path)])
         
-    #     #converting to nii in same folder
-    #     for p in sorted(specific_scan_folder.rglob("*.hdr")):
-    #         scan_folder = p
-    #         break
-        
-    #     # We have to remove the .hdr extension to convert to nii
-    #     subprocess.call(["fslchfiletype", "NIFTI", str(scan_folder).replace(".hdr", ""), str(out_nii_path)])
-        
-    # cprint("SUCCESS: All scans converted to nii format!", "green")
-        
-    # first loop: goes through each subjectº
+    # All subjects must be processed
     for _, subject in subjects.iterrows():
-        scan_folder = Path(collection_dir, f"{subject['ID']}_MR1_mpr-1_anon.nii.gz").resolve()
+        scan_folder = collection_dir / f"{subject['ID']}_MR1_mpr-1_anon.nii.gz"
         
         current_subject = [scan_folder, subject["ID"],
                         out_dir, subject["Group"], run_name]
@@ -307,9 +289,7 @@ if __name__ == "__main__":
     cprint(f"SUCCESS: All FSL scripts took {str(fsl_end_time-fsl_start_time)} to run", "green")
     
     # this means we'll take care of slice creation ad-hoc
-    for imgpath in collection_dir.rglob("*.nii.gz"):
-        nii_path = Path(imgpath)
-        
+    for nii_path in out_dir.rglob("*.nii.gz"):
         # This will be slightly different for OASIS
         scan_name = nii_path.name[:9]
         group = nii_path.parent.name
@@ -318,22 +298,22 @@ if __name__ == "__main__":
         create_image_slices_from_brain(nii_path, out_dir, scan_name, group)
         
     # slice creation chunk TODO: check that the folder split hasn't already been done
-    dataset_loc = Path(out_dir, "axial_slices")
+    dataset_loc = out_dir / "axial_slices"
     split_seed = datetime.now().timestamp()
     
     cprint(f"INFO: Splitting slice folders with split ratio {split_ratio}", "blue")
-    splitfolders.ratio(dataset_loc, output=Path(out_dir, "axial_dataset"),
+    splitfolders.ratio(dataset_loc, output=(out_dir / "axial_dataset"),
                     seed=split_seed, ratio=split_ratio, group_prefix=15)
 
     cprint("SUCCESS: Done processing raw MRIs. Saving meta data", "green")
 
-    scan_count = len(list(Path(out_dir, "nii_files").glob('**/*')))
-    slice_count = len(list(Path(out_dir, "axial_slices").glob('**/*'))) #TODO: check sagittal and coronals
+    scan_count = len(list((out_dir / "nii_files").glob('**/*')))
+    slice_count = len(list((out_dir / "axial_slices").glob('**/*'))) #TODO: check sagittal and coronals
 
     prep_end_time = datetime.now()
     
     # Writing meta file
-    with open(Path(out_dir, "meta.json"), "w") as meta_file:
+    with open((out_dir / "meta.json"), "w") as meta_file:
         metadata = {
             "run_name": run_name,
             "original_dir": str(collection_dir),
@@ -347,7 +327,7 @@ if __name__ == "__main__":
 
     if collection_csv:
         # Writing collection.csv file
-        shutil.copyfile(collection_csv, Path(out_dir, "OASIS.csv"))
+        shutil.copyfile(collection_csv, (out_dir / "OASIS.csv"))
 
     if USE_S3:
         try:  # TODO don't use subprocess, use boto3 w custom function
