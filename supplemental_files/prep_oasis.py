@@ -4,8 +4,13 @@ This is due to the fact that it is a smaller dataset, and we don't need to
 watch out for failed runs etc.
 
 This should ideally be integrated into the main prep script, but for now it
-is a separate script for ease of use and implementation.
+is a separate script for ease of use and implementation. This script should
+be ran after oasis_to_nii.py, which will create the oasis_nifti directory,
+which is the input for this script. This script will create a preprocessed
+dataset at out/preprocessed_datasets/oasis_processed.
 
+The final parameters for this preprocessing are modifiable in the script
+itself. The parameters are as follows:
 """
 
 
@@ -25,7 +30,7 @@ from multiprocessing import Pool
 from datetime import datetime
 from termcolor import cprint
 from pathlib import Path
-from fsl.wrappers import fsl_anat, fslmaths, fnirt, flirt, bet
+from fsl.wrappers import fsl_anat, flirt, bet
 
 cwd = Path().resolve()
 filedir = Path(__file__).parent.resolve()
@@ -35,7 +40,7 @@ FSL_CONCURRENT_PROCESSES=6
 FSLDIR = os.getenv('FSLDIR')
 split_ratio = [0.8, 0.1, 0.1]
 collection_dir = "supplemental_files/unprocessed_datasets/oasis_nifti"
-collection_csv = "supplemental_files/unprocessed_datasets/OASIS/OASIS.csv"
+collection_csv = "supplemental_files/unprocessed_datasets/oasis_nifti/OASIS.csv"
 run_name = "oasis_processed"
 
 def run_fsl(scan_location, scan_name, group, out_dir):

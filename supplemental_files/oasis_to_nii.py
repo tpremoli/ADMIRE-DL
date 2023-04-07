@@ -1,3 +1,27 @@
+"""This script converts the OASIS dataset to nifti format.
+The default OASIS format is Analyze 7.5, which is outdated,
+missing some metadata, and not supported by many tools.
+This script converts the dataset to nifti format, which is
+much more compatible with modern standards.
+
+This script should be run from the root directory of the
+program, and should be ran before running prep_oasis.py.
+This will create a new directory called oasis_nifti, which
+will be stored in supplemental_files/unprocessed_datasets.
+
+OASIS dataset is available at: https://www.oasis-brains.org/
+
+To use:
+    python supplemental_files/oasis_to_nii.py <rootdir>
+
+where <rootdir> is the root directory of the OASIS dataset.
+This should also contain the oasis_cross-sectional.csv file,
+which contains the labels for the subjects.
+
+Raises:
+    ValueError: Thrown if the script is not run with the correct number of arguments.
+"""
+
 from pathlib import Path
 from termcolor import cprint
 import shutil
