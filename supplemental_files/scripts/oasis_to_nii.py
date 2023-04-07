@@ -61,6 +61,11 @@ if __name__ == '__main__':
             if not a.name.endswith('.hdr'):
                 continue
 
+            output_filename = a.stem
+            if output_filename.split("_")[2] == "MR2":
+                output_filename = output_filename.replace("MR2", "MR1")
+                cprint("WARNING: MR2 acquisition found, renaming to MR1 instead", "yellow")
+
             output_file = niftidir / a.stem
 
             # Do each of the 6 steps described in the blog
@@ -80,7 +85,7 @@ if __name__ == '__main__':
     
     # copy oasis.csv file to nifti directory
     # this file contains the labels for the subjects
-    shutil.copyfile(oasisdir.parent / 'oasis_cross-sectional.csv', niftidir / 'OASIS.csv')
+    shutil.copyfile(oasisdir / 'oasis_cross-sectional.csv', niftidir / 'OASIS.csv')
 
     cprint("SUCCESS: Successfully converted all oasis files to nii!", "green")
     cprint("INFO: output files are in: " + str(niftidir), "yellow")

@@ -10,4 +10,4 @@ options:
         optimizer_name: null | Adam | SGD | RMSProp # Defaults to Adam if tl, SGD if pt
         l2reg: null | {float} # Defaults to null
         dropout: null | {float} # Defaults to null
-        learning_rate: null | {float} # Defaults to 0.001 if optimizer == Adam | RMSProp, else 0.001
+        learning_rate: null | {float} # Defaults to 0.001 if optimizer == Adam | RMSProp, else 0.0003
