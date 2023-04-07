@@ -12,9 +12,9 @@ will be stored in supplemental_files/unprocessed_datasets.
 OASIS dataset is available at: https://www.oasis-brains.org/
 
 To use:
-    python supplemental_files/scripts/oasis_to_nii.py <rootdir>
+    python supplemental_files/scripts/oasis_to_nii.py <oasisdir>
 
-where <rootdir> is the root directory of the OASIS dataset.
+where <oasisdir> is the root directory of the OASIS dataset.
 This should also contain the oasis_cross-sectional.csv file,
 which contains the labels for the subjects.
 
@@ -34,18 +34,18 @@ cwd = Path.cwd()
 if __name__ == '__main__':
     # get rootdir from args
     if len(sys.argv) != 1:
-        raise ValueError("ERROR: Need one argument - rootdir of OASIS dataset")
+        raise ValueError("ERROR: Need one argument - oasisdir of OASIS dataset")
     
-    rootdir = Path(cwd, sys.argv[1]).resolve()
+    oasisdir = Path(cwd, sys.argv[1]).resolve()
     
     # Directory to save results
-    niftidir = rootdir.parent / 'oasis_nifti'
+    niftidir = oasisdir.parent / 'oasis_nifti'
 
     # Create directory to save the results, if not existing
     (niftidir).mkdir(parents=True, exist_ok=True)
 
     # For each subject
-    for s in sorted(rootdir.iterdir()):
+    for s in sorted(oasisdir.iterdir()):
         # Skip non-directory entries
         if not s.is_dir():
             continue
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     
     # copy oasis.csv file to nifti directory
     # this file contains the labels for the subjects
-    shutil.copyfile(rootdir.parent / 'OASIS.csv', niftidir / 'OASIS.csv')
+    shutil.copyfile(oasisdir.parent / 'OASIS.csv', niftidir / 'OASIS.csv')
 
     cprint("SUCCESS: Successfully converted all oasis files to nii!", "green")
     cprint("INFO: output files are in: " + str(niftidir), "yellow")
