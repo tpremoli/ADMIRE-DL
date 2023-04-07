@@ -1,5 +1,5 @@
 import argparse
-from src.settings import *
+from admire.settings import *
 from termcolor import colored
 
 def main():
@@ -33,7 +33,7 @@ def main():
     args = parser.parse_args()
 
     if args.tool == "prep":
-        from src.preprocessing.launch_scripts import prep_adni
+        from admire.preprocessing.launch_scripts import prep_adni
 
         # One of the options must be used
         if not args.collection_dir and not args.collection_csv:
@@ -79,7 +79,7 @@ def main():
                         collection_csv=args.collection_csv)
 
     elif args.tool == "train":
-        from src.training.run_training import load_training_task
+        from admire.training.run_training import load_training_task
 
         if not args.config:
             raise argparse.ArgumentTypeError(
@@ -87,7 +87,7 @@ def main():
 
         load_training_task(args.config)
     elif args.tool == "eval":
-        from src.evaluating.eval_model import eval_all_models
+        from admire.evaluating.eval_model import eval_all_models
         
         eval_all_models()
     else:
@@ -97,5 +97,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # from src.evaluating.eval_model import main
     main()
