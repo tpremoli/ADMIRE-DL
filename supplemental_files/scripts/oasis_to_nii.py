@@ -12,7 +12,7 @@ will be stored in supplemental_files/unprocessed_datasets.
 OASIS dataset is available at: https://www.oasis-brains.org/
 
 To use:
-    python supplemental_files/oasis_to_nii.py <rootdir>
+    python supplemental_files/scripts/oasis_to_nii.py <rootdir>
 
 where <rootdir> is the root directory of the OASIS dataset.
 This should also contain the oasis_cross-sectional.csv file,

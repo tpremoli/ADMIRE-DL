@@ -1,5 +1,8 @@
 """This script runs all the tasks in the sample_configs directory.
 This is useful for running all the tasks in a single command.
+
+Run this from the project root directory, e.g.:
+python supplemental_files/scripts/run_all_tasks.py
 """
 
 import os

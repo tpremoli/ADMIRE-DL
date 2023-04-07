@@ -10,7 +10,10 @@ which is the input for this script. This script will create a preprocessed
 dataset at out/preprocessed_datasets/oasis_processed.
 
 The final parameters for this preprocessing are modifiable in the script
-itself. The parameters are as follows:
+itself.
+
+Run this script from the project root directory, i.e
+python supplemental_files/scripts/prep_oasis.py
 """
 
 
@@ -58,7 +61,7 @@ def run_fsl(scan_location, scan_name, group, out_dir):
     
     # The tmp_dir directory will be used to store all the fsl_anat info
     tmp_dir = Path(
-        filedir, "../out/preprocessed_datasets/tmp", scan_name).resolve()
+        filedir, "../../out/preprocessed_datasets/tmp", scan_name).resolve()
 
     # fsl_anat adds .anat to end of output directory
     anat_dir = Path(f"{tmp_dir}.anat")
@@ -229,7 +232,7 @@ if __name__ == "__main__":
     est_batches = len(subjects) / FSL_CONCURRENT_PROCESSES
 
     out_dir = Path(
-        filedir, "../out/preprocessed_datasets", run_name).resolve()
+        filedir, "../../out/preprocessed_datasets", run_name).resolve()
 
     cprint(f"INFO: output dir: {out_dir}", "blue")
 

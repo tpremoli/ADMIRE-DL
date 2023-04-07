@@ -4,14 +4,18 @@ The script will read all the yml files in the out/evals directory,
 creating a new file called evals.csv in the same directory, containing
 all the metrics for each model. This allows for quicker comparison.
 
+Run this from the project root directory, i.e
+python supplemental_files/scripts/evals_to_csv.py
 """
 
 import csv
 import yaml
 from pathlib import Path
 
+filedir = Path(__file__).parent.resolve()
+
 # Set the input directory
-input_directory = Path("out/evals")
+input_directory = Path(filedir, "../../out/evals").resolve()
 
 # Create the output CSV file
 output_file = input_directory / "evals.csv"
