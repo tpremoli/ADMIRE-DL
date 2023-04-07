@@ -34,6 +34,9 @@ AWS_S3_BUCKET_NAME="processed-nii-files"
 FSL_CONCURRENT_PROCESSES=6
 FSLDIR = os.getenv('FSLDIR')
 split_ratio = [0.8, 0.1, 0.1]
+collection_dir = "supplemental_files/unprocessed_datasets/oasis_nifti"
+collection_csv = "supplemental_files/unprocessed_datasets/OASIS/OASIS.csv"
+run_name = "oasis_processed"
 
 def run_fsl(scan_location, scan_name, group, out_dir):
     """Runs fsl_anat and performs brain extraction for the given scan.
@@ -193,10 +196,6 @@ def prep_raw_mri(scan_loc, scan_name, out_dir, group, run_name, slice_range=(80,
 
 
 if __name__ == "__main__":
-    collection_dir = "supplemental_files/unprocessed_datasets/OASIS"
-    collection_csv = "supplemental_files/unprocessed_datasets/OASIS/OASIS.csv"
-    run_name = "oasis_processed"
-
     prep_start_time = datetime.now()
     
     # Resetting path locs
@@ -247,28 +246,27 @@ if __name__ == "__main__":
     queued_mris = []
     current_batch = 0
 
-    cprint("INFO: Converting all scans to nii format", "blue")
+    # cprint("INFO: Converting all scans to nii format", "blue")
+    # for _, subject in subjects.iterrows():
+    #     base_folder = Path(collection_dir, subject["ID"] + "_MR1").resolve()
+    #     specific_scan_folder = Path(base_folder, "PROCESSED", "MPRAGE","SUBJ_111").resolve()
+    #     out_nii_path = Path(specific_scan_folder, "subj.nii").resolve()
+    #     if out_nii_path.exists():
+    #         subprocess.call(["rm", str(out_nii_path)])
+        
+    #     #converting to nii in same folder
+    #     for p in sorted(specific_scan_folder.rglob("*.hdr")):
+    #         scan_folder = p
+    #         break
+        
+    #     # We have to remove the .hdr extension to convert to nii
+    #     subprocess.call(["fslchfiletype", "NIFTI", str(scan_folder).replace(".hdr", ""), str(out_nii_path)])
+        
+    # cprint("SUCCESS: All scans converted to nii format!", "green")
+        
+    # first loop: goes through each subjectº
     for _, subject in subjects.iterrows():
-        base_folder = Path(collection_dir, subject["ID"] + "_MR1").resolve()
-        specific_scan_folder = Path(base_folder, "PROCESSED", "MPRAGE","SUBJ_111").resolve()
-        out_nii_path = Path(specific_scan_folder, "subj.nii").resolve()
-        if out_nii_path.exists():
-            subprocess.call(["rm", str(out_nii_path)])
-        
-        #converting to nii in same folder
-        for p in sorted(specific_scan_folder.rglob("*.img")):
-            scan_folder = p
-            break
-        
-        subprocess.call(["fslchfiletype", "NIFTI", str(scan_folder), str(out_nii_path)])
-        
-        
-    cprint("SUCCESS: All scans converted to nii format!", "green")
-        
-    # first loop: goes through each subject
-    for _, subject in subjects.iterrows():
-        base_folder = Path(collection_dir, subject["ID"] + "_MR1").resolve()
-        scan_folder = Path(base_folder, "PROCESSED", "MPRAGE","SUBJ_111","subj.nii").resolve()
+        scan_folder = Path(collection_dir, f"{subject['ID']}_MR1_mpr-1_anon.nii.gz").resolve()
         
         current_subject = [scan_folder, subject["ID"],
                         out_dir, subject["Group"], run_name]
