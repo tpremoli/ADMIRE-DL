@@ -1,8 +1,8 @@
-task_name: pt_ax_resnet50_avgpooling
+task_name: pt_ax_resnet50_nopooling
 dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
     architecture: ResNet50
     method: pretrain
-    pooling: avg 
+    pooling: null 
     epochs: 100
     batch_size: 32 

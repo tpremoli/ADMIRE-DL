@@ -33,7 +33,7 @@ cwd = Path.cwd()
 
 if __name__ == '__main__':
     # get rootdir from args
-    if len(sys.argv) != 1:
+    if len(sys.argv) != 2:
         raise ValueError("ERROR: Need one argument - oasisdir of OASIS dataset")
     
     oasisdir = Path(cwd, sys.argv[1]).resolve()
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     
     # copy oasis.csv file to nifti directory
     # this file contains the labels for the subjects
-    shutil.copyfile(oasisdir.parent / 'OASIS.csv', niftidir / 'OASIS.csv')
+    shutil.copyfile(oasisdir.parent / 'oasis_cross-sectional.csv', niftidir / 'OASIS.csv')
 
     cprint("SUCCESS: Successfully converted all oasis files to nii!", "green")
     cprint("INFO: output files are in: " + str(niftidir), "yellow")

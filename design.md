@@ -51,7 +51,7 @@ dataset: out/adni_processed
 options:
     architecture: DenseNet121
     method: transferlearn
-    pooling: avg # Default: None
+    pooling: null # Default: None
     learning_rate: 0.001 # Default: 0.001
     epochs: 25 # Default: 25
 ```
@@ -80,3 +80,53 @@ To clarify the config options:
 There are a few settings that can be set to modify the behavior of the program.
 
 TODO: Fill this in
+
+## Suppplemental files
+
+### Unprocessed Datasets
+
+TODO: explain this, basically storing the unprocessed datasets. Recommended to save them
+here for ease of use
+
+### Scripts
+
+The `supplemental_files/scripts` directory contains a collection of scripts that are generally useful
+for this program, but not essential to it's functionality. Generally, all of these should be ran from 
+the project's root directory, with syntax `python supplemental_files/scripts/{scriptname}.py` A quick
+rundown of the scripts is given below:
+
+1. `run_all_tasks.py`
+
+This script runs all tasks in the sample_configs directory. This will train all models used in the final
+paper for this study. 
+
+This has a few requirements.
+
+- The ADNI dataset should be preprocessed, with a run name of adni_processed.
+- The final dataset should be in the directory `out/preprocessed_datasets/adni_processed/axial_dataset`
+
+This will run all the tasks in the same way tasks are normally ran, with all the parameters from the given configs.
+
+2. `evals_to_csv.py`
+
+converts all evals to a csv for easier viewing. required after teh main eval script ran
+
+3. `oasis_to_nii.py`
+
+converts oasis to proper nii format and saves in oasis_nifti unprocessed datasets
+
+4. `prep_oasis.py`
+
+runs a prep script specifically for the oasis dataset. Stripped down
+
+5. `prep_adni_script.sh`
+
+which runs the default adni script that was used in sample_configs
+
+### Extensions
+
+Explain these
+
+### Sample brains
+
+Explain these

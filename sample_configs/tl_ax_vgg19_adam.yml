@@ -1,9 +1,9 @@
-task_name: tl_ax_vgg19_avgpooling_Adam
+task_name: tl_ax_vgg19_nopooling_Adam
 dataset: out/preprocessed_datasets/adni_processed/axial_dataset
 options:
     architecture: VGG19
     method: transferlearn
-    pooling: avg 
+    pooling: null 
     epochs: 100
     batch_size: 32
     overrides:
