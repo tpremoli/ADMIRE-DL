@@ -7,7 +7,7 @@ all the metrics for each model. This allows for quicker comparison.
 """
 
 import csv
-import re
+import yaml
 from pathlib import Path
 
 # Set the input directory
@@ -45,27 +45,41 @@ with open(output_file, "w", newline='') as csvfile:
     # Process each YAML file
     for file in sorted(input_directory.glob("*.yml")):
         with open(file) as f:
-            content = f.read()
+            content = yaml.safe_load(f)
 
-        # Extract the metrics using regex
-        accuracy = re.search(r"^\s+accuracy:\s(.+)$", content, re.MULTILINE).group(1)
+        # Extract the metrics
+        sklearn_eval = content["keras eval"]["sklearn eval"]
+        accuracy = sklearn_eval["accuracy"]
 
         # group metrics
-        w_avg_metrics = re.findall(r"^\s+weighted avg:\n((?:\s+(?:f1-score|precision|recall|support):\s.+[\n])+)", content, re.MULTILINE)[0]
-        w_avg_metrics = [m.group(2) for m in re.finditer(r"^\s+(f1-score|precision|recall|support):\s(.+)$", w_avg_metrics, re.MULTILINE)]
-
-        m_avg_metrics = re.findall(r"^\s+macro avg:\n((?:\s+(?:f1-score|precision|recall|support):\s.+[\n])+)", content, re.MULTILINE)[0]
-        m_avg_metrics = [m.group(2) for m in re.finditer(r"^\s+(f1-score|precision|recall|support):\s(.+)$", m_avg_metrics, re.MULTILINE)]
+        w_avg_metrics = sklearn_eval["weighted avg"]
+        m_avg_metrics = sklearn_eval["macro avg"]
 
         # class metrics
-        ad_metrics = re.findall(r"^\s+AD:\n((?:\s+(?:f1-score|precision|recall|support):\s.+[\n])+)", content, re.MULTILINE)[0]
-        ad_metrics = [m.group(2) for m in re.finditer(r"^\s+(f1-score|precision|recall|support):\s(.+)$", ad_metrics, re.MULTILINE)]
-
-        cn_metrics = re.findall(r"^\s+CN:\n((?:\s+(?:f1-score|precision|recall|support):\s.+[\n])+)", content, re.MULTILINE)[0]
-        cn_metrics = [m.group(2) for m in re.finditer(r"^\s+(f1-score|precision|recall|support):\s(.+)$", cn_metrics, re.MULTILINE)]
+        ad_metrics = sklearn_eval["AD"]
+        cn_metrics = sklearn_eval["CN"]
 
         # Write the metrics to the output file
-        row = [file.stem[5:], accuracy] + m_avg_metrics + w_avg_metrics + cn_metrics + ad_metrics
+        row = [
+            file.stem[5:],
+            accuracy,
+            m_avg_metrics["f1-score"],
+            m_avg_metrics["precision"],
+            m_avg_metrics["recall"],
+            m_avg_metrics["support"],
+            w_avg_metrics["f1-score"],
+            w_avg_metrics["precision"],
+            w_avg_metrics["recall"],
+            w_avg_metrics["support"],
+            cn_metrics["f1-score"],
+            cn_metrics["precision"],
+            cn_metrics["recall"],
+            cn_metrics["support"],
+            ad_metrics["f1-score"],
+            ad_metrics["precision"],
+            ad_metrics["recall"],
+            ad_metrics["support"],
+        ]
         csv_writer.writerow(row)
 
 print("Metrics saved in out/evals/evals.csv")
