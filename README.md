@@ -1,8 +1,8 @@
-<center>
+<p align="center">
 
 ## Alzheimer's Disease MRI Identification, Recognition, & Evaluation - Deep Learning
-<img src="supplemental_files/logo.png" alt="drawing" width="300"/>
-</center>
+<img src="supplemental_files/logo.png" alt="ADMIRE-DL logo" width="400"/>
+<p align="center">
 
 ## Table of Contents
 
