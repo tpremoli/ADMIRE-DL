@@ -8,7 +8,7 @@ def main():
 
     # Subparsers for prep, train, test, and predict
     subparsers = parser.add_subparsers(
-        help='Prep tool to run the data', dest="tool")
+        help='What tool to use. prep=preprocessing tool, train=training tool, eval=evaluation tool', dest="tool")
 
     # prep parser
     parser_prep = subparsers.add_parser("prep")

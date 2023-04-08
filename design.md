@@ -31,7 +31,7 @@ This project uses the [Alzheimer’s Disease Neuroimaging Initiative (ADNI) data
 In terms of implementation, this project uses the [Keras](https://keras.io/) deep learning library, and the [FSL](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki) image processing library.
 
 
-## Getting Started
+## Requirements
 
 This project uses [conda](https://docs.conda.io/en/latest/) to manage dependencies. To get started, run the following commands:
 
@@ -41,6 +41,56 @@ This project uses [conda](https://docs.conda.io/en/latest/) to manage dependenci
 You must also make sure that the [NVIDIA GPU Driver](https://www.nvidia.com/Download/index.aspx) is installed. To verify that the driver is installed, run
 
     nvidia-smi
+
+It is recommended that you use a GPU for training. To verify that the GPU is installed, run
+
+    python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+
+Linux users may need to install the [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) and [cuDNN](https://developer.nvidia.com/cudnn) to use the GPU.
+
+This project also uses [FSL](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki) for image processing. To install FSL, follow the instructions [here](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FslInstallation).
+
+## Getting Started
+
+To get started, clone the repository
+
+    git clone https://github.com/tpremoli/ADMIRE-DL
+
+and navigate to the directory
+    
+    cd ADMIRE-DL
+
+This project uses a CLI (Command Line Interface) to run tasks. The CLI is defined in `cli.py`. To get a list of all the tools, run
+
+    python cli.py -h
+
+To see the help for a specific command, run
+
+    python cli.py <command> -h
+
+These will be explained in more detail in [The Tools](#The-Tools).
+
+To get started, you must first download the ADNI dataset. This can be done by following the instructions [here](https://adni.loni.usc.edu/data-samples/access-data/). The specific collection used in this study is the ADNI1:Screening 1.5T MRI dataset.
+
+Once the dataset is downloaded, you must extract the zip file to `supplemental_files/unprocessed_datasets`. Once this zip file has been
+extracted, it's also required that you get the metadata csv file, as this contains information about the collection. Place this file into
+`supplemental_files/unprocessed_datasets`, and rename it to `test_sample.csv`.
+
+To prep this dataset, use the provided script
+
+    sh supplemental_files/scripts/prep_adni.sh
+
+Which will create an adni_processed in `out/preprocessed_datasets`. After that, you can get to training models. This can be done by running
+
+    python cli.py train -c <config>
+
+where `<config>` is the path to a training config file. More information can be found in [`train`: Training Models](#train-training-models). This will output a model in `out/trained_models`.
+
+After that, to evaluate the model, run
+
+    python cli.py eval
+
+This will output a file in `out/evals` containing the evaluation results.
 
 ## The Tools
 
@@ -69,8 +119,7 @@ If you're using an ADNI dataset, you must input
 
 This will output preprocessed MRI images and objects, ready to be trained on. Each scan will be treated as a different datapoint, even if a subject has multiple scans attributed to them.
 
-This runs the full suite of prep scripts, however this can be very time consuming (Particularly with the full 3D MRI registration). The behavior of the program can be tweaked using the settings file. More information can be found in [Settings](#Settings) 
-
+This runs the full suite of prep scripts, however this can be very time consuming (Particularly with the full 3D MRI registration). The behavior of the program can be tweaked using the settings file. More information on the settings file can be found in [Settings](#Settings).
 
 ### `train`: Training models
 
@@ -100,7 +149,7 @@ options:
 All the options can be found in `supplemental_files/sample_configs/_options.yml`.
 
 - **task_name**: The name of the task. This should be descriptive, written with snake_case
-- **dataset**: The prepped dataset to use. Usually an axial dataset.
+- **dataset**: The prepped dataset to use. Usually an axial dataset. This should be a folder containing `train`, `test`, and `val` folders, with CN and AD folders inside each of those.
 - **architecture**: The architecture to be used for this task. Should follow naming convention from the [Keras docs](https://keras.io/api/applications). The supported architectures are `VGG16 | VGG19 | ResNet50 | ResNet152 | DenseNet121 | DenseNet201`
 - **method**: The training method to use. This can be `pretrain` or `transferlearn`.
 - **batch_size**: The batch size to use in the training task. Default is 32.
