@@ -1,8 +1,8 @@
-<p align="center">
+<p align="center" width="100%">
 
 ## Alzheimer's Disease MRI Identification, Recognition, & Evaluation - Deep Learning
-<img src="supplemental_files/logo.png" alt="ADMIRE-DL logo" width="400"/>
-<p align="center">
+<img src="supplemental_files/logo.png" alt="ADMIRE-DL logo" width="60%"/>
+</p>
 
 ## Table of Contents
 
@@ -26,7 +26,7 @@
 
 This is the repository for the deep learning portion of the Alzheimer's Disease MRI Identification, Recognition, & Evaluation project. This project aims to create a deep learning model that can accurately classify Alzheimer's Disease using MRI scans. This is done by using a deep learning model to classify the scans. 
 
-This project uses the [Alzheimer’s Disease Neuroimaging Initiative (ADNI) dataset](https://adni.loni.usc.edu/), which contains MRI scans of patients with Alzheimer's Disease and healthy controls. The [OASIS-1](https://www.oasis-brains.org/) dataset is also used for testing purposes.
+This project uses the [Alzheimer’s Disease Neuroimaging Initiative (ADNI) dataset](https://adni.loni.usc.edu/), which contains MRI scans of patients with Alzheimer's Disease and healthy controls. The [OASIS-1](https://www.oasis-brains.org/) dataset can be used for testing purposes.
 
 In terms of implementation, this project uses the [Keras](https://keras.io/) deep learning library, and the [FSL](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki) image processing library.
 
@@ -344,3 +344,17 @@ in the paper to show the results of the preprocessing steps. The brains are:
 - `mni_lin_1mm_brain.nii.gz`: A brain that has been linearly registered to the MNI152 1mm template
 - `mni_nonlin_1mm_brain.nii.gz`: A brain that has been non-linearly registered to the MNI152 1mm template
 - `mni_nonlin_2mm_brain.nii.gz`: A brain that has been linearly registered to the MNI152 2mm template
+
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+
+This license applies to all code in this repository, with the exception of the `supplemental_files/extensions`
+folder, which contains code from the FSL project, which is licensed under the GNU General Public License v2.0.
+
+## Acknowledgments
+
+- The FSL project, for providing the tools used in this project. Read more about FSL [here](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/)
+- The ADNI project, for providing the ADNI dataset. Read more about the ADNI project [here](https://adni.loni.usc.edu/)
+- The OASIS project, for providing the OASIS dataset Read more about the OASIS project [here](https://www.oasis-brains.org/)
