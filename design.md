@@ -1,6 +1,33 @@
-# {APP_NAME} Design
+<center>
+
+## Alzheimer's Disease MRI Identification, Recognition, & Evaluation - Deep Learning
+<img src="supplemental_files/logo.png" alt="drawing" width="300"/>
+</center>
+
+## Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [Introduction](#introduction)
+- [Getting Started](#getting-started)
+- [The Tools](#the-tools)
+  - [`prep`: Preprocessing Datasets](#prep-preprocessing-datasets)
+  - [`train`: Training Models](#train-training-models)
+  - [`eval`: Evaluating Models](#eval-evaluating-models)
+
 
 ## Introduction
+
+This is the repository for the deep learning portion of the Alzheimer's Disease MRI Identification, Recognition, & Evaluation project. This project aims to create a deep learning model that can accurately classify Alzheimer's Disease using MRI scans. This is done by using a deep learning model to classify the scans. 
+
+This project uses the [Alzheimer’s Disease Neuroimaging Initiative (ADNI) dataset](https://adni.loni.usc.edu/), which contains MRI scans of patients with Alzheimer's Disease and healthy controls. The [OASIS-1](https://www.oasis-brains.org/) dataset is also used for testing purposes.
+
+In terms of implementation, this project uses the [Keras](https://keras.io/) deep learning library, and the [FSL](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki) image processing library.
+
+
+## Getting Started
+
+
+## The Tools
 
 This application works via a CLI (cli.py). There are 4 subtools:
 
@@ -8,8 +35,6 @@ This application works via a CLI (cli.py). There are 4 subtools:
 2. `train`: The tool used to train models
 3. `test`: The tool used to test models
 4. `predict`: The tool used to create single predictions on existing models
-
-## The tools
 
 ### `prep`: Preprocessing datasets
 
@@ -32,7 +57,7 @@ This will output preprocessed MRI images and objects, ready to be trained on. Ea
 This runs the full suite of prep scripts, however this can be very time consuming (Particularly with the full 3D MRI registration). The behavior of the program can be tweaked using the settings file. More information can be found in [Settings](#Settings) 
 
 
-### `train`: Preprocessing datasets
+### `train`: Training models
 
 The train tool runs a training task on a prepped dataset. The train tool is ran by using the command
 
@@ -76,7 +101,7 @@ There are also some custom overrides that can be used. These are as follows:
 
 Trained models will be saved in `out/trained_models/{task_name}`. They can be evaluated using the `eval` tool.
 
-### `eval`: Evaluating created models
+### `eval`: Evaluating Models
 
 *TBD*
 

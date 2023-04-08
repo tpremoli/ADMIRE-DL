@@ -30,4 +30,3 @@ def eval_all_models():
         
         calc_metrics(model, val, test, model_preprocessing_func, modelname=modelpath.name)
     
-    
