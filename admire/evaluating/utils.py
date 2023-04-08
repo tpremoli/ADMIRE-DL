@@ -1,10 +1,8 @@
 from pathlib import Path
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import ConfusionMatrixDisplay
 import yaml
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib
 
 from ..constants import *
 from ..settings import *
@@ -61,45 +59,9 @@ def get_final_y(y_true, y_pred):
     final_pred = []
     for i in range(0, len(y_pred), 10):
         final_pred.append(np.rint(np.mean(y_pred[i:i+10])))
-        
-    return final_true, final_pred
-            
-def calc_metrics(model, valdata, testdata, preprocessing_func, modelname):
-    """Calculates accuracy, F1, precision and recall, for a keras model and a dataset.
 
-    Args:
-        model (_type_): _description_
-        dataset (_type_): _description_
-        preprocessing_func (_type_): _description_
-    """
-    IMAGE_DIMENSIONS = ADNI_IMAGE_DIMENSIONS
-    
-    datagen = ImageDataGenerator(preprocessing_function=preprocessing_func)
-    test_flow = datagen.flow_from_directory(
-        testdata,
-        target_size=IMAGE_DIMENSIONS,
-        class_mode='binary',
-        shuffle = False,
-    )
-    
-    y_true = test_flow.classes
-    y_pred = model.predict(test_flow)
-    y_pred = [np.rint(pred[0]) for pred in y_pred]
-    y_true, y_pred = get_final_y(y_true, y_pred)
-    
-    out_dir = Path(cwd, "out/evals").resolve()
-    out_dir.mkdir(parents=True, exist_ok=True)
-    
-    this_report = classification_report(y_true, y_pred, target_names=["AD", "CN"], digits=4, output_dict=True)
-    
-    written_dict = {"keras eval": {"test accuracy": model.evaluate(test_flow)[1], "sklearn eval": this_report}}
-    
-    with open(Path(out_dir,f"eval_{modelname}.yml").resolve(), "w") as f:
-        yaml.dump(written_dict, f)
-    
-    matrix = confusion_matrix(y_true, y_pred, normalize='pred')
-    draw_confusion_matrix(matrix, modelname, out_dir)
-        
+    return final_true, final_pred
+                    
 def extract_metrics_from_yaml(file_path):
     with open(file_path, 'r') as f:
         data = yaml.safe_load(f)

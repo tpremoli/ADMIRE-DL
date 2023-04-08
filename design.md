@@ -26,6 +26,14 @@ In terms of implementation, this project uses the [Keras](https://keras.io/) dee
 
 ## Getting Started
 
+This project uses [conda](https://docs.conda.io/en/latest/) to manage dependencies. To get started, run the following commands:
+
+    conda env create -f environment.yml
+    conda activate training_env
+
+You must also make sure that the [NVIDIA GPU Driver](https://www.nvidia.com/Download/index.aspx) is installed. To verify that the driver is installed, run
+
+    nvidia-smi
 
 ## The Tools
 
@@ -184,6 +192,10 @@ trained and evaluated.
 This is mostly for ease of use, and to have all relevant data in one place.
 
 3. `oasis_to_nii.py`
+
+`NOTE`: Due to discrepancies between the OASIS and ADNI datasets, combining the two is not recommended.
+For real-world use, it is recommended to use only one dataset, as combining them will likely result in
+poor performance. The final report associated with this repository did not use OASIS.
 
 This script is used to convert the OASIS dataset from Analyze to current standards (NiFTi). This is due to
 the fact that the Analyze format is outdated, and lacks orientation information. This script will convert

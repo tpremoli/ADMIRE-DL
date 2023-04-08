@@ -24,3 +24,13 @@ SKIP_SLICE_CREATION=False
 # This setting controls if the program should split the dataset into train, test, and
 # val folders.
 SKIP_FOLDER_SPLIT=False
+
+# This setting enables OASIS dataset model testing & evaluation. Use scripts found in
+# scripts/oasis_to_nii.py and scripts/prep_oasis.py to prepare the dataset.
+# The final image slices should be stored in out/preprocessed_datasets/oasis_processed/axial_slices
+# NOTE: this was not used in the final report, and is not recommended due to discrepancies between
+# the datasets.
+EVAL_OASIS=False
+
+# This controls if we should draw the confusion matrix for the model evaluation.
+DRAW_CONFUSION_MATRIX=False

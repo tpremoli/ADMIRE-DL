@@ -9,6 +9,9 @@ be ran after oasis_to_nii.py, which will create the oasis_nifti directory,
 which is the input for this script. This script will create a preprocessed
 dataset at out/preprocessed_datasets/oasis_processed.
 
+This will not split the dataset into train/test/val folders, as this is
+purely for testing purposes.
+
 The final parameters for this preprocessing are modifiable in the script
 itself.
 
@@ -41,7 +44,6 @@ USE_S3 = True
 AWS_S3_BUCKET_NAME="processed-nii-files"
 FSL_CONCURRENT_PROCESSES=6
 FSLDIR = os.getenv('FSLDIR')
-split_ratio = [0.8, 0.1, 0.1]
 collection_dir = "supplemental_files/unprocessed_datasets/oasis_nifti"
 collection_csv = "supplemental_files/unprocessed_datasets/oasis_nifti/OASIS.csv"
 run_name = "oasis_processed"
@@ -305,18 +307,8 @@ if __name__ == "__main__":
         # Split into slices
         create_image_slices_from_brain(nii_path, out_dir, scan_name, group)
         
-    # slice creation chunk TODO: check that the folder split hasn't already been done
-    dataset_loc = out_dir / "axial_slices"
-    split_seed = datetime.now().timestamp()
-    
-    cprint(f"INFO: Splitting slice folders with split ratio {split_ratio}", "blue")
-    splitfolders.ratio(dataset_loc, output=(out_dir / "axial_dataset"),
-                    seed=split_seed, ratio=split_ratio, group_prefix=15)
-
-    cprint("SUCCESS: Done processing raw MRIs. Saving meta data", "green")
-
     scan_count = len(list((out_dir / "nii_files").glob('**/*')))
-    slice_count = len(list((out_dir / "axial_slices").glob('**/*'))) #TODO: check sagittal and coronals
+    slice_count = len(list((out_dir / "axial_slices").glob('**/*')))
 
     prep_end_time = datetime.now()
     
@@ -325,10 +317,8 @@ if __name__ == "__main__":
         metadata = {
             "run_name": run_name,
             "original_dir": str(collection_dir),
-            "split": list(split_ratio),
             "scan_count": scan_count,
             "slice_count": slice_count,
-            "dataset_split_seed": split_seed if split_seed else None, # won't always be set
             "prep_time": str(prep_end_time-prep_start_time),
         }
         json.dump(metadata, meta_file, indent=4)
