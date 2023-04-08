@@ -1,4 +1,4 @@
-"""This script runs all the tasks in the sample_configs directory.
+"""This script runs all the tasks in the supplemental_files/sample_configs directory.
 This is useful for running all the tasks in a single command.
 
 Run this from the project root directory, e.g.:
@@ -26,7 +26,7 @@ if __name__ == "__main__":
         "pt_ax_vgg19",
     ]
     for task in pt_tasks:
-        config_file = f"sample_configs/{task}.yml"
+        config_file = f"supplemental_files/sample_configs/{task}.yml"
         run_task(config_file)
 
     # TL tasks: Adam
@@ -40,7 +40,7 @@ if __name__ == "__main__":
         "tl_ax_vgg19_adam",
     ]
     for task in tl_adam_tasks:
-        config_file = f"sample_configs/{task}.yml"
+        config_file = f"supplemental_files/sample_configs/{task}.yml"
         run_task(config_file)
 
     # TL tasks: SGD
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         "tl_ax_vgg19_sgd",
     ]
     for task in tl_sgd_tasks:
-        config_file = f"sample_configs/{task}.yml"
+        config_file = f"supplemental_files/sample_configs/{task}.yml"
         run_task(config_file)
 
     print("Done with all tasks")

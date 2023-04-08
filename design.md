@@ -13,6 +13,13 @@
   - [`prep`: Preprocessing Datasets](#prep-preprocessing-datasets)
   - [`train`: Training Models](#train-training-models)
   - [`eval`: Evaluating Models](#eval-evaluating-models)
+- [Settings](#settings)
+- [Supplemental Files](#supplemental-files)
+  - [Unprocessed Datasets](#unprocessed-datasets)
+  - [Sample Configs](#sample-configs)
+  - [Scripts](#scripts)
+  - [Extensions](#extensions)
+  - [Sample brains](#sample-configs)
 
 
 ## Introduction
@@ -90,7 +97,7 @@ options:
         optimizer_name: Adam # This has given better results
 ```
 
-All the options can be found in `sample_configs/_options.yml`.
+All the options can be found in `supplemental_files/sample_configs/_options.yml`.
 
 - **task_name**: The name of the task. This should be descriptive, written with snake_case
 - **dataset**: The prepped dataset to use. Usually an axial dataset.
@@ -163,6 +170,28 @@ subject scans, as contained in the OASIS download. This dataset is not provided 
 publicly available. However, the program will work with this dataset if it is placed in this folder,
 along with the `oasis_cross-sectional.csv` file.
 
+### Sample Configs
+
+The `supplemental_files/sample_configs` directory contains a collection of sample configs that can
+be used to run the program. These follow a simple naming convention to make it easy to understand.
+
+The naming convention is as follows:
+
+    {method}_{dataset}_{architecture}
+
+Where:
+
+- **method**: The config's training method. This can be `pt` (for training from scratch) or `tl`
+(for transfer learning).
+
+- **dataset**: The config's dataset. For this version of the program, this is `ax` for axial but
+there is room for more options.
+
+- **architecture**: The config's architecture. This is the name of the architecture, in all lowercase.
+
+To run these, simply run `python cli.py train -c {config_dir}`. For example, to run the `pt_ax_vgg16`
+config, you would run `python cli.py train -c supplemental_files/sample_configs/pt_ax_vgg16`.
+
 ### Scripts
 
 The `supplemental_files/scripts` directory contains a collection of scripts that are generally useful
@@ -172,8 +201,8 @@ rundown of the scripts is given below:
 
 1. `run_all_tasks.py`
 
-This script runs all tasks in the sample_configs directory. This will train all models used in the final
-paper for this study. 
+This script runs all tasks in the supplemental_files/sample_configs directory. This will train all models
+used in the final paper for this study. 
 
 This has a few requirements.
 
