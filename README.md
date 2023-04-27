@@ -101,7 +101,6 @@ This application works via a CLI (cli.py). There are 4 subtools:
 1. `prep`: The tool used to run preprocessing scripts on MRI datasets
 2. `train`: The tool used to train models
 3. `test`: The tool used to test models
-4. `predict`: The tool used to create single predictions on existing models
 
 ### `prep`: Preprocessing datasets
 
@@ -321,6 +320,21 @@ to `ADNI`. The csv file should be renamed to `test_sample.csv`.
 
 This will preprocess this dataset into the `out/preprocessed_datasets/adni_processed` folder. This folder
 is the main one used in the paper, and is the one that should be used for training.
+
+6. `plot_histories.py`
+
+This script is used to plot the training histories of the models. This is useful for visualizing the training
+process, and can be used to compare different models. This script will plot the training history of all models
+in the `out/models` folder, and will save the plots in `out/model_history_plots`.
+
+This is not a necessary script, but is useful for visualizing the training process. The results are similar to
+the plots shown in the paper.
+
+7. `sync_models.sh`
+
+This script syncs the models in `out/models` to a set s3 bucket. This is useful for syncing the models to a
+cloud storage service, and is useful for backing up the models. This is not necessary for the use of the program,
+but is useful for backing up the models.
 
 ### Extensions
 
