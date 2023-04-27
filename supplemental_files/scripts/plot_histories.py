@@ -27,15 +27,15 @@ def plot_history(history, plot_path):
     plt.legend(loc="lower left")
     plt.savefig(plot_path)
 
+if __name__ == "__main__":
+    print("Plotting model histories...")
+    
+    outpath = Path("out/model_history_plots")
+    outpath.mkdir(exist_ok=True)
 
-history = pd.read_csv("out/trained_models/pt_ax_resnet152_nopooling/trainhistory.csv")
-plot_history(history, "pt_ax_resnet152_nopooling.png")
-
-outpath = Path("out/model_history_plots")
-outpath.mkdir(exist_ok=True)
-
-for path in Path("out/trained_models").glob("*"):
-    if path.is_dir():
-        history = pd.read_csv(path / "trainhistory.csv")
-        plot_history(history, outpath/f"{path.name}.png")
+    for path in Path("out/trained_models").glob("*"):
+        if path.is_dir():
+            print("Plotting history for", path.name)
+            history = pd.read_csv(path / "trainhistory.csv")
+            plot_history(history, outpath/f"{path.name}.png")
 
