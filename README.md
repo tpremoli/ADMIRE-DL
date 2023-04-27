@@ -168,7 +168,44 @@ Trained models will be saved in `out/trained_models/{task_name}`. They can be ev
 
 ### `eval`: Evaluating Models
 
-*TBD*
+This tool evaluates trained models. The eval tool is ran by using the command
+
+    py cli.py eval
+
+There is no need for options, as the tool will automatically find all trained models in `out/trained_models`,
+and evaluate them. The results will be saved in `out/evals`, each named after the task name.
+
+The results are saved in yaml files, and contain the following information:
+
+    keras eval:
+        sklearn eval:
+            AD:
+                f1-score: 0.8372093023255814
+                precision: 0.782608695652174
+                recall: 0.9
+                support: 20
+            CN:
+                f1-score: 0.8444444444444444
+                precision: 0.9047619047619048
+                recall: 0.7916666666666666
+                support: 24
+            accuracy: 0.8409090909090909
+            macro avg:
+                f1-score: 0.8408268733850129
+                precision: 0.8436853002070394
+                recall: 0.8458333333333333
+                support: 44
+            weighted avg:
+                f1-score: 0.8411557434813249
+                precision: 0.8492377188029362
+                recall: 0.8409090909090909
+                support: 44
+        test accuracy: 0.699999988079071
+
+This is a lot of information, but the most important is the `sklearn eval: accuracy` value. This is the accuracy of the
+model on the test set. This is evaluated using the majority vote on the prediction of each slicee of each scan,
+as described in the paper. The `test accuracy` value is the accuracy of the model on the test set, evaluated using
+single slice prediction accuracy. This is not used in the paper, but can be occasionally useful.
 
 ## Settings
 
