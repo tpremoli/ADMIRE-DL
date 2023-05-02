@@ -384,6 +384,12 @@ program.
 This script generates augmentations for a preprocessed dataset. This is useful for visualizing the impact of
 the employed augmentations used in the paper.
 
+10. `trainable_param_count.py`
+
+This script counts the number of trainable parameters in all models in the `out/models` folder. This is useful
+for understanding the complexity of the models, and is useful for comparing the models. The results are stored
+in a csv file in `out/trainable_param_counts.csv`.
+
 ### Extensions
 
 #### T1_2_MNI_152_1mm.cnf
