@@ -1,10 +1,17 @@
-
+"""This script generates augmented images from a preprocessed dataset and saves them to out/augmented
+"""
 from pathlib import Path
 from keras.preprocessing.image import ImageDataGenerator
 
 filedir = Path(__file__).parent.resolve()
 
 def gen_augmentations(dataset_dir, image_count=16):
+    """Augments the images in the dataset_dir and saves them to out/augmented
+
+    Args:
+        dataset_dir (str): dir of the dataset
+        image_count (int, optional): number of images to generate. Defaults to 16.
+    """
     IMAGE_DIMENSIONS = [182,218]
     
     for label in ['AD','CN']:

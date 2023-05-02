@@ -379,6 +379,11 @@ This script zips the models in `out/models` into seperate zip files. This is use
 and is useful for uploading the models to a cloud storage service. This is not necessary for the use of the
 program.
 
+9. `generate_augmentations.py`
+
+This script generates augmentations for a preprocessed dataset. This is useful for visualizing the impact of
+the employed augmentations used in the paper.
+
 ### Extensions
 
 #### T1_2_MNI_152_1mm.cnf
