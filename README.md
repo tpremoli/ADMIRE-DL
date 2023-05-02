@@ -373,6 +373,12 @@ This script syncs the models in `out/models` to a set s3 bucket. This is useful 
 cloud storage service, and is useful for backing up the models. This is not necessary for the use of the program,
 but is useful for backing up the models.
 
+8. `zip_trained_models.sh`
+
+This script zips the models in `out/models` into seperate zip files. This is useful for backing up the models,
+and is useful for uploading the models to a cloud storage service. This is not necessary for the use of the
+program.
+
 ### Extensions
 
 #### T1_2_MNI_152_1mm.cnf
